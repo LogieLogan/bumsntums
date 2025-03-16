@@ -29,11 +29,11 @@ The authentication system will provide secure user registration and login functi
 - Account recovery options
 - Secure logout across devices
 
-## Profile Setup Process
+## Profile Setup Process (this should be fun and engaging)
 1. Basic information collection (name, email)
 2. Age, height, weight collection
-3. Fitness goals selection
-4. Dietary preferences and restrictions
+3. Fitness goals selection (highlight the apps niece Bums or Tums ... or both ) (fun)
+4. Dietary preferences and restrictions 
 5. Body focus area targeting
 6. Fitness level assessment
 

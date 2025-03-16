@@ -1,33 +1,21 @@
 # Design System & UI/UX
 
 ## 2.1 Color Palette
-- **Primary Colors:**
-  - Salmon (`#ff7276`): Main brand color
-  - Pop Coral (`#FF6B6B`): Action buttons, highlights
-  - Terracotta (`#C65B4D`): Secondary elements
-  
-- **Secondary Colors:**
-  - Pop Green (`#01CFA8`): Success states, progress indicators
-  - Pop Orange (`#FF805C`): Notifications, alerts
-  - Teal (`#3A7383`): Detail elements, secondary buttons
+Please help with. Needs re consideration 
 
-- **Background/Neutral Colors:**
-  - Light Mint (`#E8F5E4`): Background variations
-  - Soft Yellow (`#FFD93D`): Highlight accents
-  - White/Off-white: Primary backgrounds
 
 ## 2.2 Typography
-- **Primary Font:** Poiret One (for headings, retro-feminine vibe)
-- **Secondary Font:** Nunito (for body text, great readability)
+- **Primary Font:** changaOne
+- **Secondary Font:** quantico
 - **Accent Font:** Pacifico (for callouts, emphasizing fun elements)
 
 Typography Scale:
-- H1: 32px, Poiret One, Bold
-- H2: 24px, Poiret One, Bold
-- H3: 20px, Poiret One, Medium
-- Body: 16px, Nunito, Regular
-- Small: 14px, Nunito, Regular
-- Caption: 12px, Nunito, Light
+- H1: 32px,  One, Bold
+- H2: 24px,  One, Bold
+- H3: 20px,  One, Medium
+- Body: 16px, , Regular
+- Small: 14px, , Regular
+- Caption: 12px, , Light
 
 ## 2.3 UI Components Library
 - **Buttons:**

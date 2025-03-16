@@ -1,4 +1,4 @@
-// lib/shared/components/buttons/primary_button.dart
+// Update to primary_button.dart
 import 'package:flutter/material.dart';
 import '../../theme/color_palette.dart';
 
@@ -6,44 +6,45 @@ class PrimaryButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
   final bool isLoading;
-  final IconData? iconData;
-  final double width;
+  final bool isEnabled;
+  final double width; // Add width parameter
 
   const PrimaryButton({
     super.key,
     required this.text,
     required this.onPressed,
     this.isLoading = false,
-    this.iconData,
-    this.width = double.infinity,
+    this.isEnabled = true,
+    this.width = double.infinity, // Default to full width
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width,
+      width: width, // Use the width parameter
       child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        child: isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.white,
+        onPressed: isEnabled ? onPressed : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isEnabled ? AppColors.pink : AppColors.lightGrey,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        child:
+            isLoading
+                ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+                : Text(
+                  text.toUpperCase(),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (iconData != null) ...[
-                    Icon(iconData),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(text),
-                ],
-              ),
       ),
     );
   }

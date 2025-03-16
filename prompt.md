@@ -1,8 +1,8 @@
 Using the Project Knowledge as your core persona and instructions please help me build my flutter mobile ios app on the defined area of focus 
 
 Area of focus:
-phase 1 of the plan. 
-I am stuck on a loading page on the spash screen
+Phase 1. 
+Review spec and progress. 
 
 Project folder structure:
 
@@ -19,17 +19,35 @@ Project folder structure:
 │   │   │   ├── onboarding_screen.dart
 │   │   │   └── signup_screen.dart
 │   │   ├── services
-│   │   │   └── firebase_auth_service.dart
+│   │   │   ├── firebase_auth_service.dart
+│   │   │   └── google_sign_in_service.dart
 │   │   └── widgets
+│   │       ├── apple_sign_in_button.dart
 │   │       ├── auth_button.dart
-│   │       └── profile_setup_form.dart
+│   │       ├── google_sign_in_button.dart
+│   │       └── onboarding
+│   │           ├── components
+│   │           │   ├── goal_option.dart
+│   │           │   ├── level_option.dart
+│   │           │   ├── privacy_policy_dialog.dart
+│   │           │   ├── scrollable_step.dart
+│   │           │   └── step_progress_indicator.dart
+│   │           ├── profile_setup_coordinator.dart
+│   │           └── steps
+│   │               ├── basic_info_step.dart
+│   │               ├── body_focus_step.dart
+│   │               ├── fitness_level_step.dart
+│   │               ├── goals_step.dart
+│   │               ├── health_and_diet_step.dart
+│   │               ├── measurements_step.dart
+│   │               ├── motivation_step.dart
+│   │               └── workout_environment_step.dart
 │   ├── splash
 │   │   └── screens
 │   │       └── splash_screen.dart
 │   └── workouts
 │       └── screens
 │           └── home_screen.dart
-├── firebase_options.dart
 ├── firebase_options_dev.dart
 ├── flavors.dart
 ├── main.dart
@@ -53,7 +71,10 @@ Project folder structure:
 │   ├── models
 │   │   └── app_user.dart
 │   ├── navigation
+│   │   ├── auth_guard.dart
 │   │   └── navigation.dart
+│   ├── providers
+│   │   └── firebase_providers.dart
 │   ├── services
 │   │   └── firebase_service.dart
 │   └── theme
@@ -77,6 +98,5 @@ Project folder structure:
     ├── 08_security_and_compliance.md
     ├── 09_implementation_plan.md
     └── 10_early_feedback.md
-
 
 Do you understand what we are trying to achieve?

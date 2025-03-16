@@ -1,4 +1,4 @@
-// lib/shared/config/router.dart
+// Updated lib/shared/config/router.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +9,7 @@ import '../../features/auth/screens/onboarding_screen.dart';
 import '../../features/workouts/screens/home_screen.dart';
 import '../constants/app_constants.dart';
 import '../providers/firebase_providers.dart';
+import '../navigation/auth_guard.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -26,6 +27,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: navigatorKey,
     initialLocation: AppConstants.splashRoute,
     observers: observers,
+    redirect: (context, state) => checkAuthRedirect(context, state, ref),
     routes: [
       GoRoute(
         path: AppConstants.splashRoute,

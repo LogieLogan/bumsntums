@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
 import '../../../shared/models/app_user.dart';
+import '../services/firebase_auth_service.dart';
 
 // Auth service provider
 final authServiceProvider = Provider<FirebaseAuthService>((ref) {
@@ -19,32 +20,26 @@ final authStateProvider = StreamProvider<User?>((ref) {
 final currentUserProvider = FutureProvider<AppUser?>((ref) async {
   final authState = await ref.watch(authStateProvider.future);
   if (authState == null) return null;
-  
+
   final userId = authState.uid;
   // Implement a method to fetch user data from Firestore
   // This is just a placeholder for now
   return AppUser(
-    id: userId, 
-    email: authState.email ?? '', 
+    id: userId,
+    email: authState.email ?? '',
     emailVerified: authState.emailVerified,
     createdAt: DateTime.now(),
   );
 });
 
 // Auth state notifier
-enum AuthState {
-  initial,
-  authenticated,
-  unauthenticated,
-  loading,
-  error,
-}
+enum AuthState { initial, authenticated, unauthenticated, loading, error }
 
 // lib/features/auth/providers/auth_provider.dart (continued)
 class AuthStateNotifier extends StateNotifier<AuthState> {
   final FirebaseAuthService _authService;
   final Ref _ref;
-  
+
   AuthStateNotifier(this._authService, this._ref) : super(AuthState.initial) {
     // Listen to auth state changes
     _authService.authStateChanges.listen((user) {
@@ -55,7 +50,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       }
     });
   }
-  
+
   Future<void> signInWithEmailAndPassword({
     required String email,
     required String password,
@@ -72,7 +67,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       rethrow;
     }
   }
-  
+
   Future<void> signUpWithEmailAndPassword({
     required String email,
     required String password,
@@ -89,7 +84,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       rethrow;
     }
   }
-  
+
   Future<void> signInAnonymously() async {
     try {
       state = AuthState.loading;
@@ -100,7 +95,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       rethrow;
     }
   }
-  
+
   Future<void> signOut() async {
     try {
       state = AuthState.loading;
@@ -111,9 +106,32 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       rethrow;
     }
   }
+
+  Future<void> signInWithGoogle() async {
+    try {
+      state = AuthState.loading;
+      await _authService.signInWithGoogle();
+      state = AuthState.authenticated;
+    } catch (e) {
+      state = AuthState.error;
+      rethrow;
+    }
+  }
+
+  Future<void> signInWithApple() async {
+    try {
+      state = AuthState.loading;
+      await _authService.signInWithApple();
+      state = AuthState.authenticated;
+    } catch (e) {
+      state = AuthState.error;
+      rethrow;
+    }
+  }
 }
 
-final authStateNotifierProvider = StateNotifierProvider<AuthStateNotifier, AuthState>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return AuthStateNotifier(authService, ref);
-});
+final authStateNotifierProvider =
+    StateNotifierProvider<AuthStateNotifier, AuthState>((ref) {
+      final authService = ref.watch(authServiceProvider);
+      return AuthStateNotifier(authService, ref);
+    });

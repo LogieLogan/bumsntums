@@ -8,32 +8,32 @@ class AppTheme {
   // Light theme
   static ThemeData get lightTheme {
     return ThemeData(
-      primaryColor: AppColors.salmon,
+      primaryColor: AppColors.pink,
       colorScheme: ColorScheme.light(
-        primary: AppColors.salmon,
-        secondary: AppColors.teal,
+        primary: AppColors.pink,
+        secondary: AppColors.popTurquoise,
         error: AppColors.error,
         surface: AppColors.offWhite,
       ),
       scaffoldBackgroundColor: AppColors.white,
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.salmon,
+        backgroundColor: AppColors.pink,
         titleTextStyle: AppTextStyles.h2.copyWith(color: AppColors.white),
         elevation: 0,
         centerTitle: true,
       ),
       buttonTheme: ButtonThemeData(
-        buttonColor: AppColors.salmon,
+        buttonColor: AppColors.pink,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(30),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           foregroundColor: AppColors.white,
-          backgroundColor: AppColors.salmon,
+          backgroundColor: AppColors.pink,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(30),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           textStyle: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
@@ -41,18 +41,18 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.teal,
+          foregroundColor: AppColors.pink,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(30),
           ),
-          side: const BorderSide(color: AppColors.teal, width: 2),
+          side: const BorderSide(color: AppColors.pink, width: 2),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           textStyle: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.terracotta,
+          foregroundColor: AppColors.popBlue,
           textStyle: AppTextStyles.body,
         ),
       ),
@@ -60,15 +60,15 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.offWhite,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.salmon, width: 2),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.pink, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
         labelStyle: AppTextStyles.small.copyWith(color: AppColors.mediumGrey),
@@ -83,12 +83,18 @@ class AppTheme {
         bodySmall: AppTextStyles.caption,
       ),
       cardTheme: CardTheme(
-        elevation: 4,
+        elevation: 8,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
         color: AppColors.white,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+      dialogTheme: DialogTheme(
+        elevation: 16,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
       ),
     );
   }

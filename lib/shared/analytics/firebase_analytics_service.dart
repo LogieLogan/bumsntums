@@ -7,13 +7,13 @@ class AnalyticsService {
   static final AnalyticsService _instance = AnalyticsService._internal();
   factory AnalyticsService() => _instance;
   AnalyticsService._internal();
-  
+
   bool _isInitialized = false;
   FirebaseAnalytics? _analytics;
-  
+
   void initialize() {
     if (_isInitialized) return;
-    
+
     try {
       _analytics = FirebaseAnalytics.instance;
       _isInitialized = true;
@@ -28,7 +28,7 @@ class AnalyticsService {
       if (!_isInitialized) initialize();
       if (_analytics == null) return null;
     }
-    
+
     try {
       return FirebaseAnalyticsObserver(analytics: _analytics!);
     } catch (e) {
@@ -127,5 +127,15 @@ class AnalyticsService {
     } catch (e) {
       debugPrint('Error logging food scan: $e');
     }
+  }
+
+  void logError({required String error, Map<String, dynamic>? parameters}) {
+    _analytics?.logEvent(
+      name: 'app_error',
+      parameters: {'error_message': error, ...?parameters},
+    );
+
+    // Also log to console for debugging
+    print('ERROR: $error');
   }
 }

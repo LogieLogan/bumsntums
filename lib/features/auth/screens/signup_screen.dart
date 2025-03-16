@@ -9,6 +9,9 @@ import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/constants/app_constants.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../services/firebase_auth_service.dart';
+import 'dart:io';
+import 'package:go_router/go_router.dart';
+import '../widgets/google_sign_in_button.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -40,6 +43,35 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     super.dispose();
   }
 
+  Future<void> _signInWithApple() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await ref.read(authStateNotifierProvider.notifier).signInWithApple();
+      _analyticsService.logSignUp(method: 'apple');
+
+      // Navigate to onboarding after successful sign-in
+      if (mounted) {
+        GoRouter.of(context).go('/');
+      }
+    } on AuthException catch (e) {
+      setState(() {
+        _errorMessage = e.message;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to sign in with Apple. Please try again.';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   Future<void> _signUpWithEmailAndPassword() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -49,23 +81,47 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     });
 
     try {
-      await ref.read(authStateNotifierProvider.notifier).signUpWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-      
+      // Check internet connectivity first
+      bool hasInternet = await _checkInternetConnection();
+      if (!hasInternet) {
+        setState(() {
+          _errorMessage =
+              'No internet connection. Please check your network settings.';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      await ref
+          .read(authStateNotifierProvider.notifier)
+          .signUpWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
+
       // After successful signup, navigate to onboarding
       if (mounted) {
-        Navigator.pushReplacementNamed(context, AppConstants.onboardingRoute);
+        GoRouter.of(context).go('/');
       }
     } on AuthException catch (e) {
       setState(() {
         _errorMessage = e.message;
       });
+      // Log the error
+      _analyticsService.logError(error: 'Auth Exception: ${e.message}');
     } catch (e) {
+      print('Signup error: $e');
       setState(() {
-        _errorMessage = 'An error occurred. Please try again.';
+        if (e.toString().contains('permission') ||
+            e.toString().contains('Permission')) {
+          _errorMessage =
+              'Permission denied. Please check app permissions in settings.';
+        } else {
+          _errorMessage = 'An error occurred. Please try again.';
+        }
       });
+      // Log the error
+      _analyticsService.logError(error: 'General Exception: $e');
     } finally {
       setState(() {
         _isLoading = false;
@@ -73,16 +129,24 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     }
   }
 
+  // Add this method to check internet connectivity
+  Future<bool> _checkInternetConnection() async {
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } on SocketException catch (_) {
+      return false;
+    }
+  }
+
   void _navigateToLogin() {
-    Navigator.pop(context);
+    GoRouter.of(context).go(AppConstants.loginRoute);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Account'),
-      ),
+      appBar: AppBar(title: const Text('Create Account')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -97,25 +161,25 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   size: 64,
                   color: AppColors.salmon,
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 Text(
                   'Join Bums \'n\' Tums',
                   style: AppTextStyles.h2,
                   textAlign: TextAlign.center,
                 ),
-                
+
                 const SizedBox(height: 8),
-                
+
                 Text(
                   'Create an account to track your fitness journey',
                   style: AppTextStyles.body,
                   textAlign: TextAlign.center,
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Signup form
                 Form(
                   key: _formKey,
@@ -141,9 +205,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           return null;
                         },
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Password field
                       TextFormField(
                         controller: _passwordController,
@@ -164,9 +228,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           return null;
                         },
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Confirm password field
                       TextFormField(
                         controller: _confirmPasswordController,
@@ -187,9 +251,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         },
                         onFieldSubmitted: (_) => _signUpWithEmailAndPassword(),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Error message
                       if (_errorMessage != null) ...[
                         Text(
@@ -201,16 +265,16 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         ),
                         const SizedBox(height: 16),
                       ],
-                      
+
                       // Signup button
                       PrimaryButton(
                         text: 'Create Account',
                         onPressed: _signUpWithEmailAndPassword,
                         isLoading: _isLoading,
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Or divider
                       const Row(
                         children: [
@@ -222,30 +286,32 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           Expanded(child: Divider()),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Social signup options
-                      AuthButton(
-                        type: AuthButtonType.google,
-                        text: 'Sign up with Google',
-                        onPressed: () {
-                          // TODO: Implement Google Sign-In
+                      GoogleSignInButton(
+                        isFullWidth: true,
+                        onSuccess: () {
+                          GoRouter.of(context).go('/');
+                        },
+                        onError: (errorMessage) {
+                          setState(() {
+                            _errorMessage = errorMessage;
+                          });
                         },
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       AuthButton(
                         type: AuthButtonType.apple,
                         text: 'Sign up with Apple',
-                        onPressed: () {
-                          // TODO: Implement Apple Sign-In
-                        },
+                        onPressed: _signInWithApple,
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Login link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -257,9 +323,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Terms and privacy policy
                       Text(
                         'By signing up, you agree to our Terms of Service and Privacy Policy',
