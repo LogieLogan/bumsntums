@@ -10,6 +10,9 @@ class AnalyticsService {
 
   bool _isInitialized = false;
   FirebaseAnalytics? _analytics;
+  
+  // Maximum allowed length for Firebase Analytics parameter values
+  static const int _maxParamValueLength = 100;
 
   void initialize() {
     if (_isInitialized) return;
@@ -37,13 +40,32 @@ class AnalyticsService {
     }
   }
 
+  // Helper method to truncate parameter values
+  Map<String, Object>? _sanitizeParameters(Map<String, Object>? parameters) {
+    if (parameters == null) return null;
+    
+    final sanitizedParams = <String, Object>{};
+    
+    for (final entry in parameters.entries) {
+      if (entry.value is String && (entry.value as String).length > _maxParamValueLength) {
+        sanitizedParams[entry.key] = 
+            '${(entry.value as String).substring(0, _maxParamValueLength - 3)}...';
+      } else {
+        sanitizedParams[entry.key] = entry.value;
+      }
+    }
+    
+    return sanitizedParams;
+  }
+
   Future<void> logEvent({
     required String name,
     Map<String, Object>? parameters,
   }) async {
     if (_analytics == null) return;
     try {
-      await _analytics!.logEvent(name: name, parameters: parameters);
+      final sanitizedParams = _sanitizeParameters(parameters);
+      await _analytics!.logEvent(name: name, parameters: sanitizedParams);
     } catch (e) {
       debugPrint('Error logging event: $e');
     }
@@ -120,9 +142,16 @@ class AnalyticsService {
   Future<void> logFoodScanned({required String barcodeValue}) async {
     if (_analytics == null) return;
     try {
+      // Truncate the barcode value if it's too long
+      String truncatedBarcode = barcodeValue;
+      if (truncatedBarcode.length > _maxParamValueLength) {
+        truncatedBarcode = 
+            '${truncatedBarcode.substring(0, _maxParamValueLength - 3)}...';
+      }
+      
       await _analytics!.logEvent(
         name: 'food_scanned',
-        parameters: {'barcode_value': barcodeValue},
+        parameters: {'barcode_value': truncatedBarcode},
       );
     } catch (e) {
       debugPrint('Error logging food scan: $e');
@@ -130,12 +159,25 @@ class AnalyticsService {
   }
 
   void logError({required String error, Map<String, Object>? parameters}) {
-    final Map<String, Object> errorParams = {'error_message': error};
-    if (parameters != null) {
-      errorParams.addAll(parameters);
-    }
+    if (_analytics == null) return;
+    
+    try {
+      // Truncate the error message if it's too long
+      String truncatedError = error;
+      if (truncatedError.length > _maxParamValueLength) {
+        truncatedError = 
+            '${truncatedError.substring(0, _maxParamValueLength - 3)}...';
+      }
+      
+      final Map<String, Object> errorParams = {'error_message': truncatedError};
+      if (parameters != null) {
+        errorParams.addAll(_sanitizeParameters(parameters) ?? {});
+      }
 
-    _analytics?.logEvent(name: 'app_error', parameters: errorParams);
+      _analytics?.logEvent(name: 'app_error', parameters: errorParams);
+    } catch (e) {
+      debugPrint('Error logging error event: $e');
+    }
 
     // Also log to console for debugging
     print('ERROR: $error');

@@ -1,7 +1,6 @@
 import Flutter
 import UIKit
 import Firebase
-import GoogleMLKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -9,7 +8,7 @@ import GoogleMLKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // Configure Firebase first
+    // Configure Firebase
     FirebaseApp.configure()
     
     // Set up MLKit method channel
@@ -19,7 +18,7 @@ import GoogleMLKit
     mlkitChannel.setMethodCallHandler({
       (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
       if call.method == "setMLKitCachingStrategy" {
-        // This doesn't actually need to do anything - just having this channel helps
+        // Just acknowledge the call
         result(true)
       } else {
         result(FlutterMethodNotImplemented)

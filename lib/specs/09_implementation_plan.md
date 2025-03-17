@@ -23,7 +23,7 @@
 - [x] Create workout data models and repositories
 - [x] Set up analytics tracking with Firebase
 - [x] Implement crash reporting with Crashlytics
-- [ ] Create barcode scanning MVP with Open Food Facts API
+- [x] Create barcode scanning MVP with Open Food Facts API
 - [x] Implement basic workout display and execution
 - [ ] Complete data privacy impact assessment
 - [ ] Set up TestFlight/Firebase App Distribution for testing

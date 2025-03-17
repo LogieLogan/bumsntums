@@ -2,13 +2,6 @@ Using the Project Knowledge as your core persona and instructions please help me
 
 Area of focus:
 Phase 1 of implementation plan.
-Barcode scanner Implementation.
-Getting Errors
--[MLKITx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
-GTMSessionFetcher 0x12f436580 (https://www.googleapis.com/experimentsandconfigs/v1/getExperimentsAndConfigs) was already running
--[MLKITx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
--[MLKITx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
--[MLKITx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
 
 Project folder structure:
 
@@ -59,10 +52,11 @@ Project folder structure:
 │   │   │   ├── food_details_screen.dart
 │   │   │   └── scanner_screen.dart
 │   │   ├── services
+│   │   │   ├── barcode_scanner_service.dart
+│   │   │   ├── ml_kit_service.dart
 │   │   │   ├── open_food_facts_service.dart
 │   │   │   └── permissions_service.dart
 │   │   └── widgets
-│   │       └── barcode_scanner_widget.dart
 │   ├── splash
 │   │   └── screens
 │   │       └── splash_screen.dart
