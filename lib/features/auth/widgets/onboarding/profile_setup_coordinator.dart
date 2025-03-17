@@ -1,4 +1,6 @@
 // lib/features/auth/widgets/onboarding/profile_setup_coordinator.dart
+import 'package:bums_n_tums/features/auth/widgets/onboarding/steps/capability_questionnaire.dart';
+import 'package:bums_n_tums/features/auth/widgets/onboarding/steps/dietary_preferences_step.dart';
 import 'package:bums_n_tums/shared/theme/color_palette.dart';
 import 'package:bums_n_tums/shared/theme/text_styles.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +14,6 @@ import 'steps/goals_step.dart';
 import 'steps/fitness_level_step.dart';
 import 'steps/body_focus_step.dart';
 import 'steps/workout_environment_step.dart';
-import 'steps/health_and_diet_step.dart';
-import 'steps/motivation_step.dart';
 import 'components/step_progress_indicator.dart';
 
 class ProfileSetupForm extends ConsumerStatefulWidget {
@@ -208,7 +208,8 @@ class _ProfileSetupFormState extends ConsumerState<ProfileSetupForm> {
     List<String> filteredAllergies =
         allergies.contains('None') ? [] : List<String>.from(allergies);
     List<String> filteredDietaryPreferences =
-        dietaryPreferences.contains('No Restrictions')
+        dietaryPreferences.contains('No Restrictions') ||
+                dietaryPreferences.contains('None')
             ? []
             : List<String>.from(dietaryPreferences);
 
@@ -225,6 +226,7 @@ class _ProfileSetupFormState extends ConsumerState<ProfileSetupForm> {
       print("Allergies: ${_profile.allergies.join(', ')}");
       print("Dietary Preferences: ${_profile.dietaryPreferences.join(', ')}");
 
+      // Move to the next step
       _currentStep++;
     });
     _scrollToTop();
@@ -596,14 +598,22 @@ class _ProfileSetupFormState extends ConsumerState<ProfileSetupForm> {
         );
         break;
       case 6:
-        // Skip health and diet step (empty lists)
-        print("Skipping health and diet step, setting empty lists");
+        // Skip capability questionnaire (empty list)
+        print("Skipping capability questionnaire, setting empty list");
         _updateHealthAndDiet([], [], []);
         break;
+
       case 7:
-        // Skip motivation step (empty list)
-        print("Skipping motivation step, setting empty motivation list");
-        _updateMotivation([], null);
+        // Skip dietary preferences (empty lists)
+        print("Skipping dietary preferences, setting empty lists");
+        setState(() {
+          _profile = _profile.copyWith(
+            allergies: ['None'],
+            dietaryPreferences: ['None'],
+            onboardingCompleted: true,
+          );
+          _submitProfile();
+        });
         break;
     }
   }
@@ -648,6 +658,12 @@ class _ProfileSetupFormState extends ConsumerState<ProfileSetupForm> {
         return FitnessLevelStep(
           initialLevel: _profile.fitnessLevel,
           onNext: _updateFitnessLevel,
+          onChanged: (level) {
+            // Update profile immediately when level changes
+            setState(() {
+              _profile = _profile.copyWith(fitnessLevel: level);
+            });
+          },
         );
       case 4:
         return BodyFocusStep(
@@ -670,14 +686,52 @@ class _ProfileSetupFormState extends ConsumerState<ProfileSetupForm> {
           controller: _workoutEnvironmentController,
         );
       case 6:
-        return HealthAndDietStep(
-          initialConditions: _profile.healthConditions,
+        // Pass existing answers when returning to the capability questionnaire
+        return CapabilityQuestionnaire(
+          initialQuestions: [],
+          existingAnswers:
+              _profile.healthConditions, // Pass existing answers here
+          onNext: (questionsData) {
+            // Store capability questionnaire answers in health conditions
+            final answers =
+                questionsData
+                    .where((q) => q['answer'] != null)
+                    .map((q) => "${q['question']}: ${q['answer']}")
+                    .toList();
+
+            _updateHealthAndDiet(
+              answers,
+              _profile.allergies,
+              _profile.dietaryPreferences,
+            );
+          },
+          onChanged: (questionsData) {
+            // Store answers as they change
+            final answers =
+                questionsData
+                    .where((q) => q['answer'] != null)
+                    .map((q) => "${q['question']}: ${q['answer']}")
+                    .toList();
+
+            setState(() {
+              _profile = _profile.copyWith(healthConditions: answers);
+            });
+          },
+        );
+
+      case 7:
+        // Add new DietaryPreferencesStep
+        return DietaryPreferencesStep(
           initialAllergies: _profile.allergies,
           initialDietaryPreferences: _profile.dietaryPreferences,
-          onNext: _updateHealthAndDiet,
-          onConditionsChanged: (conditions) {
+          onNext: (allergies, dietaryPreferences) {
             setState(() {
-              _profile = _profile.copyWith(healthConditions: conditions);
+              _profile = _profile.copyWith(
+                allergies: allergies,
+                dietaryPreferences: dietaryPreferences,
+                onboardingCompleted: true,
+              );
+              _submitProfile();
             });
           },
           onAllergiesChanged: (allergies) {
@@ -691,20 +745,7 @@ class _ProfileSetupFormState extends ConsumerState<ProfileSetupForm> {
             });
           },
         );
-      case 7:
-        return MotivationStep(
-          initialMotivations: _profile.motivations,
-          initialCustomMotivation: _profile.customMotivation,
-          onNext: _updateMotivation,
-          onChanged: (motivations, customMotivation) {
-            setState(() {
-              _profile = _profile.copyWith(
-                motivations: motivations,
-                customMotivation: customMotivation,
-              );
-            });
-          },
-        );
+
       default:
         return const SizedBox.shrink();
     }

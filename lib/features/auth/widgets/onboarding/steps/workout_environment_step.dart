@@ -10,19 +10,19 @@ class WorkoutEnvironmentStepController {
   int? weeklyWorkoutDays;
   int? workoutDurationMinutes;
   String? customLocation;
-  
+
   bool get isValid {
-    return selectedLocations.isNotEmpty && 
-           selectedEquipment.isNotEmpty && 
-           weeklyWorkoutDays != null && 
-           workoutDurationMinutes != null;
+    return selectedLocations.isNotEmpty &&
+        selectedEquipment.isNotEmpty &&
+        weeklyWorkoutDays != null &&
+        workoutDurationMinutes != null;
   }
-  
+
   WorkoutLocation? get primaryLocation {
     if (selectedLocations.isEmpty) return null;
     return selectedLocations.first;
   }
-  
+
   String? get validationMessage {
     if (selectedLocations.isEmpty) {
       return "Please select where you'll be working out";
@@ -67,13 +67,13 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
   final _customLocationController = TextEditingController();
   bool _isAddingCustomEquipment = false;
   bool _isAddingCustomLocation = false;
-  
+
   final List<WorkoutLocation> _availableLocations = [
     WorkoutLocation.home,
     WorkoutLocation.gym,
     WorkoutLocation.outdoors,
   ];
-  
+
   final List<String> _commonEquipment = [
     'No Equipment',
     'Dumbbells',
@@ -84,7 +84,7 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
     'Bench',
     'Full Gym Access',
   ];
-  
+
   final List<String> _moreEquipment = [
     'Barbell & Plates',
     'Pull-Up Bar',
@@ -177,24 +177,33 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
 
   String _getLocationTitle(WorkoutLocation location) {
     switch (location) {
-      case WorkoutLocation.home: return 'Home';
-      case WorkoutLocation.gym: return 'Gym';
-      case WorkoutLocation.outdoors: return 'Outdoors';
-      case WorkoutLocation.anywhere: return 'Anywhere';
+      case WorkoutLocation.home:
+        return 'Home';
+      case WorkoutLocation.gym:
+        return 'Gym';
+      case WorkoutLocation.outdoors:
+        return 'Outdoors';
+      case WorkoutLocation.anywhere:
+        return 'Anywhere';
     }
   }
 
   IconData _getLocationIcon(WorkoutLocation location) {
     switch (location) {
-      case WorkoutLocation.home: return Icons.home;
-      case WorkoutLocation.gym: return Icons.fitness_center;
-      case WorkoutLocation.outdoors: return Icons.park;
-      case WorkoutLocation.anywhere: return Icons.place;
+      case WorkoutLocation.home:
+        return Icons.home;
+      case WorkoutLocation.gym:
+        return Icons.fitness_center;
+      case WorkoutLocation.outdoors:
+        return Icons.park;
+      case WorkoutLocation.anywhere:
+        return Icons.place;
     }
   }
 
   bool _isCustomEquipment(String equipment) {
-    return !_commonEquipment.contains(equipment) && !_moreEquipment.contains(equipment);
+    return !_commonEquipment.contains(equipment) &&
+        !_moreEquipment.contains(equipment);
   }
 
   @override
@@ -202,7 +211,7 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
     // Use MediaQuery to get screen size for adaptable layout
     final screenWidth = MediaQuery.of(context).size.width;
     final contentWidth = screenWidth - 32; // Accounting for padding
-    
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,62 +226,77 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
           const SizedBox(height: 8),
 
           // Location selection
-          Text('Where will you workout? (select all that apply)', 
-              style: AppTextStyles.body),
+          Text(
+            'Where will you workout? (select all that apply)',
+            style: AppTextStyles.body,
+          ),
           const SizedBox(height: 8),
-          
+
           // Wrap for locations (more flexible than GridView)
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _availableLocations.map((location) {
-              final isSelected = widget.controller.selectedLocations.contains(location);
-              return SizedBox(
-                width: (contentWidth - 8) / 2, // 2 columns with spacing
-                child: Card(
-                  elevation: isSelected ? 4 : 1,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: isSelected ? AppColors.pink : Colors.transparent,
-                      width: 2,
-                    ),
-                  ),
-                  color: isSelected ? AppColors.pink.withOpacity(0.1) : null,
-                  margin: EdgeInsets.zero,
-                  child: InkWell(
-                    onTap: () => _toggleLocation(location),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _getLocationIcon(location),
-                            color: isSelected ? AppColors.pink : AppColors.mediumGrey,
-                            size: 28,
+            children:
+                _availableLocations.map((location) {
+                  final isSelected = widget.controller.selectedLocations
+                      .contains(location);
+                  return SizedBox(
+                    width: (contentWidth - 8) / 2, // 2 columns with spacing
+                    child: Card(
+                      elevation: isSelected ? 4 : 1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color:
+                              isSelected ? AppColors.pink : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      color:
+                          isSelected ? AppColors.pink.withOpacity(0.1) : null,
+                      margin: EdgeInsets.zero,
+                      child: InkWell(
+                        onTap: () => _toggleLocation(location),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _getLocationIcon(location),
+                                color:
+                                    isSelected
+                                        ? AppColors.pink
+                                        : AppColors.mediumGrey,
+                                size: 28,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _getLocationTitle(location),
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.small.copyWith(
+                                  fontSize: 14,
+                                  fontWeight:
+                                      isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                  color:
+                                      isSelected
+                                          ? AppColors.pink
+                                          : AppColors.darkGrey,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _getLocationTitle(location),
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.small.copyWith(
-                              fontSize: 14,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? AppColors.pink : AppColors.darkGrey,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              );
-            }).toList(),
+                  );
+                }).toList(),
           ),
-          
+
           // Custom location
           const SizedBox(height: 8),
           if (widget.controller.customLocation != null)
@@ -304,7 +328,11 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: AppColors.pink, size: 18),
+                      icon: const Icon(
+                        Icons.close,
+                        color: AppColors.pink,
+                        size: 18,
+                      ),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       onPressed: _removeCustomLocation,
@@ -313,9 +341,10 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
                 ),
               ),
             ),
-          
+
           // Add custom location
-          if (!_isAddingCustomLocation && widget.controller.customLocation == null)
+          if (!_isAddingCustomLocation &&
+              widget.controller.customLocation == null)
             TextButton.icon(
               icon: const Icon(Icons.add_location_alt, size: 18),
               label: const Text('Add custom location'),
@@ -325,10 +354,13 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
                 });
               },
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
               ),
             ),
-          
+
           // Custom location input
           if (_isAddingCustomLocation)
             Padding(
@@ -341,12 +373,19 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
                       decoration: const InputDecoration(
                         hintText: 'Enter location',
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                       ),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.check, color: AppColors.pink, size: 20),
+                    icon: const Icon(
+                      Icons.check,
+                      color: AppColors.pink,
+                      size: 20,
+                    ),
                     padding: const EdgeInsets.all(4),
                     constraints: const BoxConstraints(),
                     onPressed: _addCustomLocation,
@@ -369,16 +408,21 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
           const Divider(height: 16),
 
           // Equipment selection
-          Text('What equipment do you have access to?', style: AppTextStyles.body),
+          Text(
+            'What equipment do you have access to?',
+            style: AppTextStyles.body,
+          ),
           const SizedBox(height: 8),
-          
+
           // Equipment chips
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               ..._commonEquipment.map((equipment) {
-                final isSelected = widget.controller.selectedEquipment.contains(equipment);
+                final isSelected = widget.controller.selectedEquipment.contains(
+                  equipment,
+                );
                 return FilterChip(
                   label: Text(equipment),
                   selected: isSelected,
@@ -387,70 +431,85 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
                   selectedColor: AppColors.popTurquoise.withOpacity(0.2),
                   checkmarkColor: AppColors.popTurquoise,
                   labelStyle: TextStyle(
-                    color: isSelected ? AppColors.popTurquoise : AppColors.darkGrey,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color:
+                        isSelected
+                            ? AppColors.popTurquoise
+                            : AppColors.darkGrey,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                   side: BorderSide(
-                    color: isSelected ? AppColors.popTurquoise : Colors.transparent,
+                    color:
+                        isSelected
+                            ? AppColors.popTurquoise
+                            : Colors.transparent,
                   ),
                   visualDensity: VisualDensity.compact,
                 );
               }),
-              
+
               // More equipment button
               ActionChip(
                 label: const Text("More..."),
                 onPressed: () {
                   showDialog(
                     context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text("More Equipment Options"),
-                      content: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _moreEquipment.map((equipment) {
-                          final isSelected = widget.controller.selectedEquipment.contains(equipment);
-                          return FilterChip(
-                            label: Text(equipment),
-                            selected: isSelected,
-                            onSelected: (_) {
-                              _toggleEquipment(equipment);
-                              setState(() {});
-                            },
-                            backgroundColor: AppColors.offWhite,
-                            selectedColor: AppColors.popTurquoise.withOpacity(0.2),
-                            checkmarkColor: AppColors.popTurquoise,
-                          );
-                        }).toList(),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("Close"),
+                    builder:
+                        (context) => AlertDialog(
+                          title: const Text("More Equipment Options"),
+                          content: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children:
+                                _moreEquipment.map((equipment) {
+                                  final isSelected = widget
+                                      .controller
+                                      .selectedEquipment
+                                      .contains(equipment);
+                                  return FilterChip(
+                                    label: Text(equipment),
+                                    selected: isSelected,
+                                    onSelected: (_) {
+                                      _toggleEquipment(equipment);
+                                      setState(() {});
+                                    },
+                                    backgroundColor: AppColors.offWhite,
+                                    selectedColor: AppColors.popTurquoise
+                                        .withOpacity(0.2),
+                                    checkmarkColor: AppColors.popTurquoise,
+                                  );
+                                }).toList(),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("Close"),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
                   );
                 },
                 backgroundColor: AppColors.offWhite,
                 visualDensity: VisualDensity.compact,
               ),
-              
+
               // Custom equipment
-              ...widget.controller.selectedEquipment.where(_isCustomEquipment).map((equipment) {
-                return Chip(
-                  label: Text(equipment),
-                  backgroundColor: AppColors.popTurquoise.withOpacity(0.2),
-                  labelStyle: TextStyle(
-                    color: AppColors.popTurquoise,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  deleteIcon: const Icon(Icons.close, size: 18),
-                  onDeleted: () => _removeCustomEquipment(equipment),
-                  deleteIconColor: AppColors.popTurquoise,
-                  visualDensity: VisualDensity.compact,
-                );
-              }),
+              ...widget.controller.selectedEquipment
+                  .where(_isCustomEquipment)
+                  .map((equipment) {
+                    return Chip(
+                      label: Text(equipment),
+                      backgroundColor: AppColors.popTurquoise.withOpacity(0.2),
+                      labelStyle: TextStyle(
+                        color: AppColors.popTurquoise,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      deleteIcon: const Icon(Icons.close, size: 18),
+                      onDeleted: () => _removeCustomEquipment(equipment),
+                      deleteIconColor: AppColors.popTurquoise,
+                      visualDensity: VisualDensity.compact,
+                    );
+                  }),
             ],
           ),
 
@@ -466,12 +525,19 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
                       decoration: const InputDecoration(
                         hintText: 'Enter equipment',
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                       ),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.check, color: AppColors.popTurquoise, size: 20),
+                    icon: const Icon(
+                      Icons.check,
+                      color: AppColors.popTurquoise,
+                      size: 20,
+                    ),
                     padding: const EdgeInsets.all(4),
                     constraints: const BoxConstraints(),
                     onPressed: _addCustomEquipment,
@@ -500,16 +566,22 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
                 });
               },
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
               ),
             ),
 
           const Divider(height: 16),
 
           // Days per week
-          Text('How many days per week will you work out?', style: AppTextStyles.body),
+          Text(
+            'How many days per week will you work out?',
+            style: AppTextStyles.body,
+          ),
           const SizedBox(height: 8),
-          
+
           // Days selector using Wrap
           Wrap(
             spacing: 8,
@@ -517,10 +589,11 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
             children: List.generate(7, (index) {
               final days = index + 1;
               final isSelected = widget.controller.weeklyWorkoutDays == days;
-              
+
               // Calculate size based on available width
-              final size = (contentWidth - (6 * 8)) / 7; // 7 items with 6 spaces between
-              
+              final size =
+                  (contentWidth - (6 * 8)) / 7; // 7 items with 6 spaces between
+
               return InkWell(
                 onTap: () {
                   setState(() {
@@ -532,10 +605,14 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
                   width: size,
                   height: size,
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.popYellow.withOpacity(0.3) : AppColors.offWhite,
+                    color:
+                        isSelected
+                            ? AppColors.popYellow.withOpacity(0.3)
+                            : AppColors.offWhite,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isSelected ? AppColors.popYellow : Colors.transparent,
+                      color:
+                          isSelected ? AppColors.popYellow : Colors.transparent,
                       width: 2,
                     ),
                   ),
@@ -544,7 +621,8 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
                       '$days',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
                         color: AppColors.darkGrey,
                       ),
                     ),
@@ -559,7 +637,7 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
           // Workout duration
           Text('Typical workout duration', style: AppTextStyles.body),
           const SizedBox(height: 8),
-          
+
           // Duration selector
           Wrap(
             spacing: 8,
@@ -570,7 +648,8 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
               _buildDurationChip(30),
               _buildDurationChip(45),
               _buildDurationChip(60),
-              _buildDurationChip(60, label: '60+'),
+              _buildDurationChip(90),
+              _buildDurationChip(120),
             ],
           ),
 
@@ -579,11 +658,11 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
       ),
     );
   }
-  
+
   Widget _buildDurationChip(int minutes, {String? label}) {
     final displayText = label ?? "$minutes min";
     final isSelected = widget.controller.workoutDurationMinutes == minutes;
-    
+
     return ChoiceChip(
       label: Text(
         displayText,
@@ -602,6 +681,13 @@ class _WorkoutEnvironmentStepState extends State<WorkoutEnvironmentStep> {
       selectedColor: AppColors.popCoral.withOpacity(0.3),
       labelPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 4),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isSelected ? AppColors.popCoral : Colors.transparent,
+          width: 1.5,
+        ),
+      ),
     );
   }
 }

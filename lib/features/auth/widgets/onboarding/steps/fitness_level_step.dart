@@ -6,8 +6,14 @@ import 'package:flutter/material.dart';
 class FitnessLevelStep extends StatefulWidget {
   final Function(FitnessLevel) onNext;
   final FitnessLevel initialLevel;
+  final Function(FitnessLevel)? onChanged;
 
-  const FitnessLevelStep({super.key, required this.onNext, required this.initialLevel});
+  const FitnessLevelStep({
+    super.key,
+    required this.onNext,
+    required this.initialLevel,
+    this.onChanged,
+  });
 
   @override
   State<FitnessLevelStep> createState() => FitnessLevelStepState();
@@ -22,9 +28,22 @@ class FitnessLevelStepState extends State<FitnessLevelStep> {
     _selectedLevel = widget.initialLevel;
   }
 
+  @override
+  void didUpdateWidget(FitnessLevelStep oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialLevel != widget.initialLevel) {
+      _selectedLevel = widget.initialLevel;
+    }
+  }
+
   void _selectLevel(FitnessLevel level) {
     setState(() {
       _selectedLevel = level;
+
+      // Notify parent of the change
+      if (widget.onChanged != null) {
+        widget.onChanged!(level);
+      }
     });
   }
 

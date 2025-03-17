@@ -1,7 +1,13 @@
 Using the Project Knowledge as your core persona and instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Area of focus:
-data privacy impact assessment
+onboarding polish off
+fitness level isnt remembered when going back to that step
+workout environment - in the equipment more section the items cant be selected. Also these items need to be extended for more options focused on womens fitness like step climber and vibation plates etc.
+The duration section 60 and 60+ min are both selected when selcting either of them. We can likely just keep 60+ mins.
+Helath considerations section is too sensitive and should be replaced with something more vague like a capability questionair ie.. can you touch your toes?, how long would be a typical run (i don't run to an hour plus), keep it light hearted and easy to answer. The purpose is to provide clear seperation of users abilities without asking personal questions. there should be 5 to 10 questions. none all or some can be answered. 
+food allergies and dietry preferences should be on their own step. instead of allergies it should be exclusions. The first and most obvious option in all cases should be none so that most users can swiftly pass this step. 
+we can remove the what motivates you step. 
 
 Project folder structure:
 
@@ -69,7 +75,6 @@ Project folder structure:
 │       │   ├── workout_execution_provider.dart
 │       │   └── workout_provider.dart
 │       ├── screens
-│       │   ├── home_screen.dart
 │       │   ├── workout_browse_screen.dart
 │       │   ├── workout_completion_screen.dart
 │       │   ├── workout_detail_screen.dart
@@ -97,6 +102,11 @@ Project folder structure:
 │   │   ├── buttons
 │   │   │   ├── primary_button.dart
 │   │   │   └── secondary_button.dart
+│   │   ├── feedback
+│   │   │   ├── feedback_button.dart
+│   │   │   ├── feedback_utils.dart
+│   │   │   ├── satisfaction_prompt.dart
+│   │   │   └── shake_to_report.dart
 │   │   └── indicators
 │   │       └── loading_indicator.dart
 │   ├── config
@@ -108,9 +118,11 @@ Project folder structure:
 │   │   └── app_user.dart
 │   ├── navigation
 │   │   ├── auth_guard.dart
+│   │   ├── home_screen.dart
 │   │   └── navigation.dart
 │   ├── providers
 │   │   ├── analytics_provider.dart
+│   │   ├── feedback_provider.dart
 │   │   └── firebase_providers.dart
 │   ├── repositories
 │   │   ├── mock_data
@@ -121,7 +133,9 @@ Project folder structure:
 │   │   │   └── tums_workouts.dart
 │   │   └── mock_workout_repository.dart
 │   ├── services
-│   │   └── firebase_service.dart
+│   │   ├── feedback_service.dart
+│   │   ├── firebase_service.dart
+│   │   └── shake_detector_service.dart
 │   └── theme
 │       ├── app_theme.dart
 │       ├── color_palette.dart
