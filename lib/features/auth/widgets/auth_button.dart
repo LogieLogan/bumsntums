@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../shared/theme/color_palette.dart';
-import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/components/buttons/secondary_button.dart';
 
 enum AuthButtonType {

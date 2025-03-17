@@ -1,9 +1,7 @@
 // lib/features/auth/widgets/onboarding/steps/basic_info_step.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../shared/theme/color_palette.dart';
 import '../../../../../shared/theme/text_styles.dart';
-import '../../../../../shared/components/buttons/primary_button.dart';
 import '../../../providers/user_provider.dart';
 
 // Controller class that can be shared between the coordinator and the step

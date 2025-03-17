@@ -4,7 +4,7 @@
 **Project Name:** Bums 'n' Tums  
 **Platform:** Flutter (iOS first, Android later)  
 **Backend:** Firebase (Firestore, Authentication, Cloud Functions, Firebase ML Kit, Storage)  
-**AI Integration:** OpenAI API (OpenAI-mini for cost efficiency)  
+**AI Integration:** OpenAI API (OpenAI-mini for cost efficiency)
 **Monetization:** Apple In-App Purchases  
 **Target Audience:** Beginner women focused on weight loss and toning
 

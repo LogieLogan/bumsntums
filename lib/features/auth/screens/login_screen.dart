@@ -11,7 +11,6 @@ import '../../../shared/constants/app_constants.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../services/firebase_auth_service.dart';
 import 'package:go_router/go_router.dart';
-import '../widgets/google_sign_in_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});

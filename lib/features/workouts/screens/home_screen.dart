@@ -1,4 +1,7 @@
 // lib/features/workouts/screens/home_screen.dart
+import 'package:bums_n_tums/features/nutrition/screens/scanner_screen.dart';
+import 'package:bums_n_tums/features/workouts/screens/workout_browse_screen.dart';
+import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/auth/providers/auth_provider.dart';
@@ -10,7 +13,6 @@ import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../../features/auth/models/user_profile.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared/analytics/firebase_analytics_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 Future<String?> getDisplayName(String userId) async {
@@ -273,9 +275,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Icons.play_circle_fill,
                     AppColors.salmon,
                     () {
-                      setState(() {
-                        _currentIndex = 1; // Switch to workouts tab
-                      });
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const WorkoutBrowseScreen(),
+                        ),
+                      );
                     },
                   ),
                 ),
@@ -334,7 +338,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () {
-                            // TODO: Navigate to workout detail
+                            // Navigate to workout detail for a featured workout
+                            // For now, we can use a mock workout ID until we have real data
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => const WorkoutDetailScreen(
+                                      workoutId: 'bums-001',
+                                    ),
+                              ),
+                            );
                           },
                           child: const Text('Start Workout'),
                         ),
@@ -392,13 +405,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildWorkoutsTab() {
-    // Placeholder for workouts tab
-    return const Center(child: Text('Workouts Coming Soon'));
+    // Replace the placeholder with the actual WorkoutBrowseScreen
+    return const WorkoutBrowseScreen();
   }
 
   Widget _buildScannerTab() {
-    // Placeholder for scanner tab
-    return const Center(child: Text('Food Scanner Coming Soon'));
+    // Replace the placeholder with the actual ScannerScreen
+    return const ScannerScreen();
   }
 
   Widget _buildProfileTab(UserProfile profile) {

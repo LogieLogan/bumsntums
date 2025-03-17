@@ -62,5 +62,9 @@
     <array>
       <string>Default</string>
     </array>
+    <key>NSCameraUsageDescription</key>
+    <string>We need access to your camera to scan food barcodes</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>This app does not require microphone access</string>
   </dict>
 </plist>

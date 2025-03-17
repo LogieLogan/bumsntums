@@ -55,3 +55,12 @@ The AI model will use the following data points from the non-PII collection:
    - Use completion endpoints with controlled token limits
    - Set strict monthly usage caps to avoid unexpected costs
    - Consider pre-generating common workout recommendations
+
+5. **Workout-Specific Prompting Strategy:**
+   - Templates for generating personalized workouts
+   - Example prompt: "Create a [duration] minute [difficulty] workout focusing on [bodyFocusAreas] for a user with [equipment] equipment. The user's fitness level is [fitnessLevel] and their goals include [goals]."
+   - Templates include constraints such as:
+     - Maximum number of exercises
+     - Required rest periods
+     - Clear instructions for each exercise
+     - Proper progression structure

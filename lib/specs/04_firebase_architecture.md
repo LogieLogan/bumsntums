@@ -143,14 +143,15 @@
   - createdBy: string (admin, ai, userId)
   - exercises: array [
       {
+        id: string
         name: string
         description: string
         imageUrl: string
         youtubeVideoId: string (optional)
         sets: number
         reps: number
-        duration: number (if timed)
-        restBetween: number (seconds)
+        durationSeconds: number (optional, if timed)
+        restBetweenSeconds: number
         targetArea: string (bums, tums, etc.)
       }
   ]
@@ -182,6 +183,9 @@
   - privacy: string (private, followers, public)
   - isOfflineCreated: boolean
   - syncStatus: string (synced, pending)
+
+/user_workout_favorites/{userId}/{workoutId}
+  - addedAt: timestamp
 
 # 4. Social Interactions
 /social/following/{userId}/{followedUserId}
@@ -264,6 +268,56 @@
   - lastAttempt: timestamp
   - status: string (pending, processing, completed, failed)
   - errorMessage: string (optional)
+
+/user_achievements/{userId}/{achievementId}
+  - achievementId: string
+  - currentProgress: number
+  - targetValue: number
+  - isCompleted: boolean
+  - completedAt: timestamp (optional)
+  - isViewed: boolean
+
+/user_streaks/{userId}
+  - currentStreak: number
+  - longestStreak: number
+  - lastWorkoutDate: timestamp
+  - streakProtectionsRemaining: number
+  - streakProtectionLastRenewed: timestamp
+
+  /user_accessibility_preferences/{userId}
+  - useHighContrast: boolean
+  - reduceMotion: boolean
+  - useExerciseModifications: boolean
+  - textSize: string (standard, large, extraLarge)
+  - accessibilityNeeds: array
+
+/exercise_modifications/{exerciseId}/{modificationId}
+  - modificationDescription: string
+  - modificationImageUrl: string (optional)
+  - modificationVideoUrl: string (optional)
+  - forNeeds: array
+
+# Personalization Collections
+/user_preferences/{userId}
+  - workoutPreferences: {
+      preferredDuration: number
+      preferredIntensity: string
+      favoriteCategories: array
+      quickStartWorkouts: array (recently used)
+    }
+  - uiPreferences: {
+      showCelebrations: boolean
+      enableHapticFeedback: boolean
+      enableVoiceGuidance: boolean
+      dashboardLayout: string
+    }
+  - accessibility: {
+      useHighContrast: boolean
+      reduceMotion: boolean
+      useExerciseModifications: boolean
+      textSize: string
+      accessibilityNeeds: array
+    }
 ```
 
 ## 4.2 Firebase Storage Structure

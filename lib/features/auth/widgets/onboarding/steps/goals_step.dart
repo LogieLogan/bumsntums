@@ -8,7 +8,7 @@ class GoalsStep extends StatefulWidget {
   final List<FitnessGoal> initialGoals;
   final Function(List<FitnessGoal>)? onChanged; // Add this
 
-  const GoalsStep({
+  const GoalsStep({super.key, 
     required this.onNext,
     required this.initialGoals,
     this.onChanged,

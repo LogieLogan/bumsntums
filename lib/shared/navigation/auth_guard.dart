@@ -42,7 +42,7 @@ String? checkAuthRedirect(BuildContext context, GoRouterState state, Ref ref) {
 
     final profile = userProfileAsync.value;
     if (profile == null || !profile.onboardingCompleted) {
-      print("User needs onboarding, redirecting from ${currentPath}");
+      print("User needs onboarding, redirecting from $currentPath");
       analytics.logEvent(
         name: 'redirect_to_onboarding',
         parameters: {'from': currentPath},
@@ -50,7 +50,7 @@ String? checkAuthRedirect(BuildContext context, GoRouterState state, Ref ref) {
       return AppConstants.onboardingRoute;
     } else {
       print(
-        "User onboarding complete, redirecting to home from ${currentPath}",
+        "User onboarding complete, redirecting to home from $currentPath",
       );
       analytics.logEvent(
         name: 'redirect_to_home',
@@ -71,7 +71,7 @@ String? checkAuthRedirect(BuildContext context, GoRouterState state, Ref ref) {
 
     final profile = userProfileAsync.value;
     if (profile == null || !profile.onboardingCompleted) {
-      print("Onboarding needed, redirecting from ${currentPath}");
+      print("Onboarding needed, redirecting from $currentPath");
       analytics.logEvent(
         name: 'redirect_to_onboarding',
         parameters: {'from': currentPath},

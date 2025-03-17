@@ -129,11 +129,13 @@ class AnalyticsService {
     }
   }
 
-  void logError({required String error, Map<String, dynamic>? parameters}) {
-    _analytics?.logEvent(
-      name: 'app_error',
-      parameters: {'error_message': error, ...?parameters},
-    );
+  void logError({required String error, Map<String, Object>? parameters}) {
+    final Map<String, Object> errorParams = {'error_message': error};
+    if (parameters != null) {
+      errorParams.addAll(parameters);
+    }
+
+    _analytics?.logEvent(name: 'app_error', parameters: errorParams);
 
     // Also log to console for debugging
     print('ERROR: $error');

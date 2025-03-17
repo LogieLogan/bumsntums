@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
 import '../../../shared/models/app_user.dart';
-import '../services/firebase_auth_service.dart';
 
 // Auth service provider
 final authServiceProvider = Provider<FirebaseAuthService>((ref) {

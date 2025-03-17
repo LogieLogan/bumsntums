@@ -14,12 +14,12 @@ class GoogleSignInButton extends ConsumerStatefulWidget {
   final bool isIconOnly;
   
   const GoogleSignInButton({
-    Key? key, 
+    super.key, 
     required this.onSuccess,
     required this.onError,
     this.isFullWidth = false,
     this.isIconOnly = false,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<GoogleSignInButton> createState() => _GoogleSignInButtonState();

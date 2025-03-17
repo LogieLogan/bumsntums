@@ -7,7 +7,7 @@ class FitnessLevelStep extends StatefulWidget {
   final Function(FitnessLevel) onNext;
   final FitnessLevel initialLevel;
 
-  const FitnessLevelStep({required this.onNext, required this.initialLevel});
+  const FitnessLevelStep({super.key, required this.onNext, required this.initialLevel});
 
   @override
   State<FitnessLevelStep> createState() => FitnessLevelStepState();

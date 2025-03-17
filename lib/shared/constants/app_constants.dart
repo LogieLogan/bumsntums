@@ -7,6 +7,9 @@ class AppConstants {
   static const String userTokenKey = 'user_token';
   static const String userIdKey = 'user_id';
   static const String onboardingCompletedKey = 'onboarding_completed';
+  static const String foodScanHistoryKey = 'food_scan_history';
+  static const String dailyScanCountKey = 'daily_scan_count';
+  static const String lastScanDateKey = 'last_scan_date';
   
   // Routes
   static const String splashRoute = '/';
@@ -18,10 +21,20 @@ class AppConstants {
   static const String workoutsRoute = '/workouts';
   static const String workoutDetailRoute = '/workout-detail';
   static const String profileRoute = '/profile';
+
+  // Food scanner routes
+  static const String foodScannerRoute = '/food-scanner';
+  static const String foodDetailsRoute = '/food-details';
+  static const String foodHistoryRoute = '/food-history';
   
   // Timeouts
   static const int apiTimeoutSeconds = 30;
   
   // Misc
   static const int minPasswordLength = 8;
+  
+  // Food scanner constants
+  static const int freeTierDailyScanLimit = 5;
+  static const int scanHistoryCacheLimit = 50;
+  static const String scannerInstructionsText = 'Align barcode within the frame';
 }
