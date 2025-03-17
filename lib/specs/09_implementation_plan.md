@@ -38,6 +38,7 @@
 - Define OpenAI prompt templates
 - Implement cost optimization for AI features
 - accessibility
+- Profile page
 
 **To-Do List:**
 - [ ] Implement OCR for nutrition labels
@@ -53,6 +54,7 @@
 - [ ] Implement GDPR/CCPA data handling compliance
 - [ ] Create data export and deletion functionality
 - [ ] Implement accessibility features
+- [ ] Implement profile page features
 
 ### Phase 3: Social & Advanced Features (Weeks 11-14)
 - Social features implementation
@@ -60,8 +62,10 @@
 - Challenge system
 - Advanced AI personalization
 - Extended workout library
+- Create your own workout feature. AI or manual
 - Cross-platform testing
 - Optimize AI costs and usage
+- Account verification / anti platform abuse measures
 
 **To-Do List:**
 - [ ] Implement user profile and social features

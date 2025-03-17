@@ -2,18 +2,21 @@
 import 'package:bums_n_tums/features/nutrition/screens/scanner_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_browse_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../features/auth/providers/auth_provider.dart';
-import '../../../features/auth/providers/user_provider.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
-import '../../../shared/constants/app_constants.dart';
-import '../../../shared/components/indicators/loading_indicator.dart';
-import '../../../shared/analytics/firebase_analytics_service.dart';
-import '../../../features/auth/models/user_profile.dart';
+import '../../features/auth/providers/auth_provider.dart';
+import '../../features/auth/providers/user_provider.dart';
+import '../theme/color_palette.dart';
+import '../theme/text_styles.dart';
+import '../constants/app_constants.dart';
+import '../components/indicators/loading_indicator.dart';
+import '../analytics/firebase_analytics_service.dart';
+import '../../features/auth/models/user_profile.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../shared/components/feedback/feedback_button.dart';
+import '../../shared/providers/feedback_provider.dart';
 
 Future<String?> getDisplayName(String userId) async {
   try {
@@ -116,7 +119,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: const Text('Bums \'n\' Tums'),
         actions: [
-          IconButton(icon: const Icon(Icons.logout), onPressed: _signOut),
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: _signOut,
+          ), // This should be the AI chat function
         ],
       ),
       body: userProfileAsync.when(
@@ -684,6 +690,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
               icon: const Icon(Icons.edit),
               label: const Text('Edit Profile'),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Feedback button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                // Show feedback dialog
+                final userId =
+                    FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+                showDialog(
+                  context: context,
+                  builder:
+                      (context) => FeedbackDialog(
+                        userId: userId,
+                        currentScreen: 'Profile',
+                      ),
+                );
+              },
+              icon: const Icon(Icons.feedback_outlined),
+              label: const Text('Send Feedback'),
             ),
           ),
         ],

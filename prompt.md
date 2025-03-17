@@ -2,6 +2,7 @@ Using the Project Knowledge as your core persona and instructions please help me
 
 Area of focus:
 Phase 1 of implementation plan.
+Early feedabck
 
 Project folder structure:
 

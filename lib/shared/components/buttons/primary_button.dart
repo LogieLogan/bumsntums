@@ -1,13 +1,13 @@
-// Update to primary_button.dart
+// lib/shared/components/buttons/primary_button.dart
 import 'package:flutter/material.dart';
 import '../../theme/color_palette.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed; // Change to nullable
   final bool isLoading;
   final bool isEnabled;
-  final double width; // Add width parameter
+  final double width;
 
   const PrimaryButton({
     super.key,
@@ -15,15 +15,15 @@ class PrimaryButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.isEnabled = true,
-    this.width = double.infinity, // Default to full width
+    this.width = double.infinity,
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width, // Use the width parameter
+      width: width,
       child: ElevatedButton(
-        onPressed: isEnabled ? onPressed : null,
+        onPressed: (isEnabled && !isLoading) ? onPressed : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: isEnabled ? AppColors.pink : AppColors.lightGrey,
           padding: const EdgeInsets.symmetric(vertical: 12),

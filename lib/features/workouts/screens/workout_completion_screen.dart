@@ -10,6 +10,8 @@ import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/theme/color_palette.dart';
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../shared/services/feedback_service.dart';
+import '../../../shared/providers/feedback_provider.dart';
 
 class WorkoutCompletionScreen extends ConsumerStatefulWidget {
   final Workout workout;
@@ -443,7 +445,7 @@ class _WorkoutCompletionScreenState
       return;
     }
 
-    // Create user feedback
+    // Create user feedback for workout service
     final feedback = UserFeedback(
       rating: _rating,
       feltEasy: _feltEasy,
@@ -456,6 +458,15 @@ class _WorkoutCompletionScreenState
     ref
         .read(workoutServiceProvider)
         .updateWorkoutFeedback(userId, widget.workout.id, feedback);
+
+    // Also log the feedback through our feedback service for analytics
+    final feedbackService = ref.read(feedbackServiceProvider);
+    feedbackService.submitSatisfactionRating(
+      userId: userId,
+      rating: _rating,
+      comment: _feedbackController.text,
+      featureName: 'Workout - ${widget.workout.title}',
+    );
 
     // Navigate back to the main screen
     Navigator.of(context).popUntil((route) => route.isFirst);

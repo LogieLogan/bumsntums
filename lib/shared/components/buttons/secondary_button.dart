@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class SecondaryButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed; // Change to nullable
   final bool isLoading;
   final IconData? iconData;
   final double width;

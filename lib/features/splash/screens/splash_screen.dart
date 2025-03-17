@@ -113,28 +113,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // App logo
-            const Icon(
-              Icons.fitness_center,
-              size: 100,
-              color: AppColors.salmon,
+            // Display app logo from assets
+            ClipRRect(
+              borderRadius: BorderRadius.circular(
+                16,
+              ), // Set the radius as desired
+              child: Image.asset(
+                'assets/logo/app_logo.png', // Correct path to the logo
+                width: 100, // Adjust the size as needed
+                height: 100, // Adjust the size as needed
+              ),
             ),
 
-            const SizedBox(height: 24),
-
-            // App name
-            Text(
-              'Bums \'n\' Tums',
-              style: AppTextStyles.h1.copyWith(color: AppColors.salmon),
-            ),
-
-            const SizedBox(height: 8),
-
-            // Tagline
-            Text('Your fitness journey starts here', style: AppTextStyles.body),
-
-            const SizedBox(height: 48),
-
+            const SizedBox(height: 32),
             // Using shared loading indicator
             const LoadingIndicator(),
           ],

@@ -289,26 +289,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // App logo or image
-                        const Icon(
-                          Icons.fitness_center,
-                          size: 60,
-                          color: AppColors.pink,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // App name
-                        Text(
-                          'Bums \'n\' Tums',
-                          style: AppTextStyles.h2.copyWith(
-                            color: AppColors.pink,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            16,
+                          ), // Set the radius as desired
+                          child: Image.asset(
+                            'assets/logo/app_logo.png', // Correct path to the logo
+                            width: 100, // Adjust the size as needed
+                            height: 100, // Adjust the size as needed
                           ),
-                          textAlign: TextAlign.center,
                         ),
 
-                        const SizedBox(height: 8),
-
+                        const SizedBox(height: 32),
                         // Tagline
                         Text(
                           'Your fitness journey starts here',

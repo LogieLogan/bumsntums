@@ -6,7 +6,7 @@ import '../../features/splash/screens/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/signup_screen.dart';
 import '../../features/auth/screens/onboarding_screen.dart';
-import '../../features/workouts/screens/home_screen.dart';
+import '../navigation/home_screen.dart';
 import '../constants/app_constants.dart';
 import '../providers/firebase_providers.dart';
 import '../navigation/auth_guard.dart';
