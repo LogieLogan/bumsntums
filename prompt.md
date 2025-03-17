@@ -3,10 +3,12 @@ Using the Project Knowledge as your core persona and instructions please help me
 Area of focus:
 Phase 1 of implementation plan.
 Barcode scanner Implementation.
-There is no option to enable the camera in permission settings
-
-The method 'openAppSettings' isn't defined for the type 'Permission'.
-Try correcting the name to the name of an existing method, or defining a method named 'openAppSettings'.
+Getting Errors
+-[MLKITx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
+GTMSessionFetcher 0x12f436580 (https://www.googleapis.com/experimentsandconfigs/v1/getExperimentsAndConfigs) was already running
+-[MLKITx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
+-[MLKITx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
+-[MLKITx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
 
 Project folder structure:
 

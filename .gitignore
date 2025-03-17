@@ -31,6 +31,7 @@ ios/Flutter/Generated.xcconfig
 ios/.symlinks/
 xcuserdata/
 DerivedData/
+**/build/ios/XCBuildData/
 
 
 # Flutter/Dart/Pub related

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/theme/color_palette.dart';
-import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../../shared/providers/analytics_provider.dart';
+import '../services/ml_kit_service.dart';
 
 class BarcodeScannerWidget extends ConsumerStatefulWidget {
   final Function(String) onBarcodeDetected;
@@ -20,6 +20,8 @@ class _BarcodeScannerWidgetState extends ConsumerState<BarcodeScannerWidget> {
   late MobileScannerController _controller;
   bool _hasDetectedBarcode = false;
   bool _isTorchOn = false;
+  bool _isInitialized = false;
+  String _initErrorMessage = '';
 
   // Track analytics for scanner activity
   void _logScannerEvent(String eventName, {Map<String, Object>? parameters}) {
@@ -31,6 +33,8 @@ class _BarcodeScannerWidgetState extends ConsumerState<BarcodeScannerWidget> {
   @override
   void initState() {
     super.initState();
+    _initializeScanner();
+    _logScannerEvent('barcode_scanner_started');
     _controller = MobileScannerController(
       detectionSpeed: DetectionSpeed.normal,
       facing: CameraFacing.back,
@@ -44,6 +48,33 @@ class _BarcodeScannerWidgetState extends ConsumerState<BarcodeScannerWidget> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _initializeScanner() async {
+    try {
+      // Initialize MLKit first
+      await MLKitService.initialize();
+
+      // Then create the scanner controller
+      _controller = MobileScannerController(
+        detectionSpeed: DetectionSpeed.normal,
+        facing: CameraFacing.back,
+        torchEnabled: false,
+      );
+
+      setState(() {
+        _isInitialized = true;
+      });
+    } catch (e) {
+      setState(() {
+        _initErrorMessage = 'Failed to initialize scanner: $e';
+        _isInitialized = false;
+      });
+      _logScannerEvent(
+        'barcode_scanner_init_error',
+        parameters: {'error': e.toString()},
+      );
+    }
   }
 
   void _resetScanner() {
@@ -72,6 +103,26 @@ class _BarcodeScannerWidgetState extends ConsumerState<BarcodeScannerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: AppColors.pink),
+            const SizedBox(height: 16),
+            Text(
+              _initErrorMessage.isEmpty
+                  ? 'Initializing scanner...'
+                  : _initErrorMessage,
+              style: TextStyle(
+                color: _initErrorMessage.isEmpty ? Colors.black : Colors.red,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Stack(
       children: [
         // Scanner
