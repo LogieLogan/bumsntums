@@ -11,7 +11,9 @@ import '../../../shared/components/indicators/loading_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
-  const SplashScreen({super.key});
+  final bool testMode;
+
+  const SplashScreen({super.key, this.testMode = false});
 
   @override
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
@@ -21,7 +23,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAuthState();
+    if (!widget.testMode) {
+      _checkAuthState();
+    }
   }
 
   Future<void> _checkAuthState() async {
