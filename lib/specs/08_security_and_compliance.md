@@ -87,3 +87,36 @@
 - Responsible disclosure policy
 - Security patch management
 - Critical vulnerability response plan
+
+## AI Data Processing Addendum
+
+### Data Flow for AI Processing
+- Clearly separate PII (Personally Identifiable Information) from fitness/health data
+- Implement a data minimization pipeline before sending to OpenAI API
+- Create anonymized user profiles for AI processing that contain only necessary data
+- Implement tokens/session-specific IDs instead of persistent user IDs for AI interactions
+
+### Legal Requirements for AI Implementation
+- Create a formal Data Processing Agreement (DPA) with OpenAI
+- Verify OpenAI's compliance with relevant data protection regulations
+- Implement transparent notification when AI is processing user data
+- Provide opt-out mechanism for AI-powered features
+- Document all data sent to external AI providers
+- Implement retention limits for AI interaction logs
+
+### User Disclosures for AI Features
+- Clear disclosure at multiple touchpoints:
+  1. During signup/onboarding
+  2. Before enabling AI features
+  3. Within the app's privacy settings
+- Explicit user consent for AI processing separate from general app usage
+- Transparency about which data points will be shared with AI
+- Clear explanation of how AI will use their data and the benefits provided
+
+### Technical Safeguards for AI Integration
+- Data anonymization before sending to AI services
+- Secure API communication with encryption
+- Limit types of data sent to minimum necessary
+- Implement rate limiting and abuse prevention
+- Set up monitoring for data transfer volumes and anomalies
+- Create emergency shutdown capability for AI features if issues arise

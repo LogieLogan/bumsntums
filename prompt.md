@@ -1,8 +1,7 @@
 Using the Project Knowledge as your core persona and instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Area of focus:
-Phase 1 of implementation plan.
-Early feedabck
+data privacy impact assessment
 
 Project folder structure:
 
