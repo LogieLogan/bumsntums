@@ -1,9 +1,8 @@
 Using the Project Knowledge as your core persona and instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Area of focus:
-review legal document service privacy policy and terms and conditions
-fill them out for the apps current state
-ask questions to help get these complete
+Phase 2
+
 
 Project folder structure:
 
@@ -16,6 +15,7 @@ Project folder structure:
 │   │   │   ├── auth_provider.dart
 │   │   │   └── user_provider.dart
 │   │   ├── screens
+│   │   │   ├── edit_profile_screen.dart
 │   │   │   ├── login_screen.dart
 │   │   │   ├── onboarding_screen.dart
 │   │   │   └── signup_screen.dart
@@ -133,6 +133,8 @@ Project folder structure:
 │   │   │   └── tums_workouts.dart
 │   │   └── mock_workout_repository.dart
 │   ├── services
+│   │   ├── consent_management_service.dart
+│   │   ├── data_retention_service.dart
 │   │   ├── feedback_service.dart
 │   │   ├── firebase_service.dart
 │   │   ├── gdpr_service.dart
@@ -158,9 +160,10 @@ Project folder structure:
     ├── 07_analytics_and_monitoring.md
     ├── 08a_security_and_compliance.md
     ├── 08b_gdpr_dpia.md
+    ├── 08c_gdpr_testing_plan.md
     ├── 09_implementation_plan.md
     ├── 10_early_feedback.md
     ├── 11_gamification.md
     └── 12_accessibility.md
-
+    
 Do you understand what we are trying to achieve?

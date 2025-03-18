@@ -1,4 +1,5 @@
-// lib/features/workouts/screens/home_screen.dart
+// /shared/navigation/home_screen.dart
+import 'package:bums_n_tums/features/auth/screens/edit_profile_screen.dart';
 import 'package:bums_n_tums/features/nutrition/screens/scanner_screen.dart';
 import 'package:bums_n_tums/features/settings/screens/gdpr_settings_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_browse_screen.dart';
@@ -17,7 +18,6 @@ import '../../features/auth/models/user_profile.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../shared/components/feedback/feedback_button.dart';
-import '../../shared/providers/feedback_provider.dart';
 
 Future<String?> getDisplayName(String userId) async {
   try {
@@ -687,7 +687,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () {
-                // TODO: Navigate to edit profile screen
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const EditProfileScreen(),
+                  ),
+                );
               },
               icon: const Icon(Icons.edit),
               label: const Text('Edit Profile'),

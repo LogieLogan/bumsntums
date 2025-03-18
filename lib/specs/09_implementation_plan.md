@@ -26,17 +26,12 @@
 - [x] Create barcode scanning MVP with Open Food Facts API
 - [x] Implement basic workout display and execution
 - [x] Complete data privacy impact assessment
-- [x] Set up TestFlight/Firebase App Distribution for testing
-      - dev and prod app icons (appicon is done using flutter_launcher_icons )
-      - review lauch screen I have a splsh screen but in xcode the lauch screen is blank
-
 - [x] Create feedback collection tools and processes
 
 ### Phase 2: Core Features (Weeks 6-10)
 - OCR implementation for nutrition labels
 - Basic AI workout recommendations
 - User progress tracking
-- Subscription implementation
 - Improved UI/UX refinement
 - Define OpenAI prompt templates
 - Implement cost optimization for AI features
@@ -49,26 +44,29 @@
 - [ ] Create and test prompt templates for workout recommendations
 - [ ] Implement basic AI workout recommendation feature
 - [ ] Add progress tracking features
-- [ ] Set up in-app purchase with free trial option
-- [ ] Create subscription management system
 - [ ] Implement conversion funnels in analytics
 - [ ] Build food diary and nutrition tracking
 - [ ] Enhance workout execution experience
-- [ ] Implement GDPR/CCPA data handling compliance
-- [ ] Create data export and deletion functionality
+- [x] Implement GDPR/CCPA data handling compliance
+- [x] Create data export and deletion functionality
 - [ ] Implement accessibility features
-- [ ] Implement profile page features
+- [x] Implement profile page features
+- [ ] Set up TestFlight/Firebase App Distribution for testing
+      - dev and prod app icons (appicon is done using flutter_launcher_icons )
+      - review lauch screen I have a splsh screen but in xcode the lauch screen is blank
 
 ### Phase 3: Social & Advanced Features (Weeks 11-14)
 - Social features implementation
 - Gamification
 - Challenge system
+- Subscription implementation
 - Advanced AI personalization
 - Extended workout library
 - Create your own workout feature. AI or manual
 - Cross-platform testing
 - Optimize AI costs and usage
 - Account verification / anti platform abuse measures
+
 
 **To-Do List:**
 - [ ] Implement user profile and social features
@@ -82,6 +80,8 @@
 - [ ] Create moderation system for social content
 - [ ] Refine analytics and tracking
 - [ ] Implement gamification features
+- [ ] Set up in-app purchase with free trial option
+- [ ] Create subscription management system
 
 ### Phase 4: Polishing & Launch Preparation (Weeks 15-18)
 - Performance optimization
