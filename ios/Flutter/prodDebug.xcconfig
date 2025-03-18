@@ -3,5 +3,5 @@
 
 FLUTTER_TARGET=lib/main_prod.dart
 ASSET_PREFIX=prod
-BUNDLE_NAME=Bums 'n' Tums
-BUNDLE_DISPLAY_NAME=Bums 'n' Tums
+BUNDLE_NAME=Bums & Tums
+BUNDLE_DISPLAY_NAME=Bums & Tums

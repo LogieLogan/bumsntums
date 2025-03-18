@@ -10,7 +10,6 @@ class GdprService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final AnalyticsService _analytics = AnalyticsService();
 
-  /// Export all user data as a JSON file
   Future<Map<String, dynamic>> exportUserData(String userId) async {
     try {
       _analytics.logEvent(
@@ -21,69 +20,145 @@ class GdprService {
       // Map to store all user data
       final Map<String, dynamic> userData = {};
 
-      // Get personal information
-      final personalInfo =
-          await _firestore.collection('users_personal_info').doc(userId).get();
-      if (personalInfo.exists) {
-        userData['personalInfo'] = personalInfo.data();
+      // Use a transaction to ensure consistent read
+      await _firestore.runTransaction((transaction) async {
+        // Get personal information
+        final personalInfoDoc = await transaction.get(
+          _firestore.collection('users_personal_info').doc(userId),
+        );
+        if (personalInfoDoc.exists) {
+          userData['personalInfo'] = _convertToSerializable(
+            personalInfoDoc.data(),
+          );
+        }
+
+        // Get fitness profile
+        final fitnessProfileDoc = await transaction.get(
+          _firestore.collection('fitness_profiles').doc(userId),
+        );
+        if (fitnessProfileDoc.exists) {
+          userData['fitnessProfile'] = _convertToSerializable(
+            fitnessProfileDoc.data(),
+          );
+        }
+
+        // Get public profile
+        final publicProfileDoc = await transaction.get(
+          _firestore.collection('user_profiles_public').doc(userId),
+        );
+        if (publicProfileDoc.exists) {
+          userData['publicProfile'] = _convertToSerializable(
+            publicProfileDoc.data(),
+          );
+        }
+
+        // For collections, we need to get them outside the transaction
+        return;
+      });
+
+      // Get collections outside the transaction
+      try {
+        // Get food scans
+        final foodScans =
+            await _firestore
+                .collection('food_scans')
+                .doc(userId)
+                .collection('scans')
+                .get();
+        userData['foodScans'] =
+            foodScans.docs
+                .map((doc) => _convertToSerializable(doc.data()))
+                .toList();
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'exportUserData - foodScans',
+            'userId': userId,
+          },
+        );
+        userData['foodScans'] = [];
       }
 
-      // Get fitness profile
-      final fitnessProfile =
-          await _firestore.collection('fitness_profiles').doc(userId).get();
-      if (fitnessProfile.exists) {
-        userData['fitnessProfile'] = fitnessProfile.data();
+      try {
+        // Get food diary entries
+        final foodDiaryQuery =
+            await _firestore
+                .collection('food_diary')
+                .doc(userId)
+                .collection('entries')
+                .get();
+        userData['foodDiary'] =
+            foodDiaryQuery.docs
+                .map((doc) => _convertToSerializable(doc.data()))
+                .toList();
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'exportUserData - foodDiary',
+            'userId': userId,
+          },
+        );
+        userData['foodDiary'] = [];
       }
 
-      // Get public profile
-      final publicProfile =
-          await _firestore.collection('user_profiles_public').doc(userId).get();
-      if (publicProfile.exists) {
-        userData['publicProfile'] = publicProfile.data();
+      try {
+        // Get workout logs
+        final workoutLogs =
+            await _firestore
+                .collection('workout_logs')
+                .doc(userId)
+                .collection('logs')
+                .get();
+        userData['workoutLogs'] =
+            workoutLogs.docs
+                .map((doc) => _convertToSerializable(doc.data()))
+                .toList();
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'exportUserData - workoutLogs',
+            'userId': userId,
+          },
+        );
+        userData['workoutLogs'] = [];
       }
 
-      // Get food scans
-      final foodScans =
-          await _firestore
-              .collection('food_scans')
-              .doc(userId)
-              .collection('scans')
-              .get();
-      userData['foodScans'] = foodScans.docs.map((doc) => doc.data()).toList();
-
-      // Get food diary entries
-      final foodDiaryQuery =
-          await _firestore
-              .collection('food_diary')
-              .doc(userId)
-              .collection('entries')
-              .get();
-      userData['foodDiary'] =
-          foodDiaryQuery.docs.map((doc) => doc.data()).toList();
-
-      // Get workout logs
-      final workoutLogs =
-          await _firestore
-              .collection('workout_logs')
-              .doc(userId)
-              .collection('logs')
-              .get();
-      userData['workoutLogs'] =
-          workoutLogs.docs.map((doc) => doc.data()).toList();
-
-      // Get document acceptances
-      final acceptances =
-          await _firestore
-              .collection('user_document_acceptances')
-              .where('userId', isEqualTo: userId)
-              .get();
-      userData['documentAcceptances'] =
-          acceptances.docs.map((doc) => doc.data()).toList();
+      try {
+        // Get document acceptances
+        final acceptances =
+            await _firestore
+                .collection('user_document_acceptances')
+                .where('userId', isEqualTo: userId)
+                .get();
+        userData['documentAcceptances'] =
+            acceptances.docs
+                .map((doc) => _convertToSerializable(doc.data()))
+                .toList();
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'exportUserData - acceptances',
+            'userId': userId,
+          },
+        );
+        userData['documentAcceptances'] = [];
+      }
 
       _analytics.logEvent(
         name: 'user_data_export_completed',
         parameters: {'user_id': userId},
       );
+
+      // Add metadata
+      userData['metadata'] = {
+        'exportDate': DateTime.now().toIso8601String(),
+        'userId': userId,
+        'appVersion': '1.0.0',
+      };
 
       return userData;
     } catch (e) {
@@ -91,7 +166,7 @@ class GdprService {
         error: e.toString(),
         parameters: {'context': 'exportUserData', 'userId': userId},
       );
-      rethrow;
+      throw Exception('Error exporting data: ${e.toString()}');
     }
   }
 
@@ -248,6 +323,159 @@ class GdprService {
     }
   }
 
+  /// Delete all user data except authentication
+  Future<void> deleteUserDataWithoutAuth(String userId) async {
+    try {
+      _analytics.logEvent(
+        name: 'user_data_deletion_requested',
+        parameters: {'user_id': userId},
+      );
+
+      // Delete personal info
+      try {
+        await _firestore.collection('users_personal_info').doc(userId).delete();
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'deleteUserData - personal info',
+            'userId': userId,
+          },
+        );
+      }
+
+      // Delete fitness profile
+      try {
+        await _firestore.collection('fitness_profiles').doc(userId).delete();
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'deleteUserData - fitness profile',
+            'userId': userId,
+          },
+        );
+      }
+
+      // Delete public profile
+      try {
+        await _firestore
+            .collection('user_profiles_public')
+            .doc(userId)
+            .delete();
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'deleteUserData - public profile',
+            'userId': userId,
+          },
+        );
+      }
+
+      // Delete food scans
+      try {
+        final foodScansRef = _firestore
+            .collection('food_scans')
+            .doc(userId)
+            .collection('scans');
+        await _deleteCollection(foodScansRef);
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'deleteUserData - food scans',
+            'userId': userId,
+          },
+        );
+      }
+
+      // Delete food diary entries
+      try {
+        final foodDiaryRef = _firestore
+            .collection('food_diary')
+            .doc(userId)
+            .collection('entries');
+        await _deleteCollection(foodDiaryRef);
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'deleteUserData - food diary',
+            'userId': userId,
+          },
+        );
+      }
+
+      // Delete workout logs
+      try {
+        final workoutLogsRef = _firestore
+            .collection('workout_logs')
+            .doc(userId)
+            .collection('logs');
+        await _deleteCollection(workoutLogsRef);
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'deleteUserData - workout logs',
+            'userId': userId,
+          },
+        );
+      }
+
+      // Delete document acceptances
+      try {
+        final acceptancesQuery =
+            await _firestore
+                .collection('user_document_acceptances')
+                .where('userId', isEqualTo: userId)
+                .get();
+
+        for (var doc in acceptancesQuery.docs) {
+          await doc.reference.delete();
+        }
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'deleteUserData - acceptances',
+            'userId': userId,
+          },
+        );
+      }
+
+      // Delete storage files
+      try {
+        final storageRef = _storage.ref().child('user_assets/$userId');
+        final listResult = await storageRef.listAll();
+        for (var item in listResult.items) {
+          await item.delete();
+        }
+        for (var prefix in listResult.prefixes) {
+          await _deleteStorageFolder(prefix);
+        }
+      } catch (e) {
+        // Storage might not exist, continue
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {'context': 'deleteUserData - storage', 'userId': userId},
+        );
+      }
+
+      _analytics.logEvent(
+        name: 'user_data_deletion_completed',
+        parameters: {'user_id': userId},
+      );
+    } catch (e) {
+      _analytics.logError(
+        error: e.toString(),
+        parameters: {'context': 'deleteUserDataWithoutAuth', 'userId': userId},
+      );
+      rethrow;
+    }
+  }
+
   /// Helper method to delete a collection
   Future<void> _deleteCollection(CollectionReference collectionRef) async {
     final snapshot = await collectionRef.get();
@@ -265,5 +493,42 @@ class GdprService {
     for (var prefix in listResult.prefixes) {
       await _deleteStorageFolder(prefix);
     }
+  }
+
+  Map<String, dynamic> _convertToSerializable(Map<String, dynamic>? data) {
+    if (data == null) return {};
+
+    final result = Map<String, dynamic>.from(data);
+
+    // Recursively process the map to convert timestamps and other non-serializable types
+    result.forEach((key, value) {
+      if (value is Timestamp) {
+        // Convert Timestamp to ISO string
+        result[key] = value.toDate().toIso8601String();
+      } else if (value is Map) {
+        // Recursively convert nested maps
+        result[key] = _convertToSerializable(Map<String, dynamic>.from(value));
+      } else if (value is List) {
+        // Convert lists that might contain timestamps
+        result[key] = _convertList(value);
+      }
+    });
+
+    return result;
+  }
+
+  /// Convert List items to serializable format
+  List _convertList(List items) {
+    return items.map((item) {
+      if (item is Timestamp) {
+        return item.toDate().toIso8601String();
+      } else if (item is Map) {
+        return _convertToSerializable(Map<String, dynamic>.from(item));
+      } else if (item is List) {
+        return _convertList(item);
+      } else {
+        return item;
+      }
+    }).toList();
   }
 }

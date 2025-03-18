@@ -1,7 +1,7 @@
-# Bums 'n' Tums - Project Overview
+# Bums & Tums - Project Overview
 
 ## Project Summary
-**Project Name:** Bums 'n' Tums  
+**Project Name:** Bums & Tums  
 **Platform:** Flutter (iOS first, Android later)  
 **Backend:** Firebase (Firestore, Authentication, Cloud Functions, Firebase ML Kit, Storage)  
 **AI Integration:** OpenAI API (OpenAI-mini for cost efficiency)
@@ -9,7 +9,7 @@
 **Target Audience:** Beginner women focused on weight loss and toning
 
 ## Vision
-Bums 'n' Tums is a fitness application designed specifically for beginner women who want to focus on weight loss and toning. The app provides personalized workout recommendations, food scanning and nutritional analysis, and a supportive community to help users achieve their fitness goals.
+Bums & Tums is a fitness application designed specifically for beginner women who want to focus on weight loss and toning. The app provides personalized workout recommendations, food scanning and nutritional analysis, and a supportive community to help users achieve their fitness goals.
 
 ## Core Technologies
 - **Flutter**: Cross-platform development framework
@@ -19,7 +19,7 @@ Bums 'n' Tums is a fitness application designed specifically for beginner women 
 - **Riverpod**: State management solution
 
 ## Key Features
-- Personalized workout recommendations focused on "Bums 'n' Tums"
+- Personalized workout recommendations focused on "Bums & Tums"
 - Food scanning with nutritional analysis
 - Progress tracking
 - Social community and challenges

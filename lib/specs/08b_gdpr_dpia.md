@@ -2,12 +2,12 @@
 # Data Privacy Impact Assessment (DPIA)
 
 ## Project Information
-- **Project Name:** Bums 'n' Tums
+- **Project Name:** Bums & Tums
 - **Assessment Date:** March 18, 2025
 - **Reviewer:** [Your Name]
 
 ## Purpose of Processing
-Bums 'n' Tums processes personal data to:
+Bums & Tums processes personal data to:
 - Provide personalized workout recommendations
 - Track users' fitness progress
 - Facilitate food scanning and nutritional analysis
@@ -98,6 +98,6 @@ Bums 'n' Tums processes personal data to:
 - **Documentation:** Up-to-date data processing records
 
 ## Conclusion
-This DPIA identifies several key risks in processing personal and health-related data in the Bums 'n' Tums app. By implementing the proposed mitigation strategies, we can significantly reduce these risks while complying with GDPR requirements.
+This DPIA identifies several key risks in processing personal and health-related data in the Bums & Tums app. By implementing the proposed mitigation strategies, we can significantly reduce these risks while complying with GDPR requirements.
 
 The app will implement technical measures like data separation, access controls, and encryption, alongside organizational measures like clear policies and user controls. These will be regularly reviewed and updated as the app evolves.

@@ -165,7 +165,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 const SizedBox(height: 16),
 
                 Text(
-                  'Join Bums \'n\' Tums',
+                  'Join Bums & Tums',
                   style: AppTextStyles.h2,
                   textAlign: TextAlign.center,
                 ),

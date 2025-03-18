@@ -132,7 +132,7 @@ class _GdprSettingsScreenState extends ConsumerState<GdprSettingsScreen> {
       // Share the file
       await Share.shareXFiles([
         XFile(filePath),
-      ], text: 'Here is your exported data from Bums \'n\' Tums');
+      ], text: 'Here is your exported data from Bums & Tums');
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -177,38 +177,45 @@ class _GdprSettingsScreenState extends ConsumerState<GdprSettingsScreen> {
     }
   }
 
-  Future<void> _deleteAccount() async {
-    final user = _auth.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You must be logged in to delete your account'),
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      await _gdprService.deleteUserData(user.uid);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Your account has been deleted')),
-      );
-
-      // Navigate to login screen
-      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting account: ${e.toString()}')),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+Future<void> _deleteAccount() async {
+  final user = _auth.currentUser;
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('You must be logged in to delete your account'),
+      ),
+    );
+    return;
   }
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    // Store the user ID before deleting
+    final userId = user.uid;
+    
+    // Delete all data except the auth user
+    await _gdprService.deleteUserDataWithoutAuth(userId);
+    
+    // Now delete the auth user
+    await user.delete();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Your account has been deleted')),
+    );
+
+    // Navigate to login screen
+    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error deleting account: ${e.toString()}')),
+    );
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
 }

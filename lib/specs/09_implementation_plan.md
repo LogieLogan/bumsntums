@@ -25,11 +25,11 @@
 - [x] Implement crash reporting with Crashlytics
 - [x] Create barcode scanning MVP with Open Food Facts API
 - [x] Implement basic workout display and execution
-- [ ] Complete data privacy impact assessment
-- [ ] Set up TestFlight/Firebase App Distribution for testing
+- [x] Complete data privacy impact assessment
+- [x] Set up TestFlight/Firebase App Distribution for testing
       - dev and prod app icons (appicon is done using flutter_launcher_icons )
       - review lauch screen I have a splsh screen but in xcode the lauch screen is blank
-      
+
 - [x] Create feedback collection tools and processes
 
 ### Phase 2: Core Features (Weeks 6-10)

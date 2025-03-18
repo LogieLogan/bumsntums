@@ -137,7 +137,7 @@
 
 ## 3.2 State Management & Dependency Injection
 - **Primary State Management:** Riverpod for reactive state management
-  - Note: While Riverpod has a higher learning curve than alternatives like Provider or GetX, it offers better long-term scalability for a feature-rich app like Bums 'n' Tums
+  - Note: While Riverpod has a higher learning curve than alternatives like Provider or GetX, it offers better long-term scalability for a feature-rich app like Bums & Tums
 - **Local Storage:** Hive for efficient local storage
 - **Service Locator:** GetIt for dependency injection
 - **Navigation:** Go Router for declarative routing

@@ -79,7 +79,7 @@ class LegalDocumentService {
 # Privacy Policy
 
 ## Introduction
-Welcome to Bums 'n' Tums ("we," "our," or "us"). We respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our mobile application.
+Welcome to Bums & Tums ("we," "our," or "us"). We respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our mobile application.
 
 ## Last Updated
 This privacy policy was last updated on March 18, 2025.
@@ -154,7 +154,7 @@ If you are in the European Economic Area (EEA), you have the following rights:
 - **Right to Object:** Object to processing of your data
 - **Right to Withdraw Consent:** Withdraw consent at any time
 
-To exercise these rights, please contact us at support@bumsntums.com.
+To exercise these rights, please contact us at support@bumsandtums.com.
 
 ## Children's Privacy
 Our services are not intended for individuals under the age of 13.
@@ -165,7 +165,7 @@ We may update this Privacy Policy from time to time. We will notify you of any s
 ## Contact Us
 If you have questions about this Privacy Policy, please contact us at:
 
-Email: support@bumsntums.com
+Email: support@bumsandtums.com
 
 Last updated: ${DateTime.now().toIso8601String().split('T')[0]}
 ''';
@@ -174,7 +174,7 @@ Last updated: ${DateTime.now().toIso8601String().split('T')[0]}
 # Terms & Conditions
 
 ## Introduction
-These Terms & Conditions ("Terms") govern your use of the Bums 'n' Tums mobile application ("App") operated by Bums 'n' Tums ("we," "our," or "us"). Please read these Terms carefully before using our App.
+These Terms & Conditions ("Terms") govern your use of the Bums & Tums mobile application ("App") operated by Bums & Tums ("we," "our," or "us"). Please read these Terms carefully before using our App.
 
 ## Last Updated
 These Terms were last updated on March 18, 2025.
@@ -242,7 +242,7 @@ We may update these Terms from time to time. We will notify you of any significa
 These Terms shall be governed by and construed in accordance with the laws of the UK, without regard to its conflict of law principles.
 
 ## Contact Us
-If you have any questions about these Terms, please contact us at support@bumsntums.com.
+If you have any questions about these Terms, please contact us at support@bumsantums.com.
 
 Last updated: ${DateTime.now().toIso8601String().split('T')[0]}
 ''';

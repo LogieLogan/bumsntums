@@ -118,7 +118,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bums \'n\' Tums'),
+        title: const Text('Bums & Tums'),
         actions: [
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline),
@@ -332,7 +332,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Beginner Bums \'n\' Tums',
+                          'Beginner Bums & Tums',
                           style: AppTextStyles.body.copyWith(
                             fontWeight: FontWeight.bold,
                           ),

@@ -294,7 +294,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             16,
                           ), // Set the radius as desired
                           child: Image.asset(
-                            'assets/logo/app_logo.png', // Correct path to the logo
+                            'assets/logo/app_logo_2.png', // Correct path to the logo
                             width: 100, // Adjust the size as needed
                             height: 100, // Adjust the size as needed
                           ),
