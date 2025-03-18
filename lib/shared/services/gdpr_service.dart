@@ -22,62 +22,63 @@ class GdprService {
       final Map<String, dynamic> userData = {};
 
       // Get personal information
-      final personalInfo = await _firestore
-          .collection('users_personal_info')
-          .doc(userId)
-          .get();
+      final personalInfo =
+          await _firestore.collection('users_personal_info').doc(userId).get();
       if (personalInfo.exists) {
         userData['personalInfo'] = personalInfo.data();
       }
 
       // Get fitness profile
-      final fitnessProfile = await _firestore
-          .collection('fitness_profiles')
-          .doc(userId)
-          .get();
+      final fitnessProfile =
+          await _firestore.collection('fitness_profiles').doc(userId).get();
       if (fitnessProfile.exists) {
         userData['fitnessProfile'] = fitnessProfile.data();
       }
 
       // Get public profile
-      final publicProfile = await _firestore
-          .collection('user_profiles_public')
-          .doc(userId)
-          .get();
+      final publicProfile =
+          await _firestore.collection('user_profiles_public').doc(userId).get();
       if (publicProfile.exists) {
         userData['publicProfile'] = publicProfile.data();
       }
 
       // Get food scans
-      final foodScans = await _firestore
-          .collection('food_scans')
-          .doc(userId)
-          .collection('scans')
-          .get();
+      final foodScans =
+          await _firestore
+              .collection('food_scans')
+              .doc(userId)
+              .collection('scans')
+              .get();
       userData['foodScans'] = foodScans.docs.map((doc) => doc.data()).toList();
 
       // Get food diary entries
-      final foodDiaryQuery = await _firestore
-          .collection('food_diary')
-          .doc(userId)
-          .collection('entries')
-          .get();
-      userData['foodDiary'] = foodDiaryQuery.docs.map((doc) => doc.data()).toList();
+      final foodDiaryQuery =
+          await _firestore
+              .collection('food_diary')
+              .doc(userId)
+              .collection('entries')
+              .get();
+      userData['foodDiary'] =
+          foodDiaryQuery.docs.map((doc) => doc.data()).toList();
 
       // Get workout logs
-      final workoutLogs = await _firestore
-          .collection('workout_logs')
-          .doc(userId)
-          .collection('logs')
-          .get();
-      userData['workoutLogs'] = workoutLogs.docs.map((doc) => doc.data()).toList();
+      final workoutLogs =
+          await _firestore
+              .collection('workout_logs')
+              .doc(userId)
+              .collection('logs')
+              .get();
+      userData['workoutLogs'] =
+          workoutLogs.docs.map((doc) => doc.data()).toList();
 
       // Get document acceptances
-      final acceptances = await _firestore
-          .collection('user_document_acceptances')
-          .where('userId', isEqualTo: userId)
-          .get();
-      userData['documentAcceptances'] = acceptances.docs.map((doc) => doc.data()).toList();
+      final acceptances =
+          await _firestore
+              .collection('user_document_acceptances')
+              .where('userId', isEqualTo: userId)
+              .get();
+      userData['documentAcceptances'] =
+          acceptances.docs.map((doc) => doc.data()).toList();
 
       _analytics.logEvent(
         name: 'user_data_export_completed',
@@ -88,10 +89,7 @@ class GdprService {
     } catch (e) {
       _analytics.logError(
         error: e.toString(),
-        parameters: {
-          'context': 'exportUserData',
-          'userId': userId,
-        },
+        parameters: {'context': 'exportUserData', 'userId': userId},
       );
       rethrow;
     }
@@ -105,40 +103,106 @@ class GdprService {
         parameters: {'user_id': userId},
       );
 
-      // Delete personal info
-      await _firestore.collection('users_personal_info').doc(userId).delete();
+      // Map of collections to delete with error handling for each
+      final collectionsToDelete = {
+        'users_personal_info': _firestore
+            .collection('users_personal_info')
+            .doc(userId),
+        'fitness_profiles': _firestore
+            .collection('fitness_profiles')
+            .doc(userId),
+        'user_profiles_public': _firestore
+            .collection('user_profiles_public')
+            .doc(userId),
+      };
 
-      // Delete fitness profile
-      await _firestore.collection('fitness_profiles').doc(userId).delete();
+      // Delete each document, with individual error handling
+      for (var entry in collectionsToDelete.entries) {
+        try {
+          await entry.value.delete();
+        } catch (e) {
+          _analytics.logError(
+            error: e.toString(),
+            parameters: {
+              'context': 'deleteUserData',
+              'userId': userId,
+              'collection': entry.key,
+            },
+          );
+          // Continue with other deletions even if one fails
+        }
+      }
 
-      // Delete public profile
-      await _firestore.collection('user_profiles_public').doc(userId).delete();
+      // Collections with subcollections that need batch deletion
+      final subCollectionsToDelete = {
+        'food_scans': _firestore
+            .collection('food_scans')
+            .doc(userId)
+            .collection('scans'),
+        'food_diary': _firestore
+            .collection('food_diary')
+            .doc(userId)
+            .collection('entries'),
+        'workout_logs': _firestore
+            .collection('workout_logs')
+            .doc(userId)
+            .collection('logs'),
+      };
 
-      // Delete food scans
-      final foodScansRef = _firestore.collection('food_scans').doc(userId).collection('scans');
-      await _deleteCollection(foodScansRef);
-
-      // Delete food diary entries
-      final foodDiaryRef = _firestore.collection('food_diary').doc(userId).collection('entries');
-      await _deleteCollection(foodDiaryRef);
-
-      // Delete workout logs
-      final workoutLogsRef = _firestore.collection('workout_logs').doc(userId).collection('logs');
-      await _deleteCollection(workoutLogsRef);
+      // Delete subcollections with individual error handling
+      for (var entry in subCollectionsToDelete.entries) {
+        try {
+          await _deleteCollection(entry.value);
+        } catch (e) {
+          _analytics.logError(
+            error: e.toString(),
+            parameters: {
+              'context': 'deleteUserData',
+              'userId': userId,
+              'subCollection': entry.key,
+            },
+          );
+          // Continue with other deletions even if one fails
+        }
+      }
 
       // Delete document acceptances
-      final acceptancesQuery = await _firestore
-          .collection('user_document_acceptances')
-          .where('userId', isEqualTo: userId)
-          .get();
-      
-      for (var doc in acceptancesQuery.docs) {
-        await doc.reference.delete();
+      try {
+        final acceptancesQuery =
+            await _firestore
+                .collection('user_document_acceptances')
+                .where('userId', isEqualTo: userId)
+                .get();
+
+        for (var doc in acceptancesQuery.docs) {
+          await doc.reference.delete();
+        }
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'deleteUserData - acceptances',
+            'userId': userId,
+          },
+        );
+      }
+
+      // Delete user consents if they exist
+      try {
+        await _firestore.collection('user_consents').doc(userId).delete();
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'deleteUserData - consents',
+            'userId': userId,
+          },
+        );
       }
 
       // Delete storage files
-      final storageRef = _storage.ref().child('user_assets/$userId');
       try {
+        final storageRef = _storage.ref().child('user_assets/$userId');
         final listResult = await storageRef.listAll();
         for (var item in listResult.items) {
           await item.delete();
@@ -148,12 +212,27 @@ class GdprService {
         }
       } catch (e) {
         // Storage might not exist, continue
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {'context': 'deleteUserData - storage', 'userId': userId},
+        );
       }
 
       // Finally, delete the Auth account
-      final user = _auth.currentUser;
-      if (user != null && user.uid == userId) {
-        await user.delete();
+      try {
+        final user = _auth.currentUser;
+        if (user != null && user.uid == userId) {
+          await user.delete();
+        }
+      } catch (e) {
+        _analytics.logError(
+          error: e.toString(),
+          parameters: {
+            'context': 'deleteUserData - auth account',
+            'userId': userId,
+          },
+        );
+        rethrow; // Only rethrow for auth deletion, as this is critical
       }
 
       _analytics.logEvent(
@@ -163,10 +242,7 @@ class GdprService {
     } catch (e) {
       _analytics.logError(
         error: e.toString(),
-        parameters: {
-          'context': 'deleteUserData',
-          'userId': userId,
-        },
+        parameters: {'context': 'deleteUserData', 'userId': userId},
       );
       rethrow;
     }

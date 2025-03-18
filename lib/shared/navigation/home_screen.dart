@@ -1,5 +1,6 @@
 // lib/features/workouts/screens/home_screen.dart
 import 'package:bums_n_tums/features/nutrition/screens/scanner_screen.dart';
+import 'package:bums_n_tums/features/settings/screens/gdpr_settings_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_browse_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -714,6 +715,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
               icon: const Icon(Icons.feedback_outlined),
               label: const Text('Send Feedback'),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Privacy & GDPR settings button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const GdprSettingsScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.privacy_tip_outlined),
+              label: const Text('Privacy & Data Settings'),
             ),
           ),
         ],

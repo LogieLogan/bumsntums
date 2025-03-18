@@ -1,10 +1,9 @@
 Using the Project Knowledge as your core persona and instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Area of focus:
-Please review my GDPR implementation in terms of user data
-Simplify and optimise where possible
-fix privacy policy and terms and consitions not availiable errors 
-fix permissions issues
+review legal document service privacy policy and terms and conditions
+fill them out for the apps current state
+ask questions to help get these complete
 
 Project folder structure:
 

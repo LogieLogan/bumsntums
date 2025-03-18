@@ -41,13 +41,17 @@ The AI model will use the following data points from the non-PII collection:
 2. **Prompting Strategy:**
    - Use structured prompts with clear constraints
    - Include specific context limiting token usage
-   - Cache frequently used prompt templates
    - Develop and test specific prompt templates for workout generation
+   - Intergrate personalised system prompt with custom message from the user
+   - Workout generation two step process 1. user selects AI action i.e. build personalised workout 2. user then can chat to fine tune the workout.
    
 3. **Conversation Management:**
    - Use OpenAI's built-in conversation context for active sessions
    - For new conversations, include relevant previous insights in system prompt
    - Store only anonymous summaries of past interactions
+   - Provide tools for users to be able to configure AI personality such as (humour level, conversational level, level of detail, friendly and approachable, playfulness) and are added to system prompts.
+   - Provide stock AI personas with approachable names and defined pre made personans that are added in system prompts.
+   - Ai chat function always accsible in the app bar to direct and inform the user on anything from how to use the app to what should they make for breakfast to make me a workout all using their personalised system prompt.
 
 4. **Cost Optimization:**
    - Batch AI requests during off-peak hours
