@@ -1,6 +1,8 @@
 // lib/features/auth/widgets/onboarding/profile_setup_coordinator.dart
 import 'package:bums_n_tums/features/auth/widgets/onboarding/steps/capability_questionnaire.dart';
 import 'package:bums_n_tums/features/auth/widgets/onboarding/steps/dietary_preferences_step.dart';
+import 'package:bums_n_tums/shared/models/legal_document.dart';
+import 'package:bums_n_tums/shared/services/legal_document_service.dart';
 import 'package:bums_n_tums/shared/theme/color_palette.dart';
 import 'package:bums_n_tums/shared/theme/text_styles.dart';
 import 'package:flutter/material.dart';
@@ -88,16 +90,6 @@ class _ProfileSetupFormState extends ConsumerState<ProfileSetupForm> {
     }
   }
 
-  void _updateBasicInfo(String displayName) async {
-    final userService = ref.read(userProfileServiceProvider);
-    await userService.updateDisplayName(_profile.userId, displayName.trim());
-
-    setState(() {
-      _currentStep++;
-    });
-    _scrollToTop();
-  }
-
   void _updateMeasurements(
     DateTime? dateOfBirth,
     double? height,
@@ -124,6 +116,57 @@ class _ProfileSetupFormState extends ConsumerState<ProfileSetupForm> {
     });
     _scrollToTop();
   }
+
+void _updateBasicInfo(String displayName) async {
+  final userService = ref.read(userProfileServiceProvider);
+  await userService.updateDisplayName(_profile.userId, displayName.trim());
+
+  // Add document acceptances to the profile
+  if (_basicInfoController.hasAcceptedPrivacyPolicy || _basicInfoController.hasAcceptedTerms) {
+    final acceptedDocs = Map<String, Map<String, dynamic>>.from(
+      _profile.acceptedDocuments,
+    );
+    
+    // Add privacy policy if accepted
+    if (_basicInfoController.hasAcceptedPrivacyPolicy) {
+      acceptedDocs[LegalDocumentType.privacyPolicy.documentId] = {
+        'version': _basicInfoController.privacyPolicyVersion,
+        'acceptedAt': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      // Log acceptance in the document service
+      final documentService = LegalDocumentService();
+      documentService.logUserAcceptance(
+        _profile.userId,
+        LegalDocumentType.privacyPolicy,
+        _basicInfoController.privacyPolicyVersion,
+      );
+    }
+    
+    // Add terms & conditions if accepted
+    if (_basicInfoController.hasAcceptedTerms) {
+      acceptedDocs[LegalDocumentType.termsAndConditions.documentId] = {
+        'version': _basicInfoController.termsVersion,
+        'acceptedAt': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      // Log acceptance in the document service
+      final documentService = LegalDocumentService();
+      documentService.logUserAcceptance(
+        _profile.userId,
+        LegalDocumentType.termsAndConditions,
+        _basicInfoController.termsVersion,
+      );
+    }
+    
+    _profile = _profile.copyWith(acceptedDocuments: acceptedDocs);
+  }
+
+  setState(() {
+    _currentStep++;
+  });
+  _scrollToTop();
+}
 
   void _updateGoals(List<FitnessGoal> goals) {
     print("Updating goals: ${goals.map((g) => g.name).join(', ')}");
@@ -218,7 +261,6 @@ class _ProfileSetupFormState extends ConsumerState<ProfileSetupForm> {
         healthConditions: filteredConditions,
         allergies: filteredAllergies,
         dietaryPreferences: filteredDietaryPreferences,
-        hasAcceptedPrivacyPolicy: true,
       );
 
       print("Updated profile:");

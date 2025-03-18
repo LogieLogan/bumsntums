@@ -4,10 +4,12 @@ import '../../theme/color_palette.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String text;
-  final VoidCallback? onPressed; // Change to nullable
+  final VoidCallback? onPressed;
   final bool isLoading;
   final bool isEnabled;
   final double width;
+  final IconData? icon;
+  final Color? backgroundColor;
 
   const PrimaryButton({
     super.key,
@@ -16,6 +18,8 @@ class PrimaryButton extends StatelessWidget {
     this.isLoading = false,
     this.isEnabled = true,
     this.width = double.infinity,
+    this.icon,
+    this.backgroundColor,
   });
 
   @override
@@ -25,26 +29,35 @@ class PrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: (isEnabled && !isLoading) ? onPressed : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isEnabled ? AppColors.pink : AppColors.lightGrey,
+          backgroundColor: backgroundColor ?? (isEnabled ? AppColors.pink : AppColors.lightGrey),
           padding: const EdgeInsets.symmetric(vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        child:
-            isLoading
-                ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-                : Text(
-                  text.toUpperCase(),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+        child: isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
                 ),
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    text.toUpperCase(),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
       ),
     );
   }

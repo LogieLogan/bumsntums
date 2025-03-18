@@ -1,4 +1,6 @@
 // lib/features/auth/providers/user_provider.dart
+import 'package:bums_n_tums/shared/models/legal_document.dart';
+import 'package:bums_n_tums/shared/services/legal_document_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_profile.dart';
@@ -216,6 +218,50 @@ class UserProfileNotifier extends StateNotifier<AsyncValue<UserProfile?>> {
     } catch (e, stackTrace) {
       print("UserProfileNotifier: Error updating profile: $e");
       print("Stack trace: $stackTrace");
+      if (mounted) {
+        state = AsyncValue.error(e, stackTrace);
+      }
+    }
+  }
+
+  Future<void> acceptLegalDocument(LegalDocumentType type, int version) async {
+    if (state.value == null) return;
+
+    try {
+      final LegalDocumentService documentService = LegalDocumentService();
+
+      // Create updated profile with new document acceptance
+      final currentProfile = state.value!;
+      final acceptedDocs = Map<String, Map<String, dynamic>>.from(
+        currentProfile.acceptedDocuments,
+      );
+
+      // Update the acceptance for this document type
+      acceptedDocs[type.documentId] = {
+        'version': version,
+        'acceptedAt': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      final updatedProfile = currentProfile.copyWith(
+        acceptedDocuments: acceptedDocs,
+      );
+
+      // Update profile in Firestore
+      await _userService.updateUserProfile(updatedProfile);
+
+      // Log acceptance for analytics
+      await documentService.logUserAcceptance(
+        currentProfile.userId,
+        type,
+        version,
+      );
+
+      // Update local state
+      if (mounted) {
+        state = AsyncValue.data(updatedProfile);
+      }
+    } catch (e, stackTrace) {
+      print("Error accepting legal document: $e");
       if (mounted) {
         state = AsyncValue.error(e, stackTrace);
       }

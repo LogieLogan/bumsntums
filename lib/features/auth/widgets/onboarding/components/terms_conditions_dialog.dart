@@ -1,4 +1,4 @@
-// lib/features/auth/widgets/onboarding/components/privacy_policy_dialog.dart
+// lib/features/auth/widgets/onboarding/components/terms_conditions_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,30 +7,30 @@ import '../../../../../shared/services/legal_document_service.dart';
 import '../../../../../shared/theme/text_styles.dart';
 import '../../../../../shared/theme/color_palette.dart';
 
-class PrivacyPolicyDialog extends ConsumerStatefulWidget {
+class TermsConditionsDialog extends ConsumerStatefulWidget {
   final Function(bool accepted, int version) onResult;
 
-  const PrivacyPolicyDialog({
+  const TermsConditionsDialog({
     Key? key,
     required this.onResult,
   }) : super(key: key);
 
   @override
-  ConsumerState<PrivacyPolicyDialog> createState() => _PrivacyPolicyDialogState();
+  ConsumerState<TermsConditionsDialog> createState() => _TermsConditionsDialogState();
 }
 
-class _PrivacyPolicyDialogState extends ConsumerState<PrivacyPolicyDialog> {
+class _TermsConditionsDialogState extends ConsumerState<TermsConditionsDialog> {
   bool _isLoading = true;
-  LegalDocument? _privacyPolicy;
+  LegalDocument? _termsConditions;
   String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _loadPrivacyPolicy();
+    _loadTermsConditions();
   }
 
-  Future<void> _loadPrivacyPolicy() async {
+  Future<void> _loadTermsConditions() async {
     try {
       setState(() {
         _isLoading = true;
@@ -38,18 +38,18 @@ class _PrivacyPolicyDialogState extends ConsumerState<PrivacyPolicyDialog> {
       });
 
       final service = LegalDocumentService();
-      final document = await service.getLegalDocument(LegalDocumentType.privacyPolicy);
+      final document = await service.getLegalDocument(LegalDocumentType.termsAndConditions);
 
       if (mounted) {
         setState(() {
-          _privacyPolicy = document;
+          _termsConditions = document;
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Failed to load privacy policy. Please try again.';
+          _errorMessage = 'Failed to load terms and conditions. Please try again.';
           _isLoading = false;
         });
       }
@@ -69,7 +69,7 @@ class _PrivacyPolicyDialogState extends ConsumerState<PrivacyPolicyDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Privacy Policy',
+              'Terms & Conditions',
               style: AppTextStyles.h2,
               textAlign: TextAlign.center,
             ),
@@ -81,14 +81,14 @@ class _PrivacyPolicyDialogState extends ConsumerState<PrivacyPolicyDialog> {
               children: [
                 TextButton(
                   onPressed: () {
-                    widget.onResult(false, _privacyPolicy?.version ?? 1);
+                    widget.onResult(false, _termsConditions?.version ?? 1);
                   },
                   child: const Text('Decline'),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: () {
-                    widget.onResult(true, _privacyPolicy?.version ?? 1);
+                    widget.onResult(true, _termsConditions?.version ?? 1);
                   },
                   child: const Text('Accept'),
                 ),
@@ -124,7 +124,7 @@ class _PrivacyPolicyDialogState extends ConsumerState<PrivacyPolicyDialog> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _loadPrivacyPolicy,
+                onPressed: _loadTermsConditions,
                 child: const Text('Retry'),
               ),
             ],
@@ -133,11 +133,11 @@ class _PrivacyPolicyDialogState extends ConsumerState<PrivacyPolicyDialog> {
       );
     }
 
-    if (_privacyPolicy == null) {
+    if (_termsConditions == null) {
       return const SizedBox(
         height: 300,
         child: Center(
-          child: Text('Privacy policy not available.'),
+          child: Text('Terms and conditions not available.'),
         ),
       );
     }
@@ -145,7 +145,7 @@ class _PrivacyPolicyDialogState extends ConsumerState<PrivacyPolicyDialog> {
     return SizedBox(
       height: 300,
       child: Markdown(
-        data: _privacyPolicy!.content,
+        data: _termsConditions!.content,
         shrinkWrap: true,
       ),
     );

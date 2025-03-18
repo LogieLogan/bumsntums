@@ -1,4 +1,4 @@
-// Updated user_profile.dart with changes for multiple motivations
+// lib/features/auth/models/user_profile.dart
 import 'package:equatable/equatable.dart';
 
 enum FitnessGoal { weightLoss, toning, strength, endurance, flexibility }
@@ -31,8 +31,9 @@ class UserProfile extends Equatable {
   final List<MotivationType> motivations;
   final String? customMotivation; // For "other" motivation type
   
-  // Privacy consent
-  final bool hasAcceptedPrivacyPolicy;
+  // Legal documents acceptance
+  // Map of document type -> {version, acceptedAt}
+  final Map<String, Map<String, dynamic>> acceptedDocuments;
 
   const UserProfile({
     required this.userId,
@@ -52,7 +53,7 @@ class UserProfile extends Equatable {
     this.allergies = const [],
     this.motivations = const [],
     this.customMotivation,
-    this.hasAcceptedPrivacyPolicy = false,
+    this.acceptedDocuments = const {},
   });
 
   @override
@@ -74,7 +75,7 @@ class UserProfile extends Equatable {
         allergies,
         motivations,
         customMotivation,
-        hasAcceptedPrivacyPolicy,
+        acceptedDocuments,
       ];
 
   UserProfile copyWith({
@@ -94,7 +95,7 @@ class UserProfile extends Equatable {
     List<String>? allergies,
     List<MotivationType>? motivations,
     String? customMotivation,
-    bool? hasAcceptedPrivacyPolicy,
+    Map<String, Map<String, dynamic>>? acceptedDocuments,
   }) {
     return UserProfile(
       userId: userId,
@@ -114,7 +115,7 @@ class UserProfile extends Equatable {
       allergies: allergies ?? this.allergies,
       motivations: motivations ?? this.motivations,
       customMotivation: customMotivation ?? this.customMotivation,
-      hasAcceptedPrivacyPolicy: hasAcceptedPrivacyPolicy ?? this.hasAcceptedPrivacyPolicy,
+      acceptedDocuments: acceptedDocuments ?? this.acceptedDocuments,
     );
   }
 
@@ -137,7 +138,7 @@ class UserProfile extends Equatable {
       'allergies': allergies,
       'motivations': motivations.map((m) => m.name).toList(),
       'customMotivation': customMotivation,
-      'hasAcceptedPrivacyPolicy': hasAcceptedPrivacyPolicy,
+      'acceptedDocuments': acceptedDocuments,
     };
   }
 
@@ -196,7 +197,9 @@ class UserProfile extends Equatable {
               .toList()
           : [],
       customMotivation: map['customMotivation'],
-      hasAcceptedPrivacyPolicy: map['hasAcceptedPrivacyPolicy'] ?? false,
+      acceptedDocuments: map['acceptedDocuments'] != null
+          ? Map<String, Map<String, dynamic>>.from(map['acceptedDocuments'])
+          : {},
     );
   }
 
@@ -216,5 +219,15 @@ class UserProfile extends Equatable {
       calculatedAge--;
     }
     return calculatedAge;
+  }
+  
+  // Check if a specific document has been accepted
+  bool hasAcceptedDocument(String documentId) {
+    return acceptedDocuments.containsKey(documentId);
+  }
+  
+  // Helper to check if privacy policy is accepted (for backward compatibility)
+  bool get hasAcceptedPrivacyPolicy {
+    return hasAcceptedDocument('privacy_policy');
   }
 }
