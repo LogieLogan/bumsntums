@@ -86,6 +86,29 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
     // Continue with your original build code for when environment is initialized
     final chatState = ref.watch(aiChatProvider);
 
+    if (chatState.error != null) {
+      String errorMessage = chatState.error!;
+
+      // Handle rate limit errors with more user-friendly message
+      if (chatState.error!.contains('Rate limit exceeded')) {
+        errorMessage = chatState.error!;
+      } else {
+        errorMessage = 'Something went wrong. Please try again later.';
+      }
+
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.error.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(errorMessage, style: TextStyle(color: AppColors.error)),
+        ),
+      );
+    }
+
     // Auto-scroll when new messages arrive
     if (chatState.messages.isNotEmpty) {
       _scrollToBottom();
@@ -108,7 +131,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
           // Welcome message if no messages
           if (chatState.messages.isEmpty)
             Expanded(
-              child: Center(
+              child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
@@ -132,35 +155,47 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 12,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          _SuggestionChip(
-                            label: 'Create a workout for me',
-                            onTap: () {
-                              _messageController.text =
-                                  'Create a workout for me';
-                              _sendMessage();
-                            },
-                          ),
-                          _SuggestionChip(
-                            label: 'Nutrition tips for my goals',
-                            onTap: () {
-                              _messageController.text =
-                                  'Give me nutrition tips for my fitness goals';
-                              _sendMessage();
-                            },
-                          ),
-                          _SuggestionChip(
-                            label: 'How to stay motivated?',
-                            onTap: () {
-                              _messageController.text =
-                                  'How can I stay motivated with my workouts?';
-                              _sendMessage();
-                            },
-                          ),
+
+                      // Workouts category
+                      _buildSuggestionCategory(
+                        title: 'Workout Ideas',
+                        icon: Icons.fitness_center,
+                        color: AppColors.salmon,
+                        suggestions: [
+                          'Create a quick bums workout',
+                          'What\'s a good full-body stretch routine?',
+                          'How do I do a proper squat?',
+                          'Suggest exercises without equipment',
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Nutrition category
+                      _buildSuggestionCategory(
+                        title: 'Nutrition Advice',
+                        icon: Icons.restaurant,
+                        color: AppColors.popGreen,
+                        suggestions: [
+                          'What should I eat before a workout?',
+                          'How much protein do I need?',
+                          'Quick post-workout meal ideas',
+                          'How can I reduce sugar cravings?',
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Motivation category
+                      _buildSuggestionCategory(
+                        title: 'Motivation & Tips',
+                        icon: Icons.psychology,
+                        color: AppColors.popBlue,
+                        suggestions: [
+                          'How to stay consistent with workouts?',
+                          'I feel discouraged, what should I do?',
+                          'Tips for morning workout routine',
+                          'How long until I see results?',
                         ],
                       ),
                     ],
@@ -245,6 +280,54 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
       ),
     );
   }
+
+  Widget _buildSuggestionCategory({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required List<String> suggestions,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: AppTextStyles.h3.copyWith(color: color, fontSize: 18),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children:
+                suggestions.map((suggestion) {
+                  return _SuggestionChip(
+                    label: suggestion,
+                    color: color,
+                    onTap: () {
+                      _messageController.text = suggestion;
+                      _sendMessage();
+                    },
+                  );
+                }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ChatMessageWidget extends StatelessWidget {
@@ -290,8 +373,13 @@ class _ChatMessageWidget extends StatelessWidget {
 class _SuggestionChip extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
+  final Color color;
 
-  const _SuggestionChip({required this.label, required this.onTap});
+  const _SuggestionChip({
+    required this.label,
+    required this.onTap,
+    this.color = AppColors.salmon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -301,11 +389,11 @@ class _SuggestionChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.salmon.withOpacity(0.1),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.salmon.withOpacity(0.3)),
+          border: Border.all(color: color.withOpacity(0.5)),
         ),
-        child: Text(label, style: TextStyle(color: AppColors.salmon)),
+        child: Text(label, style: TextStyle(color: color)),
       ),
     );
   }

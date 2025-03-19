@@ -22,6 +22,8 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
   int _selectedDuration = 30;
   final TextEditingController _customRequestController =
       TextEditingController();
+      
+        ProviderListenable? get analyticsProvider => null;
 
   @override
   void dispose() {
@@ -141,7 +143,6 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: state.isLoading ? null : _generateWorkout,
-              // lib/features/ai/screens/ai_workout_screen.dart (continued)
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
@@ -163,9 +164,45 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
           if (state.error != null)
             Padding(
               padding: const EdgeInsets.only(top: 16),
-              child: Text(
-                'Error: ${state.error}',
-                style: TextStyle(color: AppColors.error),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: AppColors.error,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            state.error!.contains('Rate limit')
+                                ? 'Rate Limit Reached'
+                                : 'Error Creating Workout',
+                            style: TextStyle(
+                              color: AppColors.error,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      state.error!.contains('Rate limit')
+                          ? state.error!
+                          : 'Something went wrong. Please try again later.',
+                      style: TextStyle(color: AppColors.error),
+                    ),
+                  ],
+                ),
               ),
             ),
         ],
@@ -210,8 +247,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
                 id: e['name'].hashCode.toString(),
                 name: e['name'],
                 description: e['description'],
-                imageUrl:
-                    'assets/images/placeholder_exercise.jpg', // Placeholder
+                imageUrl: 'assets/images/placeholder_exercise.jpg',
                 sets: e['sets'],
                 reps: e['reps'],
                 durationSeconds: e['durationSeconds'],
@@ -225,7 +261,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
       id: workoutData['id'],
       title: workoutData['title'],
       description: workoutData['description'],
-      imageUrl: 'assets/images/placeholder_workout.jpg', // Placeholder
+      imageUrl: 'assets/images/placeholder_workout.jpg',
       category: WorkoutCategory.values.firstWhere(
         (c) => c.name == workoutData['category'],
         orElse: () => WorkoutCategory.fullBody,
@@ -424,6 +460,48 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
 
           const SizedBox(height: 24),
 
+          // Feedback section
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.paleGrey,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('How was this workout?', style: AppTextStyles.h3),
+                const SizedBox(height: 8),
+                Text(
+                  'Your feedback helps us improve our workout recommendations.',
+                  style: AppTextStyles.small,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildFeedbackOption(
+                      icon: Icons.thumb_down,
+                      label: 'Too Easy',
+                      onTap: () => _submitWorkoutFeedback('too_easy'),
+                    ),
+                    _buildFeedbackOption(
+                      icon: Icons.thumb_up,
+                      label: 'Just Right',
+                      onTap: () => _submitWorkoutFeedback('just_right'),
+                    ),
+                    _buildFeedbackOption(
+                      icon: Icons.fitness_center,
+                      label: 'Too Hard',
+                      onTap: () => _submitWorkoutFeedback('too_hard'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
           // Action buttons
           Row(
             children: [
@@ -455,6 +533,55 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFeedbackOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Icon(icon, color: AppColors.salmon),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTextStyles.small.copyWith(color: AppColors.darkGrey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Add this method to submit feedback
+  void _submitWorkoutFeedback(String feedbackType) {
+    // Get the workout ID
+    final workoutData = ref.read(workoutRecommendationProvider).workoutData;
+    if (workoutData == null) return;
+
+    final workoutId = workoutData['id'];
+
+    // Analytics event
+    ref
+        .read(analyticsProvider!)
+        .logEvent(
+          name: 'ai_workout_feedback',
+          parameters: {'workout_id': workoutId, 'feedback_type': feedbackType},
+        );
+
+    // Show confirmation
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Thanks for your feedback!'),
+        backgroundColor: AppColors.success,
       ),
     );
   }
