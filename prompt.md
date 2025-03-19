@@ -2,7 +2,35 @@ Using the Project Knowledge as your core persona and instructions please help me
 
 Area of focus:
 Phase 2 - AI implementation
+getting error when opening ai chat fucntion 
 
+flutter: ----------------FIREBASE CRASHLYTICS----------------
+flutter: Environment service is still initializing
+flutter: 
+#1      ProviderElementBase.watch (package:riverpod/src/framework/element.dart:742:20)
+#2      aiChatProvider.<anonymous closure> (package:bums_n_tums/features/ai/providers/ai_chat_provider.dart:291:29)
+#3      ProviderContainer.read (package:riverpod/src/framework/container.dart:241:21)
+#4      ConsumerStatefulElement.read (package:flutter_riverpod/src/consumer.dart:620:59)
+#5      _AIChatScreenState._loadConversationHistory (package:bums_n_tums/features/ai/screens/ai_chat_screen.dart:40:12)
+#6      ProviderElementBase.watch (package:riverpod/src/framework/element.dart:742:20)
+#7      openAIServiceProvider.<anonymous closure> (package:bums_n_tums/features/ai/providers/openai_provider.dart:8:34)
+#8      ProviderElementBase.watch (package:riverpod/src/framework/element.dart:714:12)
+#9      aiChatProvider.<anonymous closure> (package:bums_n_tums/features/ai/providers/ai_chat_provider.dart:291:29)
+#10     ProviderContainer.read (package:riverpod/src/framework/container.dart:241:21)
+#11     ConsumerStatefulElement.read (package:flutter_riverpod/src/consumer.dart:620:59)
+#12     _AIChatScreenState._loadConversationHistory (package:bums_n_tums/features/ai/screens/ai_chat_screen.dart:40:12)
+#13     environmentServiceProvider.<anonymous closure>.<anonymous closure> (package:bums_n_tums/shared/providers/environment_provider.dart:15:20)
+#14     AsyncValueX.when (package:riverpod/src/common.dart:735:32)
+#15     environmentServiceProvider.<anonymous closure> (package:bums_n_tums/shared/providers/environment_provider.dart:13:20)
+#16     ProviderElementBase.watch (package:riverpod/src/framework/element.dart:714:12)
+#17     openAIServiceProvider.<anonymous closure> (package:bums_n_tums/features/ai/providers/openai_provider.dart:8:34)
+#18     ProviderElementBase.watch (package:riverpod/src/framework/element.dart:714:12)
+#19     aiChatProvider.<anonymous closure> (package:bums_n_tums/features/ai/providers/ai_chat_provider.dart:291:29)
+#20     ProviderContainer.read (package:riverpod/src/framework/container.dart:241:21)
+#21     ConsumerStatefulElement.read (package:flutter_riverpod/src/consumer.dart:620:59)
+#22     _AIChatScreenState._loadConversationHistory (package:bums_n_tums/features/ai/screens/ai_chat_screen.dart:40:12)
+flutter: ----------------------------------------------------
+11.8.1 - [FirebaseCrashlytics][I-CLS000000] Crashlytics skipped rotating the Install ID during urgent mode because it is run on the main thread, which can't succeed. This can happen if the app crashed the last run and Crashlytics is uploading urgently.
 
 Project folder structure:
 
@@ -26,7 +54,7 @@ Project folder structure:
 │   │   │   ├── fitness_profile_provider.dart
 │   │   │   └── user_provider.dart
 │   │   ├── screens
-│   │   │   ├── edit_profile_screen.dartR
+│   │   │   ├── edit_profile_screen.dart
 │   │   │   ├── login_screen.dart
 │   │   │   ├── onboarding_screen.dart
 │   │   │   └── signup_screen.dart
@@ -164,7 +192,8 @@ Project folder structure:
     ├── 02_design_system.md
     ├── 03_technical_architecture.md
     ├── 04_firebase_architecture.md
-    ├── 05_ai_integration.md
+    ├── 05a_ai_integration.md
+    ├── 05b_ai_integration.md
     ├── 06a_auth_system.md
     ├── 06b_food_scanning.md
     ├── 06c_workouts.md
@@ -176,7 +205,8 @@ Project folder structure:
     ├── 08b_gdpr_dpia.md
     ├── 08c_gdpr_testing_plan.md
     ├── 09_implementation_plan.md
-    ├── 10_early_feedback.md
+    ├── 10a_early_feedback.md
+    ├── 10b_advanced_feedback.md
     ├── 11_gamification.md
     └── 12_accessibility.md
 
