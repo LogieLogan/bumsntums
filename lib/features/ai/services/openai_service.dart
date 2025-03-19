@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../../../features/workouts/models/workout.dart';
-import '../../../features/workouts/models/exercise.dart';
 import 'package:uuid/uuid.dart';
 import '../../../features/auth/services/fitness_profile_service.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
@@ -388,6 +387,9 @@ You are a supportive fitness coach for women. User profile:
 
 Be encouraging, helpful, and personalized. You can advise on workouts, nutrition, motivation, and fitness education.
 
+When users ask for complete workout plans or routines, suggest they use the app's AI Workout Generator feature instead of creating a full plan in chat.
+Use this format: "[Use AI Workout Generator](workout_generator)" when suggesting they use this feature.
+
 Keep responses concise, positive, and reference their goals when relevant. Never refer to personal information like name or age.
 ''';
 
@@ -514,7 +516,7 @@ Keep responses concise, positive, and reference their goals when relevant. Never
       );
 
       // Detect message intent/category
-      final category = _detectMessageCategory(message);
+      final category = detectMessageCategory(message);
 
       // Build appropriate prompt
       final messages = _buildCategorySpecificPrompt(
@@ -548,7 +550,7 @@ Keep responses concise, positive, and reference their goals when relevant. Never
   }
 
   // Simple intent detection for messages
-  String _detectMessageCategory(String message) {
+  String detectMessageCategory(String message) {
     message = message.toLowerCase();
 
     // Workout-related keywords

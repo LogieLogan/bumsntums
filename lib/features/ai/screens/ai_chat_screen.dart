@@ -1,5 +1,7 @@
 // lib/features/ai/screens/ai_chat_screen.dart
+import 'package:bums_n_tums/features/ai/screens/ai_workout_screen.dart';
 import 'package:bums_n_tums/shared/providers/environment_provider.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/theme/color_palette.dart';
@@ -19,10 +21,25 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   final ScrollController _scrollController = ScrollController();
 
   @override
+  void initState() {
+    super.initState();
+    _loadConversationHistory();
+  }
+
+  @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadConversationHistory() async {
+    final userProfile = await ref.read(userProfileProvider.future);
+    if (userProfile != null) {
+      await ref
+          .read(aiChatProvider.notifier)
+          .loadConversation(userProfile.userId);
+    }
   }
 
   void _scrollToBottom() {
@@ -216,7 +233,37 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
                 itemCount: chatState.messages.length,
                 itemBuilder: (context, index) {
                   final message = chatState.messages[index];
-                  return _ChatMessageWidget(message: message);
+                  return _ChatMessageWidget(
+                    message: message,
+                    onFeedback:
+                        !message.isUserMessage
+                            ? (isPositive) async {
+                              final userProfile = await ref.read(
+                                userProfileProvider.future,
+                              );
+                              if (userProfile != null) {
+                                await ref
+                                    .read(aiChatProvider.notifier)
+                                    .provideMessageFeedback(
+                                      userId: userProfile.userId,
+                                      messageId: message.id,
+                                      isPositive: isPositive,
+                                    );
+                              }
+                            }
+                            : null,
+                    onActionLink: (action) {
+                      // Handle special links/actions
+                      if (action == 'workout_generator') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const AIWorkoutScreen(),
+                          ),
+                        );
+                      }
+                      // Add other action handlers as needed
+                    },
+                  );
                 },
               ),
             ),
@@ -332,11 +379,39 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
 
 class _ChatMessageWidget extends StatelessWidget {
   final ChatMessage message;
+  final Function(bool isPositive)? onFeedback;
+  final Function(String action)? onActionLink;
 
-  const _ChatMessageWidget({required this.message});
+  const _ChatMessageWidget({
+    required this.message,
+    this.onFeedback,
+    this.onActionLink,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Process content to detect and extract action links
+    String displayContent = message.content;
+    Map<String, String> actionLinks = {};
+
+    // Look for pattern [Text](action_name)
+    final linkPattern = RegExp(r'\[(.*?)\]\((.*?)\)');
+    final matches = linkPattern.allMatches(message.content);
+
+    for (final match in matches) {
+      if (match.groupCount >= 2) {
+        final linkText = match.group(1)!;
+        final action = match.group(2)!;
+        final placeholder = '---ACTION_LINK_${actionLinks.length}---';
+
+        actionLinks[placeholder] = action;
+        displayContent = displayContent.replaceFirst(
+          match.group(0)!,
+          placeholder,
+        );
+      }
+    }
+
     return Align(
       alignment:
           message.isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
@@ -356,13 +431,124 @@ class _ChatMessageWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(message.content, style: AppTextStyles.body),
+            // Build rich text with action links
+            _buildRichText(context, displayContent, actionLinks),
             const SizedBox(height: 4),
-            Text(_formatTime(message.timestamp), style: AppTextStyles.caption),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _formatTime(message.timestamp),
+                  style: AppTextStyles.caption,
+                ),
+
+                // Only show feedback options for AI messages
+                if (!message.isUserMessage && onFeedback != null) ...[
+                  const Spacer(),
+                  // Thumbs up button
+                  IconButton(
+                    icon: Icon(
+                      Icons.thumb_up,
+                      size: 16,
+                      color:
+                          message.isPositiveFeedback
+                              ? AppColors.popGreen
+                              : AppColors.lightGrey,
+                    ),
+                    onPressed: () => onFeedback!(true),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 24,
+                      minHeight: 24,
+                    ),
+                  ),
+                  // Thumbs down button
+                  IconButton(
+                    icon: Icon(
+                      Icons.thumb_down,
+                      size: 16,
+                      color:
+                          message.isNegativeFeedback
+                              ? AppColors.error
+                              : AppColors.lightGrey,
+                    ),
+                    onPressed: () => onFeedback!(false),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 24,
+                      minHeight: 24,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildRichText(
+    BuildContext context,
+    String content,
+    Map<String, String> actionLinks,
+  ) {
+    if (actionLinks.isEmpty) {
+      return Text(content, style: AppTextStyles.body);
+    }
+
+    List<TextSpan> spans = [];
+    List<String> parts = content.split(RegExp(r'---ACTION_LINK_\d+---'));
+
+    int i = 0;
+    for (var part in parts) {
+      // Add normal text
+      if (part.isNotEmpty) {
+        spans.add(TextSpan(text: part));
+      }
+
+      // Add action link if there is one
+      if (i < parts.length - 1) {
+        String placeholder = '---ACTION_LINK_$i---';
+        String? action = actionLinks[placeholder];
+
+        if (action != null) {
+          String linkText = '';
+
+          // Extract the original link text from the content
+          final match = RegExp(
+            r'\[(.*?)\]\(' + action + r'\)',
+          ).firstMatch(message.content);
+          if (match != null && match.groupCount >= 1) {
+            linkText = match.group(1)!;
+          } else {
+            linkText = 'Take Action';
+          }
+
+          spans.add(
+            TextSpan(
+              text: linkText,
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.salmon,
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
+              ),
+              recognizer:
+                  TapGestureRecognizer()
+                    ..onTap = () {
+                      if (onActionLink != null) {
+                        onActionLink!(action);
+                      }
+                    },
+            ),
+          );
+        }
+      }
+
+      i++;
+    }
+
+    return RichText(text: TextSpan(style: AppTextStyles.body, children: spans));
   }
 
   String _formatTime(DateTime timestamp) {
