@@ -2,8 +2,7 @@ Using the Project Knowledge as your core persona and instructions please help me
 
 Area of focus:
 Phase 2 - AI implementation
-review which data is being used (it is meant to use the fitness profile only with no PII data)
-complete AI implementation
+
 
 Project folder structure:
 
@@ -24,14 +23,16 @@ Project folder structure:
 │   │   │   └── user_profile.dart
 │   │   ├── providers
 │   │   │   ├── auth_provider.dart
+│   │   │   ├── fitness_profile_provider.dart
 │   │   │   └── user_provider.dart
 │   │   ├── screens
-│   │   │   ├── edit_profile_screen.dart
+│   │   │   ├── edit_profile_screen.dartR
 │   │   │   ├── login_screen.dart
 │   │   │   ├── onboarding_screen.dart
 │   │   │   └── signup_screen.dart
 │   │   ├── services
 │   │   │   ├── firebase_auth_service.dart
+│   │   │   ├── fitness_profile_service.dart
 │   │   │   └── google_sign_in_service.dart
 │   │   └── widgets
 │   │       ├── apple_sign_in_button.dart
