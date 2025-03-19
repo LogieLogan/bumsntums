@@ -17,6 +17,8 @@ class OpenAIService {
       'gpt-3.5-turbo'; // Using smaller model for cost efficiency
   final FitnessProfileService _fitnessProfileService;
   final AnalyticsService _analytics = AnalyticsService();
+  final bool isReady;
+  final Object? initError;
 
   // Rate limiting parameters
   static const int _maxRequestsPerMinute = 10;
@@ -34,9 +36,33 @@ class OpenAIService {
   OpenAIService({
     required String apiKey,
     required FitnessProfileService fitnessProfileService,
+    this.isReady = true,
+    this.initError,
   }) : _apiKey = apiKey,
        _fitnessProfileService = fitnessProfileService;
 
+  // Add these factory constructors right after the main constructor
+  factory OpenAIService.placeholder(
+    FitnessProfileService fitnessProfileService,
+  ) {
+    return OpenAIService(
+      apiKey: 'placeholder',
+      fitnessProfileService: fitnessProfileService,
+      isReady: false,
+    );
+  }
+
+  factory OpenAIService.error(
+    Object error,
+    FitnessProfileService fitnessProfileService,
+  ) {
+    return OpenAIService(
+      apiKey: 'error',
+      fitnessProfileService: fitnessProfileService,
+      isReady: false,
+      initError: error,
+    );
+  }
   // Check if user has exceeded rate limits
   bool _isRateLimited(String userId) {
     final now = DateTime.now();
@@ -509,6 +535,12 @@ Keep responses concise, positive, and reference their goals when relevant. Never
     required String message,
     List<Map<String, String>>? previousMessages,
   }) async {
+    if (!isReady) {
+      if (initError != null) {
+        return "Sorry, there was an error initializing the AI service: $initError";
+      }
+      return "AI service is still initializing. Please try again in a moment.";
+    }
     try {
       // Fetch fitness profile data
       final profileData = await _fitnessProfileService.getFitnessProfileForAI(

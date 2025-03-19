@@ -1,4 +1,4 @@
-// lib/shared/providers/environment_provider.dart
+// lib/shared/providers/environment_provider.dart - UPDATED
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/environment_service.dart';
 
@@ -9,10 +9,13 @@ final environmentServiceInitProvider = FutureProvider<EnvironmentService>((ref) 
 });
 
 final environmentServiceProvider = Provider<EnvironmentService>((ref) {
-  final initState = ref.watch(environmentServiceInitProvider);
-  return initState.when(
+  final asyncValue = ref.watch(environmentServiceInitProvider);
+  
+  return asyncValue.maybeWhen(
     data: (service) => service,
-    loading: () => throw NotInitializedError('Environment service is still initializing'),
-    error: (error, _) => throw error,
+    orElse: () {
+      final tempService = EnvironmentService();
+      return tempService;
+    },
   );
 });

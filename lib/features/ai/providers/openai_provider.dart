@@ -5,11 +5,18 @@ import '../../../shared/providers/environment_provider.dart';
 import '../../../features/auth/providers/fitness_profile_provider.dart';
 
 final openAIServiceProvider = Provider<OpenAIService>((ref) {
-  final environmentService = ref.watch(environmentServiceProvider);
+  final environmentServiceAsync = ref.watch(environmentServiceInitProvider);
   final fitnessProfileService = ref.watch(fitnessProfileServiceProvider);
-  final apiKey = environmentService.openAIApiKey;
-  return OpenAIService(
-    apiKey: apiKey,
-    fitnessProfileService: fitnessProfileService,
+  
+  return environmentServiceAsync.when(
+    data: (environmentService) {
+      final apiKey = environmentService.openAIApiKey;
+      return OpenAIService(
+        apiKey: apiKey,
+        fitnessProfileService: fitnessProfileService,
+      );
+    },
+    loading: () => OpenAIService.placeholder(fitnessProfileService),
+    error: (error, stackTrace) => OpenAIService.error(error, fitnessProfileService),
   );
 });

@@ -82,16 +82,29 @@ class AIChatState {
 }
 
 // AI Chat Notifier
+// AI Chat Notifier
 class AIChatNotifier extends StateNotifier<AIChatState> {
   final OpenAIService _openAIService;
   final FirebaseFirestore _firestore;
   final AnalyticsService _analytics;
 
+  // Track disposal state
+  bool _isDisposed = false;
+  bool get mounted => !_isDisposed;
+
   AIChatNotifier(this._openAIService, this._firestore, this._analytics)
     : super(AIChatState());
 
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
   // Load conversation history from Firestore
   Future<void> loadConversation(String userId) async {
+    if (_isDisposed) return;
+
     try {
       state = state.copyWith(isLoading: true, error: null);
 
@@ -104,6 +117,8 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
               .limit(50) // Reasonable limit for chat history
               .get();
 
+      if (_isDisposed) return; // Check again after the async operation
+
       if (snapshot.docs.isNotEmpty) {
         final messages =
             snapshot.docs
@@ -115,7 +130,15 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
         state = state.copyWith(isLoading: false);
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      if (!_isDisposed) {
+        state = state.copyWith(isLoading: false, error: e.toString());
+      }
+
+      // Log error even if disposed since this is a backend operation
+      _analytics.logError(
+        error: e.toString(),
+        parameters: {'context': 'loadConversation', 'userId': userId},
+      );
     }
   }
 
@@ -143,6 +166,8 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
     required String messageId,
     required bool isPositive,
   }) async {
+    if (_isDisposed) return;
+
     try {
       // Find the message in state
       final index = state.messages.indexWhere((msg) => msg.id == messageId);
@@ -161,11 +186,12 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
         isNegativeFeedback: !isPositive,
       );
 
-      // Update state
-      final updatedMessages = List<ChatMessage>.from(state.messages);
-      updatedMessages[index] = updatedMessage;
-
-      state = state.copyWith(messages: updatedMessages);
+      // Update state if not disposed
+      if (!_isDisposed) {
+        final updatedMessages = List<ChatMessage>.from(state.messages);
+        updatedMessages[index] = updatedMessage;
+        state = state.copyWith(messages: updatedMessages);
+      }
 
       // Update in Firestore
       await _firestore
@@ -203,6 +229,8 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
     required String userId,
     required String message,
   }) async {
+    if (_isDisposed) return;
+
     try {
       // Add user message to state
       final userMessage = ChatMessage(
@@ -212,11 +240,13 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
         timestamp: DateTime.now(),
       );
 
-      state = state.copyWith(
-        messages: [...state.messages, userMessage],
-        isLoading: true,
-        error: null,
-      );
+      if (!_isDisposed) {
+        state = state.copyWith(
+          messages: [...state.messages, userMessage],
+          isLoading: true,
+          error: null,
+        );
+      }
 
       // Save user message to Firestore
       await _saveMessage(userId, userMessage);
@@ -241,6 +271,8 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
         previousMessages: previousMessages,
       );
 
+      if (_isDisposed) return; // Check again after the async AI request
+
       // Detect the category of the response for metrics
       final category = _openAIService.detectMessageCategory(message);
 
@@ -253,10 +285,12 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
         category: category,
       );
 
-      state = state.copyWith(
-        messages: [...state.messages, aiMessage],
-        isLoading: false,
-      );
+      if (!_isDisposed) {
+        state = state.copyWith(
+          messages: [...state.messages, aiMessage],
+          isLoading: false,
+        );
+      }
 
       // Save AI message to Firestore
       await _saveMessage(userId, aiMessage);
@@ -271,7 +305,9 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
         },
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      if (!_isDisposed) {
+        state = state.copyWith(isLoading: false, error: e.toString());
+      }
 
       // Track error for analytics
       _analytics.logError(
@@ -282,12 +318,16 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
   }
 
   void clearChat() {
-    state = AIChatState();
+    if (!_isDisposed) {
+      state = AIChatState();
+    }
   }
 }
 
 // Provider for AI Chat
-final aiChatProvider = StateNotifierProvider<AIChatNotifier, AIChatState>((ref) {
+final aiChatProvider = StateNotifierProvider<AIChatNotifier, AIChatState>((
+  ref,
+) {
   final openAIService = ref.watch(openAIServiceProvider);
   final firestore = FirebaseFirestore.instance;
   final analytics = AnalyticsService();

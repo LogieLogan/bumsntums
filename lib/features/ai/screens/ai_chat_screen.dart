@@ -34,7 +34,11 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   }
 
   Future<void> _loadConversationHistory() async {
+    if (!mounted) return; // Check if widget is still mounted
+
     final userProfile = await ref.read(userProfileProvider.future);
+    if (!mounted) return; // Check again after the await
+
     if (userProfile != null) {
       await ref
           .read(aiChatProvider.notifier)
