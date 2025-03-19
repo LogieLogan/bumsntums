@@ -1,6 +1,5 @@
 // lib/features/ai/providers/workout_recommendation_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../features/auth/models/user_profile.dart';
 import '../../../features/workouts/models/workout.dart';
 import 'openai_provider.dart';
 import '../services/openai_service.dart';
@@ -31,14 +30,15 @@ class WorkoutRecommendationState {
 }
 
 // Notifier for workout recommendation
-class WorkoutRecommendationNotifier extends StateNotifier<WorkoutRecommendationState> {
+class WorkoutRecommendationNotifier
+    extends StateNotifier<WorkoutRecommendationState> {
   final OpenAIService _openAIService;
 
   WorkoutRecommendationNotifier(this._openAIService)
-      : super(WorkoutRecommendationState());
+    : super(WorkoutRecommendationState());
 
   Future<void> generateWorkout({
-    required UserProfile userProfile,
+    required String userId,
     String? specificRequest,
     WorkoutCategory? category,
     int? maxMinutes,
@@ -47,21 +47,15 @@ class WorkoutRecommendationNotifier extends StateNotifier<WorkoutRecommendationS
       state = state.copyWith(isLoading: true, error: null);
 
       final workoutData = await _openAIService.generateWorkoutRecommendation(
-        userProfile: userProfile,
+        userId: userId,
         specificRequest: specificRequest,
         category: category,
         maxMinutes: maxMinutes,
       );
 
-      state = state.copyWith(
-        isLoading: false,
-        workoutData: workoutData,
-      );
+      state = state.copyWith(isLoading: false, workoutData: workoutData);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -71,7 +65,10 @@ class WorkoutRecommendationNotifier extends StateNotifier<WorkoutRecommendationS
 }
 
 // Provider for workout recommendation
-final workoutRecommendationProvider = StateNotifierProvider<WorkoutRecommendationNotifier, WorkoutRecommendationState>((ref) {
+final workoutRecommendationProvider = StateNotifierProvider<
+  WorkoutRecommendationNotifier,
+  WorkoutRecommendationState
+>((ref) {
   final openAIService = ref.watch(openAIServiceProvider);
   return WorkoutRecommendationNotifier(openAIService);
 });

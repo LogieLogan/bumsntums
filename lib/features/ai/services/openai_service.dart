@@ -4,34 +4,45 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../../../features/auth/models/user_profile.dart';
 import '../../../features/workouts/models/workout.dart';
-import '../../../features/workouts/models/exercise.dart';
+import '../../../features/auth/services/fitness_profile_service.dart';
+import '../../../shared/analytics/firebase_analytics_service.dart';
 import 'package:uuid/uuid.dart';
 
 class OpenAIService {
   final String _apiKey;
   final String _baseUrl = 'https://api.openai.com/v1/chat/completions';
-  final String _model = 'gpt-3.5-turbo'; // Using smaller model for cost efficiency
-  
-  OpenAIService({required String apiKey}) : _apiKey = apiKey;
-  
+  final String _model =
+      'gpt-3.5-turbo'; // Using smaller model for cost efficiency
+  final FitnessProfileService _fitnessProfileService;
+  final AnalyticsService _analytics = AnalyticsService();
+
+  OpenAIService({
+    required String apiKey,
+    required FitnessProfileService fitnessProfileService,
+  }) : _apiKey = apiKey,
+       _fitnessProfileService = fitnessProfileService;
+
+  // Modified method signature to use userId instead of UserProfile
   Future<Map<String, dynamic>> generateWorkoutRecommendation({
-    required UserProfile userProfile,
+    required String userId,
     String? specificRequest,
     WorkoutCategory? category,
     int? maxMinutes,
   }) async {
     try {
-      // Create anonymized profile for AI input
-      final anonymizedProfile = _createAnonymizedProfile(userProfile);
-      
+      // Fetch fitness profile data from Firestore
+      final profileData = await _fitnessProfileService.getFitnessProfileForAI(
+        userId,
+      );
+
       // Construct the workout generation prompt
       final messages = _buildWorkoutPrompt(
-        anonymizedProfile: anonymizedProfile,
+        profileData: profileData,
         specificRequest: specificRequest,
         category: category,
         maxMinutes: maxMinutes,
       );
-      
+
       // Make API request
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -46,10 +57,21 @@ class OpenAIService {
           'max_tokens': 1000,
         }),
       );
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
+
+        _analytics.logEvent(
+          name: 'ai_workout_generated',
+          parameters: {
+            'user_id': userId,
+            'category': category?.name ?? 'fullBody',
+            'max_minutes': maxMinutes?.toString() ?? 'default',
+            'token_count':
+                data['usage']['total_tokens']?.toString() ?? 'unknown',
+          },
+        );
+
         // Parse AI response into structured workout
         return _parseWorkoutResponse(data['choices'][0]['message']['content']);
       } else {
@@ -60,23 +82,9 @@ class OpenAIService {
       rethrow;
     }
   }
-  
-  Map<String, dynamic> _createAnonymizedProfile(UserProfile profile) {
-    // Only include non-PII data relevant for workout recommendations
-    return {
-      'fitnessLevel': profile.fitnessLevel.name,
-      'goals': profile.goals.map((g) => g.name).toList(),
-      'bodyFocusAreas': profile.bodyFocusAreas,
-      'availableEquipment': profile.availableEquipment,
-      'preferredLocation': profile.preferredLocation?.name,
-      'workoutDurationMinutes': profile.workoutDurationMinutes,
-      'weeklyWorkoutDays': profile.weeklyWorkoutDays,
-      'healthConditions': profile.healthConditions,
-    };
-  }
-  
+
   List<Map<String, String>> _buildWorkoutPrompt({
-    required Map<String, dynamic> anonymizedProfile,
+    required Map<String, dynamic> profileData,
     String? specificRequest,
     WorkoutCategory? category,
     int? maxMinutes,
@@ -86,13 +94,13 @@ class OpenAIService {
     You are a professional fitness trainer specialized in creating personalized workouts for women focusing on weight loss and toning. 
     
     Create a structured workout plan based on the user's profile:
-    - Fitness level: ${anonymizedProfile['fitnessLevel']}
-    - Goals: ${anonymizedProfile['goals'].join(', ')}
-    - Focus areas: ${anonymizedProfile['bodyFocusAreas'].join(', ')}
-    - Available equipment: ${anonymizedProfile['availableEquipment'].isEmpty ? 'None' : anonymizedProfile['availableEquipment'].join(', ')}
-    - Preferred location: ${anonymizedProfile['preferredLocation'] ?? 'Anywhere'}
-    - Duration preference: ${maxMinutes ?? anonymizedProfile['workoutDurationMinutes'] ?? 30} minutes
-    - Health considerations: ${anonymizedProfile['healthConditions'].isEmpty ? 'None' : anonymizedProfile['healthConditions'].join(', ')}
+    - Fitness level: ${profileData['fitnessLevel']}
+    - Goals: ${(profileData['goals'] as List<dynamic>?)?.join(', ') ?? 'General fitness'}
+    - Focus areas: ${(profileData['bodyFocusAreas'] as List<dynamic>?)?.join(', ') ?? 'Full body'}
+    - Available equipment: ${(profileData['availableEquipment'] as List<dynamic>?)?.isEmpty == true ? 'None' : (profileData['availableEquipment'] as List<dynamic>?)?.join(', ')}
+    - Preferred location: ${profileData['preferredLocation'] ?? 'Anywhere'}
+    - Duration preference: ${maxMinutes ?? profileData['workoutDurationMinutes'] ?? 30} minutes
+    - Health considerations: ${(profileData['healthConditions'] as List<dynamic>?)?.isEmpty == true ? 'None' : (profileData['healthConditions'] as List<dynamic>?)?.join(', ')}
     
     Generate a ${category?.name ?? "full body"} workout with the following JSON structure:
     {
@@ -123,58 +131,60 @@ class OpenAIService {
     4. Follow proper exercise progression
     5. Include appropriate warm-up and cool-down
     6. Ensure proper rest periods between exercises
-    7. Total workout time must not exceed ${maxMinutes ?? anonymizedProfile['workoutDurationMinutes'] ?? 30} minutes
+    7. Total workout time must not exceed ${maxMinutes ?? profileData['workoutDurationMinutes'] ?? 30} minutes
     8. Respond ONLY with valid JSON
     ''';
-    
+
     // User request with specific customization
-    final userMessage = specificRequest ?? 'Create a workout plan for me based on my profile.';
-    
+    final userMessage =
+        specificRequest ?? 'Create a workout plan for me based on my profile.';
+
     return [
       {'role': 'system', 'content': systemMessage},
       {'role': 'user', 'content': userMessage},
     ];
   }
-  
+
   Map<String, dynamic> _parseWorkoutResponse(String response) {
     try {
       // Extract JSON from the response
       final jsonStart = response.indexOf('{');
       final jsonEnd = response.lastIndexOf('}') + 1;
       final jsonStr = response.substring(jsonStart, jsonEnd);
-      
+
       final Map<String, dynamic> workoutData = jsonDecode(jsonStr);
-      
+
       // Add additional metadata
       workoutData['id'] = const Uuid().v4();
       workoutData['isAiGenerated'] = true;
       workoutData['createdAt'] = DateTime.now().toIso8601String();
       workoutData['createdBy'] = 'ai';
-      
+
       return workoutData;
     } catch (e) {
       debugPrint('Error parsing workout response: $e');
       throw Exception('Failed to parse AI response into workout format');
     }
   }
-  
-  // Method for chat-based AI interactions
+
   Future<String> chat({
-    required UserProfile userProfile,
+    required String userId,
     required String message,
     List<Map<String, String>>? previousMessages,
   }) async {
     try {
-      // Create anonymized profile for AI input
-      final anonymizedProfile = _createAnonymizedProfile(userProfile);
-      
+      // Fetch fitness profile data from Firestore
+      final profileData = await _fitnessProfileService.getFitnessProfileForAI(
+        userId,
+      );
+
       // Build conversation history
       final messages = _buildChatPrompt(
-        anonymizedProfile: anonymizedProfile,
+        profileData: profileData,
         userMessage: message,
         previousMessages: previousMessages,
       );
-      
+
       // Make API request
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -189,9 +199,19 @@ class OpenAIService {
           'max_tokens': 500,
         }),
       );
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+
+        _analytics.logEvent(
+          name: 'ai_chat_message',
+          parameters: {
+            'user_id': userId,
+            'message_length': message.length.toString(),
+            'token_count':
+                data['usage']['total_tokens']?.toString() ?? 'unknown',
+          },
+        );
         return data['choices'][0]['message']['content'];
       } else {
         throw Exception('Failed to chat with AI: ${response.body}');
@@ -201,9 +221,9 @@ class OpenAIService {
       rethrow;
     }
   }
-  
+
   List<Map<String, String>> _buildChatPrompt({
-    required Map<String, dynamic> anonymizedProfile,
+    required Map<String, dynamic> profileData,
     required String userMessage,
     List<Map<String, String>>? previousMessages,
   }) {
@@ -212,9 +232,9 @@ class OpenAIService {
     You are a friendly, supportive fitness coach specializing in helping women achieve their fitness goals through tailored workout plans and nutrition advice.
     
     USER PROFILE:
-    - Fitness level: ${anonymizedProfile['fitnessLevel']}
-    - Goals: ${anonymizedProfile['goals'].join(', ')}
-    - Focus areas: ${anonymizedProfile['bodyFocusAreas'].join(', ')}
+    - Fitness level: ${profileData['fitnessLevel']}
+    - Goals: ${(profileData['goals'] as List<dynamic>?)?.join(', ') ?? 'General fitness'}
+    - Focus areas: ${(profileData['bodyFocusAreas'] as List<dynamic>?)?.isEmpty == true ? 'Full body' : (profileData['bodyFocusAreas'] as List<dynamic>?)?.join(', ')}
     
     Your responses should be encouraging, informative, and tailored to the user's specific profile. Keep your tone conversational, friendly, and supportive. Avoid generic advice and personalize your responses.
     
@@ -231,19 +251,19 @@ class OpenAIService {
     - When giving advice, explain the benefits or reasoning
     - Never refer to the user's personal information (name, age, etc.)
     ''';
-    
+
     List<Map<String, String>> messages = [
       {'role': 'system', 'content': systemMessage},
     ];
-    
+
     // Add previous conversation history if available
     if (previousMessages != null && previousMessages.isNotEmpty) {
       messages.addAll(previousMessages);
     }
-    
+
     // Add current user message
     messages.add({'role': 'user', 'content': userMessage});
-    
+
     return messages;
   }
 }

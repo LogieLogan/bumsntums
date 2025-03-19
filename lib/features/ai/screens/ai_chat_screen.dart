@@ -51,10 +51,10 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
 
     _messageController.clear();
 
-    // Send message
+    // Send message with userId instead of userProfile
     await ref
         .read(aiChatProvider.notifier)
-        .sendMessage(userProfile: userProfile, message: message);
+        .sendMessage(userId: userProfile.userId, message: message);
 
     _scrollToBottom();
   }

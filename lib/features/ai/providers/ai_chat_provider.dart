@@ -1,6 +1,5 @@
 // lib/features/ai/providers/ai_chat_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../features/auth/models/user_profile.dart';
 import 'openai_provider.dart';
 import '../services/openai_service.dart';
 
@@ -19,10 +18,7 @@ class ChatMessage {
   });
 
   Map<String, String> toAPIFormat() {
-    return {
-      'role': isUserMessage ? 'user' : 'assistant',
-      'content': content,
-    };
+    return {'role': isUserMessage ? 'user' : 'assistant', 'content': content};
   }
 }
 
@@ -32,11 +28,7 @@ class AIChatState {
   final bool isLoading;
   final String? error;
 
-  AIChatState({
-    this.messages = const [],
-    this.isLoading = false,
-    this.error,
-  });
+  AIChatState({this.messages = const [], this.isLoading = false, this.error});
 
   AIChatState copyWith({
     List<ChatMessage>? messages,
@@ -58,7 +50,7 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
   AIChatNotifier(this._openAIService) : super(AIChatState());
 
   Future<void> sendMessage({
-    required UserProfile userProfile,
+    required String userId,
     required String message,
   }) async {
     try {
@@ -69,7 +61,7 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
         isUserMessage: true,
         timestamp: DateTime.now(),
       );
-      
+
       state = state.copyWith(
         messages: [...state.messages, userMessage],
         isLoading: true,
@@ -77,14 +69,15 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
       );
 
       // Prepare previous messages for context (limit to last 10 messages)
-      final previousMessages = state.messages
-          .take(state.messages.length > 10 ? 10 : state.messages.length)
-          .map((msg) => msg.toAPIFormat())
-          .toList();
+      final previousMessages =
+          state.messages
+              .take(state.messages.length > 10 ? 10 : state.messages.length)
+              .map((msg) => msg.toAPIFormat())
+              .toList();
 
       // Get AI response
       final response = await _openAIService.chat(
-        userProfile: userProfile,
+        userId: userId,
         message: message,
         previousMessages: previousMessages,
       );
@@ -96,16 +89,13 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
         isUserMessage: false,
         timestamp: DateTime.now(),
       );
-      
+
       state = state.copyWith(
         messages: [...state.messages, aiMessage],
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -115,7 +105,9 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
 }
 
 // Provider for AI Chat
-final aiChatProvider = StateNotifierProvider<AIChatNotifier, AIChatState>((ref) {
+final aiChatProvider = StateNotifierProvider<AIChatNotifier, AIChatState>((
+  ref,
+) {
   final openAIService = ref.watch(openAIServiceProvider);
   return AIChatNotifier(openAIService);
 });

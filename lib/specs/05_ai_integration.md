@@ -60,6 +60,49 @@ The AI model will use the following data points from the non-PII collection:
    - Set strict monthly usage caps to avoid unexpected costs
    - Consider pre-generating common workout recommendations
 
+# Additional Cost Optimization Considerations
+
+## Current Approach
+- Token limits are implemented for both chat and workout generation
+- System prompts are optimized for clarity while minimizing token usage
+- Response constraints are specified to guide the AI toward concise outputs
+
+## Future Enhancements for Cost Optimization
+
+### Caching Strategy Considerations
+While a full caching system isn't implemented in the initial phase, the following considerations have been documented for future implementation:
+
+**Challenges with Caching in Personalized AI:**
+- Most prompts contain personalized system information based on user profiles
+- Responses are tailored to individual fitness levels, goals, and constraints
+- Simple 1:1 caching would have limited effectiveness due to these personalizations
+
+**Potential Future Approaches:**
+- **Segmented Caching:** Cache by query + key profile attributes to create user segments
+- **Knowledge-Based Response Caching:** Implement selective caching for responses that are less dependent on personalization
+- **Pre-Generated Content:** For common workout types, pre-generate and cache responses for different user profiles
+
+### Current Optimization Techniques
+The following techniques are implemented to manage costs without a complex caching system:
+
+1. **Token Optimization:** 
+   - Carefully crafted prompts to use fewer tokens while maintaining quality
+   - Removal of unnecessary context from system prompts
+   - Structured output requirements to minimize verbosity
+
+2. **Response Limits:** 
+   - Strict max_tokens limits for different types of responses
+   - Different limits based on feature (chat vs. workout generation)
+
+3. **Rate Limiting:** 
+   - User-based quotas to prevent API abuse
+   - Cooling periods for rapid successive requests
+
+### Future Cost Analysis
+- Implement analytics to track token usage per feature
+- Establish usage patterns to identify optimization opportunities
+- Consider implementing more advanced caching based on actual usage data
+
 5. **Workout-Specific Prompting Strategy:**
    - Templates for generating personalized workouts
    - Example prompt: "Create a [duration] minute [difficulty] workout focusing on [bodyFocusAreas] for a user with [equipment] equipment. The user's fitness level is [fitnessLevel] and their goals include [goals]."

@@ -45,10 +45,11 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
             ? _customRequestController.text.trim()
             : null;
 
+    // Use userId instead of userProfile
     await ref
         .read(workoutRecommendationProvider.notifier)
         .generateWorkout(
-          userProfile: userProfile,
+          userId: userProfile.userId,
           category: _selectedCategory,
           maxMinutes: _selectedDuration,
           specificRequest: customRequest,

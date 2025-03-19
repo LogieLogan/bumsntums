@@ -1,10 +1,9 @@
 Using the Project Knowledge as your core persona and instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Area of focus:
-Phase 2
-getting an error when trying to load open ai api key into chat function
-flutter: Error accessing environment variables: Instance of 'NotInitializedError'
-
+Phase 2 - AI implementation
+review which data is being used (it is meant to use the fitness profile only with no PII data)
+complete AI implementation
 
 Project folder structure:
 
@@ -134,6 +133,7 @@ Project folder structure:
 │   │   └── navigation.dart
 │   ├── providers
 │   │   ├── analytics_provider.dart
+│   │   ├── environment_provider.dart
 │   │   ├── feedback_provider.dart
 │   │   └── firebase_providers.dart
 │   ├── repositories
@@ -179,4 +179,4 @@ Project folder structure:
     ├── 11_gamification.md
     └── 12_accessibility.md
 
-Do you understand what we are trying to achieve?
+Which of these files do you want to review? 
