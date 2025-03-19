@@ -229,7 +229,30 @@ The Advanced Feedback System collects, processes, and utilizes detailed user fee
 
 ## 5. AI Integration
 
-### 5.1 Feedback-Enhanced Prompts
+### 5.1 Integration with Prompting Strategy
+
+The Advanced Feedback System integrates directly with the Layered Prompting Architecture, primarily by defining and populating the Feedback Layer of each prompt. This integration follows a systematic approach:
+
+#### 5.1.1 Feedback Layer Generation
+
+For each AI interaction, the system will:
+
+1. **Retrieve User Feedback Profile**:
+   - Load the `/user_feedback_profile/{userId}` document
+   - Extract personalization parameters and preferences
+   - Calculate current difficulty calibration factor
+
+2. **Generate Feedback Layer Content**:
+   - Structured format optimized for token efficiency
+   - Prioritized by impact on current interaction type
+   - Filtered to include only relevant feedback data
+
+3. **Inject into Prompt Construction Pipeline**:
+   - Positioned between Base Layer (profile) and Context Layer (conversation)
+   - Formatted consistently with other prompt layers
+   - Token usage monitored and optimized
+
+#### 5.1.2 Feedback-Enhanced Prompts
 
 Feedback data will enhance AI prompts in several ways:
 
@@ -260,6 +283,30 @@ Feedback data will enhance AI prompts in several ways:
    - Provide detailed form guidance for {lowConfidenceExercises}
    - Suggest appropriate modifications for {painPointExercises}
    ```
+
+#### 5.1.3 Prompt Template Evolution
+
+The feedback system will drive evolution of prompt templates:
+
+1. **Template Performance Tracking**:
+   - Each prompt template version is tracked with unique identifier
+   - Success metrics (user satisfaction, completion rates) linked to templates
+   - A/B testing of template variations with feedback as success metric
+
+2. **Automated Template Updates**:
+   - Weekly analysis of template performance
+   - Identification of high-performing phrases and structures
+   - Automated suggestions for template improvements
+
+3. **Template Versioning System**:
+   - Templates stored in Firestore with version history
+   - Gradual rollout of template changes
+   - Ability to rollback problematic templates
+
+4. **Feedback-Specific Template Segments**:
+   - Library of template segments for different feedback scenarios
+   - Dynamic selection based on user feedback profile
+   - Continuous optimization based on performance
 
 ### 5.2 Feedback-Driven AI Learning Loop
 
