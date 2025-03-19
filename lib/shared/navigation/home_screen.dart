@@ -1,4 +1,5 @@
 // /shared/navigation/home_screen.dart
+import 'package:bums_n_tums/features/ai/screens/ai_workout_screen.dart';
 import 'package:bums_n_tums/features/auth/screens/edit_profile_screen.dart';
 import 'package:bums_n_tums/features/nutrition/screens/scanner_screen.dart';
 import 'package:bums_n_tums/features/settings/screens/gdpr_settings_screen.dart';
@@ -18,6 +19,7 @@ import '../../features/auth/models/user_profile.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../shared/components/feedback/feedback_button.dart';
+import '../../features/ai/screens/ai_chat_screen.dart';
 
 Future<String?> getDisplayName(String userId) async {
   try {
@@ -122,8 +124,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline),
-            onPressed: _signOut,
-          ), // This should be the AI chat function
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const AIChatScreen()),
+              );
+            },
+          ),
         ],
       ),
       body: userProfileAsync.when(
@@ -362,6 +368,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // AI Workout Creator button
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.salmon, AppColors.popCoral],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AIWorkoutScreen(),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.auto_awesome,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'AI Workout Creator',
+                              style: AppTextStyles.h3.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              'Generate a personalized workout just for you',
+                              style: AppTextStyles.small.copyWith(
+                                color: Colors.white.withOpacity(0.9),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],

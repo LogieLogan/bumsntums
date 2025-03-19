@@ -2,12 +2,24 @@ Using the Project Knowledge as your core persona and instructions please help me
 
 Area of focus:
 Phase 2
+getting an error when trying to load open ai api key into chat function
+flutter: Error accessing environment variables: Instance of 'NotInitializedError'
 
 
 Project folder structure:
 
 ├── app.dart
 ├── features
+│   ├── ai
+│   │   ├── providers
+│   │   │   ├── ai_chat_provider.dart
+│   │   │   ├── openai_provider.dart
+│   │   │   └── workout_recommendation_provider.dart
+│   │   ├── screens
+│   │   │   ├── ai_chat_screen.dart
+│   │   │   └── ai_workout_screen.dart
+│   │   └── services
+│   │       └── openai_service.dart
 │   ├── auth
 │   │   ├── models
 │   │   │   └── user_profile.dart
@@ -135,6 +147,7 @@ Project folder structure:
 │   ├── services
 │   │   ├── consent_management_service.dart
 │   │   ├── data_retention_service.dart
+│   │   ├── environment_service.dart
 │   │   ├── feedback_service.dart
 │   │   ├── firebase_service.dart
 │   │   ├── gdpr_service.dart
@@ -165,5 +178,5 @@ Project folder structure:
     ├── 10_early_feedback.md
     ├── 11_gamification.md
     └── 12_accessibility.md
-    
+
 Do you understand what we are trying to achieve?
