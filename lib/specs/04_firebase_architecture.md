@@ -128,36 +128,102 @@
   - isOfflineCreated: boolean
   - syncStatus: string (synced, pending)
 
+# Exercise Database
+/exercises/{exerciseId}
+  - id: string
+  - name: string
+  - description: string
+  - instructions: string
+  - imageUrl: string
+  - videoUrl: string (optional)
+  - targetAreas: array (bums, tums, arms, etc.)
+  - equipment: array (none, mat, dumbbells, etc.)
+  - difficultyLevel: string (beginner, intermediate, advanced)
+  - recommendedReps: number
+  - recommendedSets: number
+  - durationSeconds: number (for timed exercises)
+  - restBetweenSets: number (seconds)
+  - formTips: array (guidance for proper form)
+  - commonMistakes: array (things to avoid)
+  - createdAt: timestamp
+  - createdBy: string (admin, system)
+  - isActive: boolean
+  - tags: array
+
+/exercise_modifications/{exerciseId}/{modificationId}
+  - id: string
+  - exerciseId: string
+  - title: string
+  - description: string
+  - imageUrl: string (optional)
+  - videoUrl: string (optional)
+  - forAccessibilityNeeds: array
+  - difficultyAdjustment: string (easier, harder)
+  - equipmentAlternative: string (optional)
+  - createdAt: timestamp
+
+# Workout Collections
 /workouts/{workoutId}
+  - id: string
   - title: string
   - description: string
   - imageUrl: string
   - youtubeVideoId: string (optional)
   - category: string (bums, tums, full body, etc.)
   - difficulty: string (beginner, intermediate, advanced)
-  - duration: number (minutes)
-  - caloriesBurn: number (estimated)
+  - durationMinutes: number
+  - estimatedCaloriesBurn: number
   - featured: boolean
   - isAiGenerated: boolean
+  - isUserCreated: boolean
+  - originalWorkoutId: string (if this is a modification of another workout)
   - createdAt: timestamp
   - createdBy: string (admin, ai, userId)
+  - updatedAt: timestamp
+  - updatedBy: string (admin, ai, userId)
   - exercises: array [
       {
         id: string
+        exerciseId: string (reference to exercises collection)
         name: string
         description: string
         imageUrl: string
-        youtubeVideoId: string (optional)
+        videoUrl: string (optional)
         sets: number
         reps: number
         durationSeconds: number (optional, if timed)
         restBetweenSeconds: number
         targetArea: string (bums, tums, etc.)
+        order: number (position in workout)
+        modifications: array (of modification IDs)
       }
   ]
+  - warmup: array (optional warmup exercises)
+  - cooldown: array (optional cooldown exercises)
   - equipment: array (none, mat, dumbbells, etc.)
   - tags: array (quick, intense, recovery, etc.)
   - downloadsAvailable: boolean (for offline access)
+  - hasAccessibilityOptions: boolean
+  - intensityModifications: array (options to modify intensity)
+  - viewCount: number
+  - completionCount: number
+  - averageRating: number
+  - reviewCount: number
+
+# User Workout Interactions
+/user_workout_favorites/{userId}/{workoutId}
+  - addedAt: timestamp
+
+/user_workout_history/{userId}/{entryId}
+  - workoutId: string
+  - title: string (denormalized for offline access)
+  - category: string
+  - completedAt: timestamp
+  - startedAt: timestamp
+  - durationMinutes: number (actual time taken)
+  - caloriesBurned: number (estimated)
+  - difficulty: string
+  - isCompleted: boolean
 
 /workout_logs/{userId}/{logId}
   - workoutId: string
@@ -167,10 +233,13 @@
   - caloriesBurned: number (calculated)
   - exercisesCompleted: array [
       {
+        exerciseId: string
         exerciseName: string
         setsCompleted: number
         repsCompleted: number
-        difficulty: number (user rating 1-5)
+        weightUsed: number (optional)
+        difficultyRating: number (user rating 1-5)
+        notes: string (optional)
       }
   ]
   - userFeedback: {
@@ -178,11 +247,208 @@
       feltEasy: boolean
       feltTooHard: boolean
       comments: string
+      energyLevel: number (1-5)
+      muscleGroups: array (areas that felt worked)
+      wouldDoAgain: boolean
   }
+  - location: string (home, gym, etc.)
+  - timeOfDay: string (morning, afternoon, evening)
   - isShared: boolean
   - privacy: string (private, followers, public)
   - isOfflineCreated: boolean
   - syncStatus: string (synced, pending)
+  - analyticsData: {
+      totalActiveSeconds: number
+      totalRestSeconds: number
+      averageHeartRate: number (if available)
+      peakHeartRate: number (if available)
+      caloriesSource: string (estimated, device)
+  }
+
+# Custom Workouts
+/user_custom_workouts/{userId}/{workoutId}
+  - (Same fields as /workouts collection)
+  - isTemplate: boolean (if this is saved as a template)
+  - isPublic: boolean (if shared with community)
+  - parentWorkoutId: string (if based on existing workout)
+  - lastUsed: timestamp
+
+# Workout Planning & Scheduling
+/workout_plans/{userId}/{planId}
+  - name: string
+  - description: string
+  - startDate: timestamp
+  - endDate: timestamp (optional)
+  - createdAt: timestamp
+  - isActive: boolean
+  - goal: string
+  - scheduledWorkouts: array [
+      {
+        workoutId: string
+        title: string (denormalized)
+        scheduledDate: timestamp
+        isCompleted: boolean
+        completedAt: timestamp (optional)
+        isRecurring: boolean
+        recurrencePattern: string (daily, weekly, etc.)
+        recurrenceEndDate: timestamp (optional)
+        reminderTime: timestamp
+        reminderEnabled: boolean
+      }
+  ]
+
+/workout_reminders/{userId}/{reminderId}
+  - workoutId: string
+  - workoutTitle: string
+  - scheduledDate: timestamp
+  - reminderTime: timestamp
+  - message: string
+  - isRead: boolean
+  - isCustomMessage: boolean
+  - deliveryStatus: string (pending, sent, failed)
+
+# Workout Feedback & Analytics
+/workout_feedback/{feedbackId}
+  - userId: string (anonymized)
+  - workoutId: string
+  - isAiGenerated: boolean
+  - timestamp: timestamp
+  - completionPercentage: number (0-100)
+  
+  // Core feedback metrics (1-5 scale)
+  - difficultyRating: {
+      value: number (1=Too Easy, 3=Just Right, 5=Too Hard)
+      comment: string (optional)
+    }
+  - enjoymentRating: {
+      value: number (1-5)
+      comment: string (optional)
+    }
+  - personalizationRating: {
+      value: number (1-5)
+      comment: string (optional)
+    }
+  
+  // Workout-specific metrics
+  - intensityBySegment: {
+      warmup: number (1-5)
+      main: number (1-5)
+      cooldown: number (1-5)
+    }
+  - exerciseFeedback: [
+      {
+        exerciseId: string
+        name: string
+        difficultyRating: number (1-5)
+        enjoymentRating: number (1-5)
+        formConfidence: number (1-5)
+        comment: string (optional)
+      }
+    ]
+  
+  // Physical response metrics
+  - physicalResponse: {
+      sweatLevel: number (1-5)
+      muscleFailure: boolean
+      painPoints: array (e.g., ["knees", "lower back"])
+      energyAfter: number (1-5, 1=depleted, 5=energized)
+    }
+  
+  // Context information
+  - userContext: {
+      fitnessLevel: string
+      bodyFocusAreas: array
+      goals: array
+      equipmentUsed: array
+      location: string
+      timeOfDay: string
+    }
+  
+  // Follow-up intentions
+  - userIntentions: {
+      willRepeat: boolean
+      willModify: boolean
+      recommendationLikelihood: number (1-5)
+    }
+
+/workout_aggregate_feedback/{workoutId}
+  - id: string
+  - workoutId: string
+  - isAiGenerated: boolean
+  - feedbackCount: number
+  - averageRatings: {
+      difficulty: number
+      enjoyment: number
+      personalization: number
+      intensity: number
+    }
+  - difficultyDistribution: {
+      tooEasy: number (percentage)
+      justRight: number (percentage)
+      tooHard: number (percentage)
+    }
+  - completionRate: number (percentage)
+  - popularityScore: number
+  - targetAudience: {
+      fitnessLevels: array
+      primaryGoals: array
+      idealEquipment: array
+    }
+  - mostChallenging: array (exercise names)
+  - mostEnjoyed: array (exercise names)
+  - leastEnjoyed: array (exercise names)
+  - updatedAt: timestamp
+
+/exercise_feedback/{exerciseId}
+  - id: string
+  - exerciseName: string
+  - feedbackCount: number
+  - averageRatings: {
+      difficulty: number
+      enjoyment: number
+      formConfidence: number
+    }
+  - difficultyByFitnessLevel: {
+      beginner: number
+      intermediate: number 
+      advanced: number
+    }
+  - commonPainPoints: array
+  - substitutionPreferences: array
+  - updatedAt: timestamp
+
+# User Analytics
+/user_workout_analytics/{userId}
+  - totalWorkoutsCompleted: number
+  - totalWorkoutMinutes: number
+  - workoutsByCategory: {
+      bums: number
+      tums: number
+      fullBody: number
+      cardio: number
+      // etc.
+    }
+  - workoutsByDifficulty: {
+      beginner: number
+      intermediate: number
+      advanced: number
+    }
+  - workoutsByDayOfWeek: array [number] (index 0 = Sunday)
+  - workoutsByTimeOfDay: {
+      morning: number
+      afternoon: number
+      evening: number
+    }
+  - averageWorkoutDuration: number
+  - longestStreak: number
+  - currentStreak: number
+  - caloriesBurned: number
+  - lastUpdated: timestamp
+  - weeklyAverage: number
+  - monthlyTrend: array
+  - completionRate: number (percentage of started workouts that were completed)
+  - favoriteWorkouts: array (top 5 workoutIds by usage)
+  - favoriteExercises: array (top 5 exerciseIds by usage)
 
 /user_workout_favorites/{userId}/{workoutId}
   - addedAt: timestamp
@@ -325,9 +591,11 @@
 /user_assets/{userId}/profile/{filename}
 /user_assets/{userId}/posts/{postId}/{filename}
 /workout_assets/images/{workoutId}/{filename}
-/workout_assets/thumbnails/{workoutId}/{filename} # YouTube video thumbnails
+/workout_assets/thumbnails/{workoutId}/{filename}
 /exercise_assets/images/{exerciseId}/{filename}
-/exercise_assets/thumbnails/{exerciseId}/{filename} # YouTube video thumbnails
+/exercise_assets/videos/{exerciseId}/{filename}
+/exercise_assets/modifications/{exerciseId}/{modificationId}/{filename}
+/user_workout_assets/{userId}/{workoutId}/{filename} // For user-created workouts
 /challenge_assets/{challengeId}/{filename}
 /offline_assets/{userId}/{assetId} # Cached assets for offline use
 ```
@@ -440,3 +708,62 @@ The app implements a comprehensive offline strategy:
    - Timestamp-based conflict resolution for simultaneous online/offline edits
    - Server timestamps are used as the source of truth
    - Users are notified of conflicts that require manual resolution
+
+Workout Execution Offline Strategy
+
+Pre-download Selected Workouts
+
+Allow users to download favorite workouts
+Store complete workout data in local database
+Cache all exercise images and descriptions
+Prioritize critical execution assets
+
+
+Offline Workout Execution
+
+Full support for starting and completing workouts offline
+Store workout logs in local database
+Queue completed workout data for sync when online
+Maintain all workout interactions offline
+
+
+Seamless Sync
+
+Background sync of completed workouts when connectivity returns
+Conflict resolution for simultaneously edited custom workouts
+Progress preservation even if app is closed during offline period
+Prioritize sync of workout completion data over other interactions
+
+
+
+Workout Planning Offline Strategy
+
+Local Calendar Storage
+
+Store workout schedule in local database
+Allow modification of future workout plans offline
+Maintain notifications functionality offline
+
+
+Reminder Handling
+
+Manage workout reminders locally
+Ensure notifications work without connectivity
+Queue notification interaction data for later sync
+
+
+
+Custom Workout Creation Offline Support
+
+Local Exercise Library Cache
+
+Store frequently used exercises for offline access
+Allow creation of custom workouts offline
+Support editing of user-created workouts without connectivity
+
+
+Asset Management
+
+Optimize storage use with limited offline assets
+Clear strategy for asset removal when storage limits are reached
+User control over which assets are prioritized for offline use

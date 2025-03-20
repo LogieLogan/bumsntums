@@ -188,6 +188,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
                           'How do I do a proper squat?',
                           'Suggest exercises without equipment',
                         ],
+                        showWorkoutGeneratorLink: true,
                       ),
 
                       const SizedBox(height: 20),
@@ -337,6 +338,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
     required IconData icon,
     required Color color,
     required List<String> suggestions,
+    bool showWorkoutGeneratorLink = false,
   }) {
     return Container(
       width: double.infinity,
@@ -375,6 +377,41 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
                   );
                 }).toList(),
           ),
+          // Add workout generator button if requested
+          if (showWorkoutGeneratorLink) ...[
+            const SizedBox(height: 16),
+            InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AIWorkoutScreen(),
+                  ),
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.salmon,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.auto_awesome, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Create Custom Workout',
+                      style: AppTextStyles.body.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

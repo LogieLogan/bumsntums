@@ -22,8 +22,8 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
   int _selectedDuration = 30;
   final TextEditingController _customRequestController =
       TextEditingController();
-      
-        ProviderListenable? get analyticsProvider => null;
+
+  ProviderListenable? get analyticsProvider => null;
 
   @override
   void dispose() {
@@ -239,302 +239,367 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
   }
 
   Widget _buildWorkoutResult(Map<String, dynamic> workoutData) {
-    // Convert raw AI-generated data to a Workout object
-    final exercises =
-        (workoutData['exercises'] as List)
-            .map(
-              (e) => Exercise(
-                id: e['name'].hashCode.toString(),
-                name: e['name'],
-                description: e['description'],
-                imageUrl: 'assets/images/placeholder_exercise.jpg',
-                sets: e['sets'],
-                reps: e['reps'],
-                durationSeconds: e['durationSeconds'],
-                restBetweenSeconds: e['restBetweenSeconds'],
-                targetArea: e['targetArea'],
-              ),
-            )
-            .toList();
+    try {
+      // Helper function to safely parse integers from AI responses
+      int? safelyParseInt(dynamic value) {
+        if (value == null) return null;
+        if (value is int) return value;
+        if (value is String) {
+          try {
+            return int.parse(value);
+          } catch (_) {
+            return null;
+          }
+        }
+        return null;
+      }
 
-    final workout = Workout(
-      id: workoutData['id'],
-      title: workoutData['title'],
-      description: workoutData['description'],
-      imageUrl: 'assets/images/placeholder_workout.jpg',
-      category: WorkoutCategory.values.firstWhere(
-        (c) => c.name == workoutData['category'],
-        orElse: () => WorkoutCategory.fullBody,
-      ),
-      difficulty: WorkoutDifficulty.values.firstWhere(
-        (d) => d.name == workoutData['difficulty'],
-        orElse: () => WorkoutDifficulty.beginner,
-      ),
-      durationMinutes: workoutData['durationMinutes'],
-      estimatedCaloriesBurn: workoutData['estimatedCaloriesBurn'],
-      isAiGenerated: true,
-      createdAt: DateTime.parse(workoutData['createdAt']),
-      createdBy: 'ai',
-      exercises: exercises,
-      equipment: List<String>.from(workoutData['equipment']),
-      tags: ['ai-generated'],
-    );
+      // Process exercises with robust error handling
+      final exercises = <Exercise>[];
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header with back button
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  ref.read(workoutRecommendationProvider.notifier).reset();
-                },
-              ),
-              Expanded(
-                child: Text(
-                  'Your AI Workout',
-                  style: AppTextStyles.h2,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(width: 48), // For balance
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Workout info card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(workout.title, style: AppTextStyles.h3),
-                  const SizedBox(height: 8),
-                  Text(workout.description, style: AppTextStyles.body),
-                  const SizedBox(height: 16),
-
-                  // Stats row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildWorkoutStat(
-                        Icons.timer,
-                        '${workout.durationMinutes} min',
-                      ),
-                      _buildWorkoutStat(
-                        Icons.local_fire_department,
-                        '${workout.estimatedCaloriesBurn} cal',
-                      ),
-                      _buildWorkoutStat(
-                        Icons.fitness_center,
-                        workout.difficulty.name,
-                      ),
-                    ],
-                  ),
-
-                  // Equipment list
-                  if (workout.equipment.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      'Equipment Needed:',
-                      style: AppTextStyles.body.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 8,
-                      children:
-                          workout.equipment.map((item) {
-                            return Chip(
-                              label: Text(item),
-                              backgroundColor: AppColors.popTurquoise
-                                  .withOpacity(0.1),
-                              labelStyle: TextStyle(
-                                color: AppColors.popTurquoise,
-                              ),
-                            );
-                          }).toList(),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Exercises list
-          Text('Exercises', style: AppTextStyles.h3),
-          const SizedBox(height: 8),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: workout.exercises.length,
-            itemBuilder: (context, index) {
-              final exercise = workout.exercises[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: AppColors.salmon.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '${index + 1}',
-                                style: AppTextStyles.h2.copyWith(
-                                  color: AppColors.salmon,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  exercise.name,
-                                  style: AppTextStyles.body.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Target: ${exercise.targetArea}',
-                                  style: AppTextStyles.small.copyWith(
-                                    color: AppColors.mediumGrey,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    _buildExerciseStat(
-                                      'Sets',
-                                      exercise.sets.toString(),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    _buildExerciseStat(
-                                      'Reps',
-                                      exercise.reps.toString(),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    _buildExerciseStat(
-                                      'Rest',
-                                      '${exercise.restBetweenSeconds}s',
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Exercise description
-                      Text(exercise.description, style: AppTextStyles.small),
-                    ],
-                  ),
+      try {
+        final exercisesList = workoutData['exercises'] as List?;
+        if (exercisesList != null) {
+          for (final e in exercisesList) {
+            try {
+              exercises.add(
+                Exercise(
+                  id: (e['name'] ?? 'exercise').hashCode.toString(),
+                  name: e['name'] ?? 'Unnamed Exercise',
+                  description: e['description'] ?? 'No description available',
+                  imageUrl: 'assets/images/placeholder_exercise.jpg',
+                  sets: safelyParseInt(e['sets']) ?? 1,
+                  reps: safelyParseInt(e['reps']) ?? 10,
+                  durationSeconds: safelyParseInt(e['durationSeconds']),
+                  restBetweenSeconds:
+                      safelyParseInt(e['restBetweenSeconds']) ?? 30,
+                  targetArea: e['targetArea'] ?? 'Core',
                 ),
               );
-            },
-          ),
+            } catch (ex) {
+              print('Error processing exercise: $ex');
+              // Continue to next exercise
+            }
+          }
+        }
+      } catch (e) {
+        print('Error processing exercises list: $e');
+        // Continue with an empty list
+      }
 
-          const SizedBox(height: 24),
+      final workout = Workout(
+        id:
+            workoutData['id'] ??
+            DateTime.now().millisecondsSinceEpoch.toString(),
+        title: workoutData['title'] ?? 'Custom Workout',
+        description:
+            workoutData['description'] ??
+            'A personalized workout created just for you.',
+        imageUrl: 'assets/images/placeholder_workout.jpg',
+        category: WorkoutCategory.values.firstWhere(
+          (c) => c.name == workoutData['category'],
+          orElse: () => WorkoutCategory.fullBody,
+        ),
+        difficulty: WorkoutDifficulty.values.firstWhere(
+          (d) => d.name == workoutData['difficulty'],
+          orElse: () => WorkoutDifficulty.beginner,
+        ),
+        durationMinutes: safelyParseInt(workoutData['durationMinutes']) ?? 30,
+        estimatedCaloriesBurn:
+            safelyParseInt(workoutData['estimatedCaloriesBurn']) ?? 150,
+        isAiGenerated: true,
+        createdAt: DateTime.now(), // Safest approach
+        createdBy: 'ai',
+        exercises: exercises,
+        equipment:
+            workoutData['equipment'] != null
+                ? List<String>.from(workoutData['equipment'])
+                : [],
+        tags: ['ai-generated'],
+      );
 
-          // Feedback section
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.paleGrey,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with back button
+            Row(
               children: [
-                Text('How was this workout?', style: AppTextStyles.h3),
-                const SizedBox(height: 8),
-                Text(
-                  'Your feedback helps us improve our workout recommendations.',
-                  style: AppTextStyles.small,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildFeedbackOption(
-                      icon: Icons.thumb_down,
-                      label: 'Too Easy',
-                      onTap: () => _submitWorkoutFeedback('too_easy'),
-                    ),
-                    _buildFeedbackOption(
-                      icon: Icons.thumb_up,
-                      label: 'Just Right',
-                      onTap: () => _submitWorkoutFeedback('just_right'),
-                    ),
-                    _buildFeedbackOption(
-                      icon: Icons.fitness_center,
-                      label: 'Too Hard',
-                      onTap: () => _submitWorkoutFeedback('too_hard'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Action buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
                   onPressed: () {
                     ref.read(workoutRecommendationProvider.notifier).reset();
                   },
-                  child: const Text('Start Over'),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Initialize the workout using the correct method name
-                    ref
-                        .read(workoutExecutionProvider.notifier)
-                        .startWorkout(workout);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const WorkoutExecutionScreen(),
+                Expanded(
+                  child: Text(
+                    'Your AI Workout',
+                    style: AppTextStyles.h2,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(width: 48), // For balance
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Workout info card
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(workout.title, style: AppTextStyles.h3),
+                    const SizedBox(height: 8),
+                    Text(workout.description, style: AppTextStyles.body),
+                    const SizedBox(height: 16),
+
+                    // Stats row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildWorkoutStat(
+                          Icons.timer,
+                          '${workout.durationMinutes} min',
+                        ),
+                        _buildWorkoutStat(
+                          Icons.local_fire_department,
+                          '${workout.estimatedCaloriesBurn} cal',
+                        ),
+                        _buildWorkoutStat(
+                          Icons.fitness_center,
+                          workout.difficulty.name,
+                        ),
+                      ],
+                    ),
+
+                    // Equipment list
+                    if (workout.equipment.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Equipment Needed:',
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    );
-                  },
-                  child: const Text('Start Workout'),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 8,
+                        children:
+                            workout.equipment.map((item) {
+                              return Chip(
+                                label: Text(item),
+                                backgroundColor: AppColors.popTurquoise
+                                    .withOpacity(0.1),
+                                labelStyle: TextStyle(
+                                  color: AppColors.popTurquoise,
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ],
-          ),
-        ],
-      ),
-    );
+            ),
+
+            const SizedBox(height: 24),
+
+            // Exercises list
+            Text('Exercises', style: AppTextStyles.h3),
+            const SizedBox(height: 8),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: workout.exercises.length,
+              itemBuilder: (context, index) {
+                final exercise = workout.exercises[index];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: AppColors.salmon.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${index + 1}',
+                                  style: AppTextStyles.h2.copyWith(
+                                    color: AppColors.salmon,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    exercise.name,
+                                    style: AppTextStyles.body.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Target: ${exercise.targetArea}',
+                                    style: AppTextStyles.small.copyWith(
+                                      color: AppColors.mediumGrey,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      _buildExerciseStat(
+                                        'Sets',
+                                        exercise.sets.toString(),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      _buildExerciseStat(
+                                        'Reps',
+                                        exercise.reps.toString(),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      _buildExerciseStat(
+                                        'Rest',
+                                        '${exercise.restBetweenSeconds}s',
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Exercise description
+                        Text(exercise.description, style: AppTextStyles.small),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 24),
+
+            // Feedback section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.paleGrey,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('How was this workout?', style: AppTextStyles.h3),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Your feedback helps us improve our workout recommendations.',
+                    style: AppTextStyles.small,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildFeedbackOption(
+                        icon: Icons.thumb_down,
+                        label: 'Too Easy',
+                        onTap: () => _submitWorkoutFeedback('too_easy'),
+                      ),
+                      _buildFeedbackOption(
+                        icon: Icons.thumb_up,
+                        label: 'Just Right',
+                        onTap: () => _submitWorkoutFeedback('just_right'),
+                      ),
+                      _buildFeedbackOption(
+                        icon: Icons.fitness_center,
+                        label: 'Too Hard',
+                        onTap: () => _submitWorkoutFeedback('too_hard'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      ref.read(workoutRecommendationProvider.notifier).reset();
+                    },
+                    child: const Text('Start Over'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Initialize the workout using the correct method name
+                      ref
+                          .read(workoutExecutionProvider.notifier)
+                          .startWorkout(workout);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const WorkoutExecutionScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text('Start Workout'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } catch (e, stackTrace) {
+      // Log comprehensive error information
+      print('Error building workout result: $e');
+      print('Stack trace: $stackTrace');
+      print('Workout data: $workoutData');
+
+      // Show an error widget instead of crashing
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+            const SizedBox(height: 16),
+            Text('Error creating workout', style: AppTextStyles.h3),
+            const SizedBox(height: 8),
+            const Text('Something went wrong while generating your workout.'),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                ref.read(workoutRecommendationProvider.notifier).reset();
+              },
+              child: const Text('Try Again'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Widget _buildFeedbackOption({
