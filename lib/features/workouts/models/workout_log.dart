@@ -125,13 +125,15 @@ class ExerciseLog extends Equatable {
   final String exerciseName;
   final int setsCompleted;
   final int repsCompleted;
-  final int difficultyRating; // 1-5 rating
+  final int difficultyRating;
+  final String? notes; 
 
   const ExerciseLog({
     required this.exerciseName,
     required this.setsCompleted,
     required this.repsCompleted,
     required this.difficultyRating,
+    this.notes,
   });
 
   @override

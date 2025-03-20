@@ -72,6 +72,7 @@ dependencies:
   flutter_markdown: ^0.7.6+2
   share_plus: ^10.1.4
   flutter_dotenv: ^5.2.1
+  flutter_tts: ^4.2.2
 
 dev_dependencies:
   flutter_test:
@@ -100,6 +101,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/workouts/
+    - assets/images/exercises/
     - assets/icons/
     - assets/logo/
     - .env

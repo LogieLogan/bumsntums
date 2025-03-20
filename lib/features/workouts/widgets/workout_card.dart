@@ -1,4 +1,5 @@
 // lib/features/workouts/widgets/workout_card.dart
+import 'package:bums_n_tums/shared/services/fallback_image_provider.dart';
 import 'package:flutter/material.dart';
 import '../models/workout.dart';
 import '../../../shared/theme/color_palette.dart';
@@ -45,24 +46,16 @@ class WorkoutCard extends StatelessWidget {
                 height: isCompact ? 120 : 200,
                 width: double.infinity,
                 color: AppColors.paleGrey,
-                child: Image.asset(
-                  workout.imageUrl,
+                child: FallbackImageProvider.workoutImage(
+                  imageUrl: workout.imageUrl,
+                  category: workout.category,
+                  height: isCompact ? 120 : 200,
+                  width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: AppColors.salmon.withOpacity(0.3),
-                      child: Center(
-                        child: Icon(
-                          Icons.fitness_center,
-                          color: AppColors.salmon,
-                          size: isCompact ? 32 : 48,
-                        ),
-                      ),
-                    );
-                  },
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              
+
               // Gradient overlay for text readability
               Container(
                 height: isCompact ? 120 : 200,
@@ -71,15 +64,12 @@ class WorkoutCard extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.7),
-                    ],
+                    colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
                     stops: const [0.6, 1.0],
                   ),
                 ),
               ),
-              
+
               // Workout info overlay
               Positioned(
                 bottom: 0,
@@ -93,21 +83,22 @@ class WorkoutCard extends StatelessWidget {
                       // Title
                       Text(
                         workout.title,
-                        style: isCompact
-                            ? textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              )
-                            : textTheme.titleLarge?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        style:
+                            isCompact
+                                ? textTheme.titleMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                )
+                                : textTheme.titleLarge?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      
+
                       if (!isCompact) const SizedBox(height: 4),
-                      
+
                       // Difficulty & duration row
                       Row(
                         children: [
@@ -117,24 +108,24 @@ class WorkoutCard extends StatelessWidget {
                             getDifficultyText(workout.difficulty),
                             getDifficultyColor(workout.difficulty),
                           ),
-                          
+
                           const SizedBox(width: 8),
-                          
+
                           // Duration badge
                           _buildInfoBadge(
                             Icons.timer,
                             '${workout.durationMinutes} min',
                             AppColors.popTurquoise,
                           ),
-                          
+
                           if (workout.equipment.isNotEmpty) ...[
                             const SizedBox(width: 8),
                             // Equipment badge (simplified for compact mode)
                             if (isCompact)
                               _buildInfoBadge(
                                 Icons.fitness_center,
-                                workout.equipment.length > 1 
-                                    ? 'Equipment' 
+                                workout.equipment.length > 1
+                                    ? 'Equipment'
                                     : workout.equipment.first,
                                 AppColors.popBlue,
                               )
@@ -151,7 +142,7 @@ class WorkoutCard extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // Featured badge
               if (workout.featured)
                 Positioned(
@@ -169,11 +160,7 @@ class WorkoutCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.star,
-                          color: Colors.black87,
-                          size: 14,
-                        ),
+                        const Icon(Icons.star, color: Colors.black87, size: 14),
                         const SizedBox(width: 4),
                         Text(
                           'Featured',
@@ -203,11 +190,7 @@ class WorkoutCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: Colors.white,
-            size: 12,
-          ),
+          Icon(icon, color: Colors.white, size: 12),
           const SizedBox(width: 4),
           Text(
             text,

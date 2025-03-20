@@ -10,7 +10,6 @@ import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/theme/color_palette.dart';
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../shared/services/feedback_service.dart';
 import '../../../shared/providers/feedback_provider.dart';
 
 class WorkoutCompletionScreen extends ConsumerStatefulWidget {
