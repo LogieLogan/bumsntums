@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workout.dart';
 import '../repositories/custom_workout_repository.dart';
-import '../../auth/providers/auth_provider.dart';
 
 // State class for workout editor
 class WorkoutEditorState {

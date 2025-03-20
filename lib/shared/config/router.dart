@@ -1,4 +1,4 @@
-// Updated lib/shared/config/router.dart
+// lib/shared/config/router.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,7 +6,7 @@ import '../../features/splash/screens/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/signup_screen.dart';
 import '../../features/auth/screens/onboarding_screen.dart';
-import '../navigation/home_screen.dart';
+import '../../features/home/screens/home_screen.dart';
 import '../constants/app_constants.dart';
 import '../providers/firebase_providers.dart';
 import '../navigation/auth_guard.dart';
@@ -50,8 +50,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const HomeScreen(),
       ),
     ],
-    errorBuilder:
-        (context, state) =>
-            Scaffold(body: Center(child: Text('Page not found: ${state.uri}'))),
+    errorBuilder: (context, state) => 
+      Scaffold(body: Center(child: Text('Page not found: ${state.uri}'))),
   );
 });

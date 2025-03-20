@@ -2,12 +2,7 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 
 Area of focus:
 phase 2 
-Enhanced workout execution experience
-fix error 
-flutter: Saving workout: test for user: HLaaCQwCqnWkc6xQiqK0geKkmbv2
-11.8.1 - [FirebaseFirestore][I-FST000001] WriteStream (313235353431663538) Stream error: 'Permission denied: Missing or insufficient permissions.'
-11.8.1 - [FirebaseFirestore][I-FST000001] Write at user_custom_workouts/HLaaCQwCqnWkc6xQiqK0geKkmbv2/workouts/custom-3be08fb8-c459-49dc-8504-682768ce3f22 failed: Missing or insufficient permissions.
-flutter: Error saving custom workout: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
+Refactor home screen, does it need to be in its own folder? does it need splitting up? where should it live oin the project? 
 
 
 Project folder structure:
@@ -96,6 +91,7 @@ Project folder structure:
 │       ├── repositories
 │       │   └── custom_workout_repository.dart
 │       ├── screens
+│       │   ├── custom_workouts_screen.dart
 │       │   ├── exercise_editor_screen.dart
 │       │   ├── exercise_selector_screen.dart
 │       │   ├── workout_browse_screen.dart
@@ -199,5 +195,9 @@ Project folder structure:
     ├── 10b_advanced_feedback.md
     ├── 11_gamification.md
     └── 12_accessibility.md
-    
+
 Which of these files do you want to review? 
+
+
+things to do: 
+need to centralise exerciseses and workouts repositories 
