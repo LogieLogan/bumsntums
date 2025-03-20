@@ -1,6 +1,7 @@
 // lib/features/home/screens/home_tab.dart
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
+import 'package:bums_n_tums/shared/navigation/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bums_n_tums/features/ai/screens/ai_chat_screen.dart';
@@ -109,11 +110,17 @@ class _HomeTabState extends ConsumerState<HomeTab>
 
               const SizedBox(height: 32),
 
+              // // Calendar and Analytics
+              // _buildSectionHeader("Calendar & Analytics", Icons.upcoming),
+              // const SizedBox(height: 12),
+              // _buildProgressTrackingFeatures(),
+
+              // const SizedBox(height: 32),
+
               // Coming Soon Features (Challenges & Progress Tracking)
               _buildSectionHeader("Coming Soon", Icons.upcoming),
               const SizedBox(height: 12),
               _buildComingSoonFeatures(),
-
               const SizedBox(height: 16),
             ],
           ),
@@ -319,8 +326,8 @@ class _HomeTabState extends ConsumerState<HomeTab>
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildQuickActionItem(
-                    "My Profile",
-                    Icons.person,
+                    "My Progress",
+                    Icons.analytics,
                     AppColors.popGreen,
                     () {
                       widget.onTabChange(3); // Switch to profile tab
@@ -742,6 +749,127 @@ class _HomeTabState extends ConsumerState<HomeTab>
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressTrackingFeatures() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Workout Calendar
+          GestureDetector(
+            onTap: () {
+              AppNavigation.navigateToWorkoutCalendar(
+                context,
+                widget.profile.userId,
+              );
+            },
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: AppColors.popBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.calendar_month,
+                    color: AppColors.popBlue,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Workout Calendar",
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Plan and schedule your workouts",
+                        style: AppTextStyles.small.copyWith(
+                          color: AppColors.mediumGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: AppColors.mediumGrey),
+              ],
+            ),
+          ),
+
+          const Divider(height: 32),
+
+          // Progress Analytics
+          GestureDetector(
+            onTap: () {
+              AppNavigation.navigateToWorkoutAnalytics(
+                context,
+                widget.profile.userId,
+              );
+            },
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: AppColors.popGreen.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.bar_chart,
+                    color: AppColors.popGreen,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Workout Analytics",
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Track your progress and visualize your fitness journey",
+                        style: AppTextStyles.small.copyWith(
+                          color: AppColors.mediumGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: AppColors.mediumGrey),
               ],
             ),
           ),

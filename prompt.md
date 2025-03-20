@@ -1,9 +1,18 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Area of focus:
-phase 2 
-Refactor home screen, does it need to be in its own folder? does it need splitting up? where should it live oin the project? 
-
+phase 2 implementation
+I am getting a permissions issue when trying to access the progress tab (calendar screen)
+11.8.1 - [FirebaseFirestore][I-FST000001] Listen for query at workout_logs failed: Missing or insufficient permissions.
+flutter: Error getting workout history by week: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
+11.8.1 - [FirebaseFirestore][I-FST000001] Listen for query at workout_logs failed: Missing or insufficient permissions.
+flutter: Error getting workout history by week: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
+11.8.1 - [FirebaseFirestore][I-FST000001] Listen for query at workout_logs failed: Missing or insufficient permissions.
+flutter: Error getting workout history by week: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
+11.8.1 - [FirebaseFirestore][I-FST000001] Listen for query at workout_logs failed: Missing or insufficient permissions.
+flutter: Error getting workout history by week: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
+11.8.1 - [FirebaseFirestore][I-FST000001] WatchStream (313630613334313538) Stream error: 'Cancelled: Disconnecting idle stream. Timed out waiting for new targets.'
+etc.............
 
 Project folder structure:
 
@@ -57,6 +66,22 @@ Project folder structure:
 │   │               ├── goals_step.dart
 │   │               ├── measurements_step.dart
 │   │               └── workout_environment_step.dart
+│   ├── home
+│   │   ├── providers
+│   │   │   ├── display_name_provider.dart
+│   │   │   ├── recommended_workout_provider.dart
+│   │   │   └── workout_stats_provider.dart
+│   │   ├── screens
+│   │   │   ├── home_screen.dart
+│   │   │   ├── home_tab.dart
+│   │   │   └── profile_tab.dart
+│   │   └── widgets
+│   │       ├── ai_workout_creator_card.dart
+│   │       ├── category_card.dart
+│   │       ├── featured_workout_card.dart
+│   │       ├── quick_action_card.dart
+│   │       ├── stats_card.dart
+│   │       └── welcome_card.dart
 │   ├── nutrition
 │   │   ├── models
 │   │   │   └── food_item.dart
@@ -82,19 +107,26 @@ Project folder structure:
 │       ├── models
 │       │   ├── exercise.dart
 │       │   ├── workout.dart
-│       │   └── workout_log.dart
+│       │   ├── workout_log.dart
+│       │   ├── workout_plan.dart
+│       │   ├── workout_stats.dart
+│       │   └── workout_streak.dart
 │       ├── providers
 │       │   ├── exercise_selector_provider.dart
 │       │   ├── workout_editor_provider.dart
 │       │   ├── workout_execution_provider.dart
-│       │   └── workout_provider.dart
+│       │   ├── workout_planning_provider.dart
+│       │   ├── workout_provider.dart
+│       │   └── workout_stats_provider.dart
 │       ├── repositories
 │       │   └── custom_workout_repository.dart
 │       ├── screens
 │       │   ├── custom_workouts_screen.dart
 │       │   ├── exercise_editor_screen.dart
 │       │   ├── exercise_selector_screen.dart
+│       │   ├── workout_analytics_screen.dart
 │       │   ├── workout_browse_screen.dart
+│       │   ├── workout_calendar_screen.dart
 │       │   ├── workout_completion_screen.dart
 │       │   ├── workout_detail_screen.dart
 │       │   ├── workout_editor_screen.dart
@@ -103,7 +135,9 @@ Project folder structure:
 │       ├── services
 │       │   ├── exercise_db_service.dart
 │       │   ├── voice_guidance_service.dart
-│       │   └── workout_service.dart
+│       │   ├── workout_planning_service.dart
+│       │   ├── workout_service.dart
+│       │   └── workout_stats_service.dart
 │       └── widgets
 │           ├── category_card.dart
 │           ├── execution
@@ -143,7 +177,6 @@ Project folder structure:
 │   │   └── legal_document.dart
 │   ├── navigation
 │   │   ├── auth_guard.dart
-│   │   ├── home_screen.dart
 │   │   └── navigation.dart
 │   ├── providers
 │   │   ├── analytics_provider.dart
@@ -184,6 +217,7 @@ Project folder structure:
     ├── 06b_food_scanning.md
     ├── 06c_workouts.md
     ├── 06d_social_features.md
+    ├── 06d_workout_tracking_analytics.md
     ├── 06e_challenges.md
     ├── 06f_in_app_purchases.md
     ├── 07_analytics_and_monitoring.md
@@ -194,10 +228,10 @@ Project folder structure:
     ├── 10a_early_feedback.md
     ├── 10b_advanced_feedback.md
     ├── 11_gamification.md
-    └── 12_accessibility.md
-
+    ├── 12_accessibility.md
+    └── 13_ux_ui_spec.md
+    
 Which of these files do you want to review? 
 
 
 things to do: 
-need to centralise exerciseses and workouts repositories 

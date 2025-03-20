@@ -2,6 +2,7 @@
 import 'package:bums_n_tums/features/ai/screens/ai_chat_screen.dart';
 import 'package:bums_n_tums/features/nutrition/screens/scanner_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_browse_screen.dart';
+import 'package:bums_n_tums/features/workouts/screens/workout_calendar_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -89,19 +90,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
           return _buildContent(profile);
         },
-        loading: () => const LoadingIndicator(message: 'Loading your profile...'),
-        error: (error, stackTrace) => Center(
-          child: Text(
-            'Error: ${error.toString()}',
-            style: TextStyle(color: AppColors.error),
-          ),
-        ),
+        loading:
+            () => const LoadingIndicator(message: 'Loading your profile...'),
+        error:
+            (error, stackTrace) => Center(
+              child: Text(
+                'Error: ${error.toString()}',
+                style: TextStyle(color: AppColors.error),
+              ),
+            ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
         selectedItemColor: AppColors.salmon,
         unselectedItemColor: AppColors.mediumGrey,
+        type: BottomNavigationBarType.fixed, // Add this line for 5 items
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
@@ -109,6 +113,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             label: 'Workouts',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scan'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.analytics),
+            label: 'Progress',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
@@ -118,21 +126,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildContent(profile) {
     switch (_currentIndex) {
       case 0:
-        return HomeTab(
-          profile: profile,
-          onTabChange: _onTabTapped,
-        );
+        return HomeTab(profile: profile, onTabChange: _onTabTapped);
       case 1:
         return const WorkoutBrowseScreen();
       case 2:
         return const ScannerScreen();
       case 3:
+        // Show workout calendar by default, with a tab to switch to analytics
+        return WorkoutCalendarScreen(userId: profile.userId);
+      case 4:
         return ProfileTab(profile: profile);
       default:
-        return HomeTab(
-          profile: profile,
-          onTabChange: _onTabTapped,
-        );
+        return HomeTab(profile: profile, onTabChange: _onTabTapped);
     }
   }
 }

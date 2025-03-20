@@ -1,3 +1,5 @@
+USE THIS AS A GUIDE ONLY. IT ISNT GURNATEED THESE ARE WHAT IS NEEDED OR IN THE CURRENT FIREBASE RULES.
+
 # Firebase Architecture
 
 ## 4.1 Firestore Collections (Enhanced Schema with PII Separation)
