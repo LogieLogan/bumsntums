@@ -20,6 +20,7 @@ class AppConstants {
   static const String scannerRoute = '/scanner';
   static const String workoutsRoute = '/workouts';
   static const String workoutDetailRoute = '/workout-detail';
+  static const String customWorkoutsRoute = '/custom-workouts';
   static const String profileRoute = '/profile';
 
   // Food scanner routes

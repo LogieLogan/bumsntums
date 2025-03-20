@@ -8,6 +8,9 @@ class EnvironmentService {
   
   bool _isInitialized = false;
   String? _cachedOpenAIKey;
+  String? _cachedExerciseDBKey;
+
+  bool get isInitialized => _isInitialized;
   
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -40,6 +43,27 @@ class EnvironmentService {
     
     // Fallback for development
     return 'sk-dummy-key-for-development';
+  }
+  
+  // New getter for ExerciseDB API key
+  String get exerciseDBApiKey {
+    if (!_isInitialized) {
+      throw NotInitializedError('Environment service is not initialized');
+    }
+    
+    // First check cached value
+    if (_cachedExerciseDBKey != null) {
+      return _cachedExerciseDBKey!;
+    }
+    
+    // Try to get from dotenv
+    _cachedExerciseDBKey = dotenv.env['EXERCISE_DB_API_KEY'];
+    if (_cachedExerciseDBKey?.isNotEmpty == true) {
+      return _cachedExerciseDBKey!;
+    }
+    
+    // Fallback for development
+    return 'dummy-exercisedb-key-for-development';
   }
 }
 

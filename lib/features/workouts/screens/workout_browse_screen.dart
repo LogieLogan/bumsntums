@@ -1,5 +1,6 @@
 // lib/features/workouts/screens/workout_browse_screen.dart
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
+import 'package:bums_n_tums/features/workouts/screens/workout_editor_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,7 +44,6 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
               );
             },
           ),
-
           IconButton(
             icon: const Icon(Icons.favorite_border),
             onPressed: () {
@@ -51,6 +51,30 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
             },
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      const WorkoutEditorScreen(), // No workout = create new
+            ),
+          ).then((newWorkout) {
+            if (newWorkout != null) {
+              // Handle refreshing the UI with the new workout
+              // This would refresh whatever provider or state contains your workouts
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('New workout created successfully!'),
+                ),
+              );
+            }
+          });
+        },
       ),
       body: RefreshIndicator(
         onRefresh: () async {

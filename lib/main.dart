@@ -22,13 +22,13 @@ FutureOr<void> main() async {
   // Request necessary permissions for iOS
   await _requestPermissions();
 
-  try {
-    // Initialize Environment Service first
-    print("Initializing Environment Service...");
-    final environmentService = EnvironmentService();
-    await environmentService.initialize();
-    print("Environment Service initialized successfully");
+  // Initialize Environment Service first - create a single instance to reuse
+  print("Initializing Environment Service...");
+  final environmentService = EnvironmentService();
+  await environmentService.initialize();
+  print("Environment Service initialized successfully");
 
+  try {
     // Initialize Firebase Core next
     print("Initializing Firebase Core...");
     await Firebase.initializeApp(
@@ -64,11 +64,10 @@ FutureOr<void> main() async {
   runApp(
     ProviderScope(
       overrides: [
-        // Pre-initialize the environment service provider
-        environmentServiceInitProvider.overrideWith((ref) async {
-          final service = EnvironmentService();
-          await service.initialize();
-          return service;
+        // Provide a FutureProvider that returns our pre-initialized instance
+        environmentServiceInitProvider.overrideWith((_) async {
+          print('Returning pre-initialized environment service');
+          return environmentService;
         }),
       ],
       child: const App(),

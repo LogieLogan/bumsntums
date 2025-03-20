@@ -1,25 +1,13 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Area of focus:
-Phase 2 on implementation plan spec - Enhanced workout execution experience
-Help solve renderbox issues. I havent yet uploaded or have any images, icons, diagrams videos etc. I only hav an app icon. I dont want to make any assets myself. I need a free (cheap one off payment), way to quickly get high quality assets to go with the workouts
-
-══╡ EXCEPTION CAUGHT BY IMAGE RESOURCE SERVICE ╞════════════════════════════════════════════════════
-The following assertion was thrown resolving an image codec:
-Unable to load asset: "assets/images/workouts/total_body_awakening.jpg".
-Exception: Asset not found
-
-When the exception was thrown, this was the stack:
-#0      PlatformAssetBundle.loadBuffer (package:flutter/src/services/asset_bundle.dart:374:7)
-<asynchronous suspension>
-#1      AssetBundleImageProvider._loadAsync (package:flutter/src/painting/image_provider.dart:787:16)
-<asynchronous suspension>
-#2      MultiFrameImageStreamCompleter._handleCodecReady (package:flutter/src/painting/image_stream.dart:1048:3)
-<asynchronous suspension>
-
-Image provider: AssetImage(bundle: null, name: "assets/images/workouts/total_body_awakening.jpg")
-Image key: AssetBundleImageKey(bundle: PlatformAssetBundle#18654(), name:
-  "assets/images/workouts/total_body_awakening.jpg", scale: 1.0)
+phase 2 
+Enhanced workout execution experience
+fix error 
+flutter: Saving workout: test for user: HLaaCQwCqnWkc6xQiqK0geKkmbv2
+11.8.1 - [FirebaseFirestore][I-FST000001] WriteStream (313235353431663538) Stream error: 'Permission denied: Missing or insufficient permissions.'
+11.8.1 - [FirebaseFirestore][I-FST000001] Write at user_custom_workouts/HLaaCQwCqnWkc6xQiqK0geKkmbv2/workouts/custom-3be08fb8-c459-49dc-8504-682768ce3f22 failed: Missing or insufficient permissions.
+flutter: Error saving custom workout: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
 
 
 Project folder structure:
@@ -101,20 +89,29 @@ Project folder structure:
 │       │   ├── workout.dart
 │       │   └── workout_log.dart
 │       ├── providers
+│       │   ├── exercise_selector_provider.dart
+│       │   ├── workout_editor_provider.dart
 │       │   ├── workout_execution_provider.dart
 │       │   └── workout_provider.dart
+│       ├── repositories
+│       │   └── custom_workout_repository.dart
 │       ├── screens
+│       │   ├── exercise_editor_screen.dart
+│       │   ├── exercise_selector_screen.dart
 │       │   ├── workout_browse_screen.dart
 │       │   ├── workout_completion_screen.dart
 │       │   ├── workout_detail_screen.dart
+│       │   ├── workout_editor_screen.dart
 │       │   ├── workout_execution_screen.dart
 │       │   └── workout_search_screen.dart
 │       ├── services
+│       │   ├── exercise_db_service.dart
 │       │   ├── voice_guidance_service.dart
 │       │   └── workout_service.dart
 │       └── widgets
 │           ├── category_card.dart
 │           ├── execution
+│           │   ├── exercise_completion_animation.dart
 │           │   ├── exercise_timer.dart
 │           │   ├── rest_timer.dart
 │           │   └── workout_progress_indicator.dart
@@ -169,6 +166,7 @@ Project folder structure:
 │   │   ├── consent_management_service.dart
 │   │   ├── data_retention_service.dart
 │   │   ├── environment_service.dart
+│   │   ├── fallback_image_provider.dart
 │   │   ├── feedback_service.dart
 │   │   ├── firebase_service.dart
 │   │   ├── gdpr_service.dart
@@ -201,5 +199,5 @@ Project folder structure:
     ├── 10b_advanced_feedback.md
     ├── 11_gamification.md
     └── 12_accessibility.md
-
+    
 Which of these files do you want to review? 

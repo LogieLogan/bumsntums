@@ -1,4 +1,5 @@
 // lib/features/workouts/screens/workout_detail_screen.dart
+import 'package:bums_n_tums/features/workouts/screens/workout_editor_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_execution_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,6 +67,35 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
             return const Center(child: Text('Workout not found'));
           }
 
+          ElevatedButton.icon(
+            icon: const Icon(Icons.edit),
+            label: const Text('Customize'),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => WorkoutEditorScreen(
+                        originalWorkout: workout, // Pass the current workout
+                      ),
+                ),
+              ).then((customizedWorkout) {
+                if (customizedWorkout != null) {
+                  // Handle refreshing the UI with the customized workout
+                  setState(() {
+                    // If you're using a provider, you'd refresh the provider state here
+                    // For example: ref.refresh(specificWorkoutProvider(workout.id));
+                  });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Workout customized successfully!'),
+                    ),
+                  );
+                }
+              });
+            },
+          );
           return _buildWorkoutDetail(workout);
         },
         loading: () => const Center(child: LoadingIndicator()),
