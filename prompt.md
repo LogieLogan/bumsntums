@@ -1,18 +1,8 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Area of focus:
-phase 2 implementation
-I am getting a permissions issue when trying to access the progress tab (calendar screen)
-11.8.1 - [FirebaseFirestore][I-FST000001] Listen for query at workout_logs failed: Missing or insufficient permissions.
-flutter: Error getting workout history by week: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
-11.8.1 - [FirebaseFirestore][I-FST000001] Listen for query at workout_logs failed: Missing or insufficient permissions.
-flutter: Error getting workout history by week: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
-11.8.1 - [FirebaseFirestore][I-FST000001] Listen for query at workout_logs failed: Missing or insufficient permissions.
-flutter: Error getting workout history by week: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
-11.8.1 - [FirebaseFirestore][I-FST000001] Listen for query at workout_logs failed: Missing or insufficient permissions.
-flutter: Error getting workout history by week: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
-11.8.1 - [FirebaseFirestore][I-FST000001] WatchStream (313630613334313538) Stream error: 'Cancelled: Disconnecting idle stream. Timed out waiting for new targets.'
-etc.............
+The workout calander
+Complete the workout 
 
 Project folder structure:
 
