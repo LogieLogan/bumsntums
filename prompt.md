@@ -1,10 +1,12 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Area of focus:
-The workout calander
-Complete the workout 
+workouts 
+need to update the implementation plan to firstly accurately represent what has been done
+what is next 
+steps to get there (basic first moving up to advanced)
 
-Project folder structure:
+Project folder structure (use this to request files):
 
 ├── app.dart
 ├── features
@@ -59,8 +61,7 @@ Project folder structure:
 │   ├── home
 │   │   ├── providers
 │   │   │   ├── display_name_provider.dart
-│   │   │   ├── recommended_workout_provider.dart
-│   │   │   └── workout_stats_provider.dart
+│   │   │   └── recommended_workout_provider.dart
 │   │   ├── screens
 │   │   │   ├── home_screen.dart
 │   │   │   ├── home_tab.dart
@@ -103,6 +104,7 @@ Project folder structure:
 │       │   └── workout_streak.dart
 │       ├── providers
 │       │   ├── exercise_selector_provider.dart
+│       │   ├── workout_calendar_provider.dart
 │       │   ├── workout_editor_provider.dart
 │       │   ├── workout_execution_provider.dart
 │       │   ├── workout_planning_provider.dart
@@ -121,6 +123,7 @@ Project folder structure:
 │       │   ├── workout_detail_screen.dart
 │       │   ├── workout_editor_screen.dart
 │       │   ├── workout_execution_screen.dart
+│       │   ├── workout_plan_editor_screen.dart
 │       │   └── workout_search_screen.dart
 │       ├── services
 │       │   ├── exercise_db_service.dart
@@ -136,7 +139,8 @@ Project folder structure:
 │           │   ├── rest_timer.dart
 │           │   └── workout_progress_indicator.dart
 │           ├── exercise_list_item.dart
-│           └── workout_card.dart
+│           ├── workout_card.dart
+│           └── workout_progress_chart.dart
 ├── firebase_options_dev.dart
 ├── flavors.dart
 ├── main.dart
@@ -220,8 +224,18 @@ Project folder structure:
     ├── 11_gamification.md
     ├── 12_accessibility.md
     └── 13_ux_ui_spec.md
-    
+
 Which of these files do you want to review? 
 
 
 things to do: 
+
+
+ideas
+user journey after onboarding
+- do a simple workout with two simple exercises (under 1 min)
+- complete and add to plan (force adding to plan with message saying this can be removed later, have option to skip adding to plan disabled)
+- Direct / take user to plan page to view exercise in the calander as done
+- demonstrate workput extrapolation every day, week, month (custom) for how long?
+- demonstrate workout intensity increase automation (is there a max reps/weight/sets)
+- demonstrate
