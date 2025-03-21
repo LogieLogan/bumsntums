@@ -10,7 +10,6 @@ The Workout Tracking & Analytics System will enable users to track their workout
 - Interactive calendar for planning and viewing workouts
 - Recurring workout scheduling
 - Visual indicators for completed, missed, and planned workouts
-- Integration with device calendar
 
 ### 2.2 Analytics Dashboard
 - Workout frequency visualization

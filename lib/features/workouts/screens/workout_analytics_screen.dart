@@ -28,7 +28,7 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Progress', style: AppTextStyles.h2),
+        title: Text('Plan', style: AppTextStyles.h2),
         centerTitle: true,
         backgroundColor: AppColors.salmon,
       ),

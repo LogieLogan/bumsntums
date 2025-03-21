@@ -1,12 +1,10 @@
 // lib/features/home/screens/home_tab.dart
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
-import 'package:bums_n_tums/shared/navigation/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bums_n_tums/features/ai/screens/ai_chat_screen.dart';
 import 'package:bums_n_tums/features/auth/models/user_profile.dart';
-import 'package:bums_n_tums/features/workouts/screens/custom_workouts_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_browse_screen.dart';
 import 'package:bums_n_tums/features/ai/screens/ai_workout_screen.dart';
 import 'package:bums_n_tums/shared/theme/color_palette.dart';
@@ -93,20 +91,6 @@ class _HomeTabState extends ConsumerState<HomeTab>
               _buildSectionHeader("Your Progress", Icons.trending_up),
               const SizedBox(height: 12),
               StatsCard(userId: widget.profile.userId),
-
-              const SizedBox(height: 32),
-
-              // Workout Categories Section
-              _buildSectionHeader("Workout Categories", Icons.category),
-              const SizedBox(height: 12),
-              _buildWorkoutCategoriesRow(context),
-
-              const SizedBox(height: 32),
-
-              // My Custom Workouts with proper content
-              _buildSectionHeader("My Workouts", Icons.fitness_center),
-              const SizedBox(height: 12),
-              _buildMyWorkoutsSection(),
 
               const SizedBox(height: 32),
 
@@ -326,8 +310,8 @@ class _HomeTabState extends ConsumerState<HomeTab>
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildQuickActionItem(
-                    "My Progress",
-                    Icons.analytics,
+                    "Plan",
+                    Icons.calendar_month,
                     AppColors.popGreen,
                     () {
                       widget.onTabChange(3); // Switch to profile tab
@@ -547,214 +531,6 @@ class _HomeTabState extends ConsumerState<HomeTab>
       default:
         return "Beginner friendly";
     }
-  }
-
-  Widget _buildWorkoutCategoriesRow(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _buildCategoryItem("Bums", AppColors.salmon, () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const WorkoutBrowseScreen(),
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildCategoryItem("Tums", AppColors.popCoral, () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const WorkoutBrowseScreen(),
-                    ),
-                  );
-                }),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildCategoryItem("Full Body", AppColors.popBlue, () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const WorkoutBrowseScreen(),
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildCategoryItem("Quick", AppColors.popGreen, () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const WorkoutBrowseScreen(),
-                    ),
-                  );
-                }),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          OutlinedButton(
-            onPressed: () {
-              widget.onTabChange(1); // Switch to workouts tab
-            },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.salmon,
-              side: const BorderSide(color: AppColors.salmon),
-              minimumSize: const Size(double.infinity, 44),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              "Browse All Workouts",
-              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w500),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryItem(String title, Color color, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        height: 100,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.fitness_center, color: color, size: 36),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: AppTextStyles.body.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMyWorkoutsSection() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: AppColors.popCoral.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.add_circle_outline,
-                  color: AppColors.popCoral,
-                  size: 32,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Create Your Custom Workout",
-                      style: AppTextStyles.body.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Design workouts tailored to your preferences",
-                      style: AppTextStyles.small.copyWith(
-                        color: AppColors.mediumGrey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          OutlinedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder:
-                      (context) =>
-                          CustomWorkoutsScreen(userId: widget.profile.userId),
-                ),
-              );
-            },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.popCoral,
-              side: const BorderSide(color: AppColors.popCoral),
-              minimumSize: const Size(double.infinity, 44),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.add, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  "Create or View Custom Workouts",
-                  style: AppTextStyles.body.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildComingSoonFeatures() {

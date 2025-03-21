@@ -114,8 +114,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scan'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.analytics),
-            label: 'Progress',
+            icon: Icon(Icons.calendar_month),
+            label: 'Plan',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
