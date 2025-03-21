@@ -12,19 +12,19 @@ import '../../../shared/components/indicators/loading_indicator.dart';
 class WorkoutAnalyticsScreen extends ConsumerWidget {
   final String userId;
 
-  const WorkoutAnalyticsScreen({
-    Key? key,
-    required this.userId,
-  }) : super(key: key);
+  const WorkoutAnalyticsScreen({Key? key, required this.userId})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userStatsAsync = ref.watch(userWorkoutStatsProvider(userId));
     final userStreakAsync = ref.watch(userWorkoutStreakProvider(userId));
-    final workoutFrequencyAsync = ref.watch(workoutFrequencyDataProvider((
-      userId: userId,
-      days: 90, // Last 90 days
-    )));
+    final workoutFrequencyAsync = ref.watch(
+      workoutFrequencyDataProvider((
+        userId: userId,
+        days: 90, // Last 90 days
+      )),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -129,10 +129,7 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
             ),
           ),
           const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: child,
-          ),
+          Padding(padding: const EdgeInsets.all(16), child: child),
         ],
       ),
     );
@@ -215,9 +212,7 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: AppTextStyles.small.copyWith(
-              color: AppColors.mediumGrey,
-            ),
+            style: AppTextStyles.small.copyWith(color: AppColors.mediumGrey),
             textAlign: TextAlign.center,
           ),
         ],
@@ -263,11 +258,12 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: OutlinedButton.icon(
-                          onPressed: streak.streakProtectionsRemaining > 0
-                              ? () {
-                                  _useStreakProtection(context, ref);
-                                }
-                              : null,
+                          onPressed:
+                              streak.streakProtectionsRemaining > 0
+                                  ? () {
+                                    _useStreakProtection(context, ref);
+                                  }
+                                  : null,
                           icon: const Icon(Icons.shield),
                           label: const Text('Protect Streak'),
                           style: OutlinedButton.styleFrom(
@@ -325,6 +321,92 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildProgressTrendChart(UserWorkoutStats stats) {
+    if (stats.monthlyTrend.isEmpty) {
+      return _buildEmptyDataWidget('No progress trend data available');
+    }
+
+    // Create month labels
+    final now = DateTime.now();
+    final labels = List.generate(6, (index) {
+      final month = now.month - (5 - index);
+      final adjustedMonth = month <= 0 ? month + 12 : month;
+      return _getMonthAbbreviation(adjustedMonth);
+    });
+
+    return SizedBox(
+      height: 200,
+      child: BarChart(
+        BarChartData(
+          alignment: BarChartAlignment.spaceAround,
+          maxY:
+              stats.monthlyTrend.reduce((a, b) => a > b ? a : b).toDouble() + 1,
+          barTouchData: BarTouchData(enabled: false),
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: true, reservedSize: 30),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  if (value.toInt() >= 0 && value.toInt() < labels.length) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        labels[value.toInt()],
+                        style: AppTextStyles.caption,
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          borderData: FlBorderData(show: false),
+          barGroups: List.generate(
+            6,
+            (index) => BarChartGroupData(
+              x: index,
+              barRods: [
+                BarChartRodData(
+                  toY: stats.monthlyTrend[index].toDouble(),
+                  color: AppColors.popBlue,
+                  width: 25,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getMonthAbbreviation(int month) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return months[month - 1];
+  }
+
   Widget _buildFrequencyChart(List<Map<String, dynamic>> frequencyData) {
     if (frequencyData.isEmpty) {
       return _buildEmptyDataWidget('No workout frequency data available');
@@ -350,7 +432,8 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
                 showTitles: true,
                 reservedSize: 30,
                 getTitlesWidget: (value, meta) {
-                  if (value.toInt() % 15 == 0 && value.toInt() < frequencyData.length) {
+                  if (value.toInt() % 15 == 0 &&
+                      value.toInt() < frequencyData.length) {
                     final date = frequencyData[value.toInt()]['date'] as String;
                     return Padding(
                       padding: const EdgeInsets.only(top: 8),
@@ -375,9 +458,7 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
               color: AppColors.salmon,
               barWidth: 3,
               isStrokeCapRound: true,
-              dotData: FlDotData(
-                show: false,
-              ),
+              dotData: FlDotData(show: false),
               belowBarData: BarAreaData(
                 show: true,
                 color: AppColors.salmon.withOpacity(0.2),
@@ -395,19 +476,20 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
     }
 
     // Process data for pie chart
-    final sections = stats.workoutsByCategory.entries.map((entry) {
-      final color = _getCategoryColor(entry.key);
-      return PieChartSectionData(
-        value: entry.value.toDouble(),
-        title: '${entry.key}\n${entry.value}',
-        color: color,
-        radius: 100,
-        titleStyle: AppTextStyles.caption.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      );
-    }).toList();
+    final sections =
+        stats.workoutsByCategory.entries.map((entry) {
+          final color = _getCategoryColor(entry.key);
+          return PieChartSectionData(
+            value: entry.value.toDouble(),
+            title: '${entry.key}\n${entry.value}',
+            color: color,
+            radius: 100,
+            titleStyle: AppTextStyles.caption.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          );
+        }).toList();
 
     return SizedBox(
       height: 200,
@@ -434,7 +516,11 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
-          maxY: stats.workoutsByDayOfWeek.reduce((a, b) => a > b ? a : b).toDouble() + 1,
+          maxY:
+              stats.workoutsByDayOfWeek
+                  .reduce((a, b) => a > b ? a : b)
+                  .toDouble() +
+              1,
           barTouchData: BarTouchData(enabled: false),
           titlesData: FlTitlesData(
             leftTitles: AxisTitles(
@@ -490,11 +576,7 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.bar_chart,
-              size: 64,
-              color: AppColors.lightGrey,
-            ),
+            Icon(Icons.bar_chart, size: 64, color: AppColors.lightGrey),
             const SizedBox(height: 16),
             Text(
               message,
@@ -514,11 +596,7 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.error,
-            ),
+            Icon(Icons.error_outline, size: 64, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
               'Error loading data: $error',
@@ -550,9 +628,9 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
 
   void _useStreakProtection(BuildContext context, WidgetRef ref) async {
     final actionsNotifier = ref.read(workoutStatsActionsProvider.notifier);
-    
+
     final success = await actionsNotifier.useStreakProtection(userId);
-    
+
     if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -560,7 +638,7 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
           backgroundColor: AppColors.popGreen,
         ),
       );
-      
+
       // Refresh the streak data
       ref.refresh(userWorkoutStreakProvider(userId));
     } else if (context.mounted) {

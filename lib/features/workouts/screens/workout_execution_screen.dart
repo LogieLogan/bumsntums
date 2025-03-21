@@ -1,4 +1,6 @@
 // lib/features/workouts/screens/workout_execution_screen.dart
+import 'package:bums_n_tums/features/workouts/providers/workout_calendar_provider.dart';
+import 'package:bums_n_tums/features/workouts/providers/workout_stats_provider.dart';
 import 'package:bums_n_tums/features/workouts/widgets/execution/exercise_completion_animation.dart';
 import 'package:bums_n_tums/shared/services/fallback_image_provider.dart';
 import 'package:flutter/material.dart';
@@ -805,17 +807,6 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
       return;
     }
 
-    // Navigate to the completion screen
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder:
-            (context) => WorkoutCompletionScreen(
-              workout: ref.read(workoutExecutionProvider)!.workout,
-              elapsedTimeSeconds: _secondsElapsed,
-            ),
-      ),
-    );
-
     // Complete the workout in the provider
     await ref
         .read(workoutExecutionProvider.notifier)
@@ -825,6 +816,35 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
             rating: 4, // Will be updated on the completion screen
           ),
         );
+
+    // Navigate to the completion screen
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder:
+              (context) => WorkoutCompletionScreen(
+                workout: ref.read(workoutExecutionProvider)!.workout,
+                elapsedTimeSeconds: _secondsElapsed,
+                // Remove the workoutLog parameter
+              ),
+        ),
+      );
+    }
+
+    // Log an analytics event
+    _analytics.logWorkoutCompleted(
+      workoutId: ref.read(workoutExecutionProvider)!.workout.id,
+      workoutName: ref.read(workoutExecutionProvider)!.workout.title,
+      durationSeconds: _secondsElapsed,
+    );
+
+    ref.refresh(
+      combinedCalendarEventsProvider((
+        userId: userId,
+        startDate: DateTime.now().subtract(const Duration(days: 365)),
+        endDate: DateTime.now().add(const Duration(days: 30)),
+      )),
+    );
   }
 
   Future<bool> _onWillPop() async {

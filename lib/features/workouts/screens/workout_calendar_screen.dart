@@ -1,46 +1,82 @@
 // lib/features/workouts/screens/workout_calendar_screen.dart
+import 'package:bums_n_tums/features/workouts/screens/workout_analytics_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../models/workout_plan.dart';
 import '../models/workout_log.dart';
-import '../providers/workout_planning_provider.dart';
 import '../providers/workout_stats_provider.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
+import 'workout_browse_screen.dart';
 import 'workout_detail_screen.dart';
+
+// Simple provider for workout history
+final simpleWorkoutHistoryProvider = FutureProvider.family<Map<DateTime, List<WorkoutLog>>, String>(
+  (ref, userId) async {
+    final firestore = FirebaseFirestore.instance;
+    Map<DateTime, List<WorkoutLog>> workoutsByDate = {};
+
+    try {
+      // Get workout logs for the past year
+      final now = DateTime.now();
+      final oneYearAgo = now.subtract(const Duration(days: 365));
+
+      final logsSnapshot = await firestore
+          .collection('user_workout_history')
+          .doc(userId)
+          .collection('logs')
+          .where('completedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(oneYearAgo))
+          .get();
+
+      // Process the workout logs
+      for (final doc in logsSnapshot.docs) {
+        final log = WorkoutLog.fromMap({'id': doc.id, ...doc.data()});
+        
+        // Group by date (ignore time)
+        final date = DateTime(
+          log.completedAt.year,
+          log.completedAt.month,
+          log.completedAt.day,
+        );
+        
+        if (workoutsByDate.containsKey(date)) {
+          workoutsByDate[date]!.add(log);
+        } else {
+          workoutsByDate[date] = [log];
+        }
+      }
+
+      return workoutsByDate;
+    } catch (e) {
+      print('Error fetching workout history: $e');
+      return {}; // Return empty map on error
+    }
+  }
+);
 
 class WorkoutCalendarScreen extends ConsumerStatefulWidget {
   final String userId;
 
   const WorkoutCalendarScreen({Key? key, required this.userId})
-    : super(key: key);
+      : super(key: key);
 
   @override
   ConsumerState<WorkoutCalendarScreen> createState() =>
       _WorkoutCalendarScreenState();
 }
 
-class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen> {
+class _WorkoutCalendarScreenState
+    extends ConsumerState<WorkoutCalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
   CalendarFormat _calendarFormat = CalendarFormat.month;
 
   @override
   Widget build(BuildContext context) {
-    // Get the workout history and active plan for the calendar
-    final workoutHistoryAsync = ref.watch(
-      workoutCalendarDataProvider((
-        userId: widget.userId,
-        startDate: DateTime.now().subtract(const Duration(days: 365)),
-        endDate: DateTime.now().add(const Duration(days: 30)),
-      )),
-    );
+    final workoutHistoryAsync = ref.watch(simpleWorkoutHistoryProvider(widget.userId));
 
-    final activePlanAsync = ref.watch(activeWorkoutPlanProvider(widget.userId));
-
-    // Combine history and active plan data
     return Scaffold(
       appBar: AppBar(
         title: Text('Workout Calendar', style: AppTextStyles.h2),
@@ -48,9 +84,15 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen> {
         backgroundColor: AppColors.salmon,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.analytics),
             onPressed: () {
-              _showCreatePlanDialog(context);
+              // Navigate to analytics screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => WorkoutAnalyticsScreen(userId: widget.userId),
+                ),
+              );
             },
           ),
         ],
@@ -60,26 +102,31 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen> {
           Expanded(
             child: workoutHistoryAsync.when(
               data: (workoutsByDate) {
-                return activePlanAsync.when(
-                  data: (activePlan) {
-                    // Process data for the calendar
-                    final Map<DateTime, List<dynamic>> events = _processEvents(
-                      workoutsByDate,
-                      activePlan,
-                    );
-
-                    return _buildCalendarWithEvents(events);
-                  },
-                  loading: () => LoadingIndicator(),
-                  error: (error, stackTrace) {
-                    return _buildCalendarWithEvents({});
-                  },
-                );
+                return _buildCalendarWithEvents(workoutsByDate);
               },
-              loading: () => LoadingIndicator(),
+              loading: () => const Center(child: LoadingIndicator()),
               error: (error, stackTrace) {
+                print('Error loading calendar data: $error');
                 return Center(
-                  child: Text('Error loading calendar data: $error'),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Could not load your workout calendar',
+                        style: AppTextStyles.body,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          ref.refresh(simpleWorkoutHistoryProvider(widget.userId));
+                        },
+                        child: const Text('Try Again'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.salmon,
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
@@ -87,24 +134,14 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder:
-                  (context) => WorkoutDetailScreen(
-                    workoutId:
-                        'workout_id', // Replace with actual recommendation
-                  ),
-            ),
-          );
-        },
+        onPressed: () => _addWorkoutToSelectedDay(),
         backgroundColor: AppColors.salmon,
-        child: const Icon(Icons.fitness_center),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildCalendarWithEvents(Map<DateTime, List<dynamic>> events) {
+  Widget _buildCalendarWithEvents(Map<DateTime, List<WorkoutLog>> workoutsByDate) {
     return Column(
       children: [
         TableCalendar(
@@ -113,9 +150,8 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen> {
           focusedDay: _focusedDay,
           calendarFormat: _calendarFormat,
           eventLoader: (day) {
-            // Clean date (remove time)
             final date = DateTime(day.year, day.month, day.day);
-            return events[date] ?? [];
+            return workoutsByDate[date] ?? [];
           },
           selectedDayPredicate: (day) {
             return isSameDay(_selectedDay, day);
@@ -157,33 +193,31 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        Expanded(child: _buildEventList(events[_selectedDay] ?? [])),
+        Expanded(
+          child: _buildSelectedDayWorkouts(workoutsByDate[_selectedDay] ?? []),
+        ),
       ],
     );
   }
 
-  Widget _buildEventList(List<dynamic> events) {
-    if (events.isEmpty) {
+  Widget _buildSelectedDayWorkouts(List<WorkoutLog> workouts) {
+    if (workouts.isEmpty) {
       return Center(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.calendar_today, size: 64, color: AppColors.lightGrey),
+            Icon(Icons.calendar_today, size: 48, color: Colors.grey[300]),
             const SizedBox(height: 16),
             Text(
-              'No workouts scheduled for this day',
-              style: AppTextStyles.body.copyWith(color: AppColors.mediumGrey),
+              'No workouts on this day',
+              style: AppTextStyles.body.copyWith(color: Colors.grey[500]),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () {
-                _showAddWorkoutDialog(context, _selectedDay);
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Add Workout'),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () => _addWorkoutToSelectedDay(),
+              child: const Text('Add Workout'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.salmon,
-                foregroundColor: Colors.white,
               ),
             ),
           ],
@@ -192,238 +226,62 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen> {
     }
 
     return ListView.builder(
-      itemCount: events.length,
+      itemCount: workouts.length,
       itemBuilder: (context, index) {
-        final event = events[index];
-
-        if (event is WorkoutLog) {
-          // Past workout (completed)
-          return _buildCompletedWorkoutCard(event);
-        } else if (event is ScheduledWorkout) {
-          // Future workout (planned)
-          return _buildScheduledWorkoutCard(event);
-        }
-
-        return const SizedBox.shrink(); // Fallback
-      },
-    );
-  }
-
-  Widget _buildCompletedWorkoutCard(WorkoutLog log) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.popGreen.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.check_circle, color: AppColors.popGreen),
-        ),
-        title: Text(
-          'Completed: ${log.workoutId}',
-          style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          '${log.durationMinutes} minutes • ${log.caloriesBurned} calories',
-          style: AppTextStyles.small,
-        ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          // Navigate to workout details or log details
-        },
-      ),
-    );
-  }
-
-  Widget _buildScheduledWorkoutCard(ScheduledWorkout scheduled) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.popBlue.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.event, color: AppColors.popBlue),
-        ),
-        title: Text(
-          scheduled.title,
-          style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          scheduled.isRecurring ? 'Recurring workout' : 'Scheduled workout',
-          style: AppTextStyles.small,
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit, color: AppColors.mediumGrey),
-              onPressed: () {
-                // Edit scheduled workout
-              },
+        final workout = workouts[index];
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: AppColors.salmon,
+              child: const Icon(Icons.fitness_center, color: Colors.white),
             ),
-            IconButton(
-              icon: const Icon(Icons.play_arrow, color: AppColors.salmon),
-              onPressed: () {
-                // Start this workout
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            WorkoutDetailScreen(workoutId: scheduled.workoutId),
+            title: Text(
+              workout.workoutId,
+              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              '${workout.durationMinutes} minutes • ${workout.caloriesBurned} calories',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              // Navigate to workout details
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => WorkoutDetailScreen(
+                    workoutId: workout.workoutId,
                   ),
-                );
-              },
-            ),
-          ],
-        ),
-        onTap: () {
-          // View workout details
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder:
-                  (context) =>
-                      WorkoutDetailScreen(workoutId: scheduled.workoutId),
-            ),
-          );
-        },
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _addWorkoutToSelectedDay() {
+    // Navigate to workout browse screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WorkoutBrowseScreen(),
       ),
-    );
-  }
-
-  // Helper to process events from different sources
-  Map<DateTime, List<dynamic>> _processEvents(
-    Map<DateTime, List<WorkoutLog>> workoutsByDate,
-    WorkoutPlan? activePlan,
-  ) {
-    final Map<DateTime, List<dynamic>> events = {};
-
-    // Add completed workouts to events
-    workoutsByDate.forEach((date, logs) {
-      events[date] = logs;
-    });
-
-    // Add scheduled workouts from active plan
-    if (activePlan != null) {
-      for (final scheduled in activePlan.scheduledWorkouts) {
-        final date = DateTime(
-          scheduled.scheduledDate.year,
-          scheduled.scheduledDate.month,
-          scheduled.scheduledDate.day,
+    ).then((selectedWorkout) {
+      if (selectedWorkout != null) {
+        // Here you would typically save this to Firebase
+        // For MVP, we'll just show a success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Workout added to schedule'),
+            backgroundColor: Colors.green,
+          ),
         );
-
-        if (events.containsKey(date)) {
-          events[date]!.add(scheduled);
-        } else {
-          events[date] = [scheduled];
-        }
+        
+        // Refresh the data
+        ref.refresh(simpleWorkoutHistoryProvider(widget.userId));
       }
-    }
-
-    return events;
-  }
-
-  void _showCreatePlanDialog(BuildContext context) {
-    // Implementation for creating a new workout plan
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Create Workout Plan', style: AppTextStyles.h3),
-          content: const Text('Choose how to create your workout plan:'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _createCustomPlan();
-              },
-              child: const Text('Custom Plan'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _createAIRecommendedPlan();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.salmon,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('AI Recommended'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showAddWorkoutDialog(BuildContext context, DateTime date) {
-    // Implementation for adding a workout to a specific date
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Add Workout', style: AppTextStyles.h3),
-          content: const Text('Select a workout to add to this day:'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                // Navigate to workout browse screen
-                // with callback to add selected workout to this date
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.salmon,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Browse Workouts'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _createCustomPlan() {
-    // Navigate to custom plan creation screen (implementation omitted)
-  }
-
-  void _createAIRecommendedPlan() async {
-    final actionsNotifier = ref.read(workoutPlanActionsProvider.notifier);
-
-    // You would get these values from user profile in production code
-    final focusAreas = ['bums', 'tums'];
-    final weeklyWorkoutDays = 3;
-    final fitnessLevel = 'beginner';
-
-    final plan = await actionsNotifier.generateRecommendedPlan(
-      widget.userId,
-      focusAreas,
-      weeklyWorkoutDays,
-      fitnessLevel,
-    );
-
-    if (plan != null && mounted) {
-      await actionsNotifier.createWorkoutPlan(plan);
-
-      // Refresh the data
-      ref.refresh(activeWorkoutPlanProvider(widget.userId));
-      ref.refresh(
-        workoutCalendarDataProvider((
-          userId: widget.userId,
-          startDate: DateTime.now().subtract(const Duration(days: 365)),
-          endDate: DateTime.now().add(const Duration(days: 30)),
-        )),
-      );
-    }
+    });
   }
 }

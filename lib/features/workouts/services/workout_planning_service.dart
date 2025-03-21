@@ -1,4 +1,5 @@
 // lib/features/workouts/services/workout_planning_service.dart
+import 'package:bums_n_tums/features/workouts/models/exercise.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/workout_plan.dart';
@@ -313,54 +314,264 @@ class WorkoutPlanningService {
     }
   }
 
-  // Helper method to get recommended workouts for the user
   Future<List<Workout>> _getRecommendedWorkoutsForUser(
     String userId,
     List<String> focusAreas,
     String fitnessLevel,
   ) async {
-    // In a production app, this would use more sophisticated recommendation logic
-    // For now, we'll just get a mix of workouts that match the focus areas
-
-    // Convert fitnessLevel string to enum
-    final difficulty = _mapFitnessLevelToDifficulty(fitnessLevel);
-
     try {
-      final snapshot =
-          await _firestore
-              .collection('workouts')
-              .where('difficulty', isEqualTo: difficulty.name)
-              .limit(20)
-              .get();
+      final difficulty = _mapFitnessLevelToDifficulty(fitnessLevel);
+      List<Workout> matchingWorkouts = [];
 
-      List<Workout> allWorkouts =
-          snapshot.docs
-              .map((doc) => Workout.fromMap({'id': doc.id, ...doc.data()}))
-              .toList();
+      // Try to find workouts that match the user's focus areas
+      for (final area in focusAreas) {
+        try {
+          final snapshot =
+              await _firestore
+                  .collection('workouts')
+                  .where('difficulty', isEqualTo: difficulty.name)
+                  .where(
+                    'category',
+                    isEqualTo: _mapFocusAreaToCategory(area).name,
+                  )
+                  .limit(5)
+                  .get();
 
-      // Filter for workouts that match at least one focus area
-      final matchingWorkouts =
-          allWorkouts.where((workout) {
-            final category = workout.category.name.toLowerCase();
-            return focusAreas.any(
-              (area) => category.contains(area.toLowerCase()),
-            );
-          }).toList();
+          final workouts =
+              snapshot.docs
+                  .map((doc) => Workout.fromMap({'id': doc.id, ...doc.data()}))
+                  .toList();
 
-      // If we don't have enough matching workouts, add some other ones
-      if (matchingWorkouts.length < 10) {
-        matchingWorkouts.addAll(
-          allWorkouts
-              .where((w) => !matchingWorkouts.contains(w))
-              .take(10 - matchingWorkouts.length),
-        );
+          matchingWorkouts.addAll(workouts);
+        } catch (e) {
+          debugPrint('Error fetching workouts for area $area: $e');
+        }
+      }
+
+      // If we didn't find any workouts matching the focus areas, try just the difficulty
+      if (matchingWorkouts.isEmpty) {
+        try {
+          final snapshot =
+              await _firestore
+                  .collection('workouts')
+                  .where('difficulty', isEqualTo: difficulty.name)
+                  .limit(10)
+                  .get();
+
+          matchingWorkouts =
+              snapshot.docs
+                  .map((doc) => Workout.fromMap({'id': doc.id, ...doc.data()}))
+                  .toList();
+        } catch (e) {
+          debugPrint('Error fetching workouts by difficulty: $e');
+        }
+      }
+
+      // If we still don't have any workouts, try to get any workouts at all
+      if (matchingWorkouts.isEmpty) {
+        try {
+          final snapshot =
+              await _firestore.collection('workouts').limit(10).get();
+
+          matchingWorkouts =
+              snapshot.docs
+                  .map((doc) => Workout.fromMap({'id': doc.id, ...doc.data()}))
+                  .toList();
+        } catch (e) {
+          debugPrint('Error fetching any workouts: $e');
+        }
+      }
+
+      // If we still don't have any workouts, create sample ones
+      if (matchingWorkouts.isEmpty) {
+        matchingWorkouts = _createSampleWorkouts(focusAreas, difficulty);
       }
 
       return matchingWorkouts;
     } catch (e) {
       debugPrint('Error getting recommended workouts: $e');
-      // Return empty list in case of error
-      return [];
+      // Return sample workouts in case of error
+      return _createSampleWorkouts(
+        focusAreas,
+        _mapFitnessLevelToDifficulty(fitnessLevel),
+      );
+    }
+  }
+
+  List<Workout> _createSampleWorkouts(
+    List<String> focusAreas,
+    WorkoutDifficulty difficulty,
+  ) {
+    final now = DateTime.now();
+    final List<Workout> sampleWorkouts = [];
+
+    // Create a workout for each focus area
+    for (final area in focusAreas) {
+      final workout = Workout(
+        id: 'sample-${area.toLowerCase()}-${now.millisecondsSinceEpoch}',
+        title:
+            '${area.substring(0, 1).toUpperCase()}${area.substring(1)} Workout',
+        description: 'A sample workout focused on ${area.toLowerCase()}.',
+        imageUrl: '',
+        category: _mapFocusAreaToCategory(area),
+        difficulty: difficulty,
+        durationMinutes: 30,
+        estimatedCaloriesBurn: 200,
+        createdAt: now,
+        createdBy: 'system',
+        exercises: _createSampleExercises(_mapFocusAreaToCategory(area)),
+        equipment: const ['No equipment needed'],
+        tags: [area.toLowerCase(), 'sample', 'generated'],
+      );
+      sampleWorkouts.add(workout);
+    }
+
+    // Add a full body workout for variety
+    sampleWorkouts.add(
+      Workout(
+        id: 'sample-fullbody-${now.millisecondsSinceEpoch}',
+        title: 'Full Body Workout',
+        description: 'A complete workout targeting all major muscle groups.',
+        imageUrl: '',
+        category: WorkoutCategory.fullBody,
+        difficulty: difficulty,
+        durationMinutes: 45,
+        estimatedCaloriesBurn: 300,
+        createdAt: now,
+        createdBy: 'system',
+        exercises: _createSampleExercises(WorkoutCategory.fullBody),
+        equipment: const ['No equipment needed'],
+        tags: ['full body', 'sample', 'generated'],
+      ),
+    );
+
+    return sampleWorkouts;
+  }
+
+  List<Exercise> _createSampleExercises(WorkoutCategory category) {
+    final List<Exercise> exercises = [];
+
+    // Define some basic exercises based on the category
+    switch (category) {
+      case WorkoutCategory.bums:
+        exercises.addAll([
+          Exercise(
+            id: 'sample-squats',
+            name: 'Squats',
+            description:
+                'Stand with feet shoulder-width apart. Lower your body by bending your knees and pushing your hips back, as if sitting in a chair. Keep your chest up and back straight. Return to standing.',
+            imageUrl: '', // Empty string for sample
+            sets: 3,
+            reps: 12,
+            restBetweenSeconds: 30,
+            targetArea: 'bums',
+            modifications: [],
+          ),
+          Exercise(
+            id: 'sample-lunges',
+            name: 'Lunges',
+            description:
+                'Step forward with one leg and lower your body until both knees are bent at 90-degree angles. Push through your front heel to return to starting position. Repeat with the other leg.',
+            imageUrl: '', // Empty string for sample
+            sets: 3,
+            reps: 10,
+            restBetweenSeconds: 30,
+            targetArea: 'bums',
+            modifications: [],
+          ),
+        ]);
+        break;
+      case WorkoutCategory.tums:
+        exercises.addAll([
+          Exercise(
+            id: 'sample-crunches',
+            name: 'Crunches',
+            description:
+                'Lie on your back with knees bent and feet flat on the floor. Place hands behind your head. Lift your shoulders off the ground using your abdominal muscles, then lower back down with control.',
+            imageUrl: '', // Empty string for sample
+            sets: 3,
+            reps: 15,
+            restBetweenSeconds: 30,
+            targetArea: 'tums',
+            modifications: [],
+          ),
+          Exercise(
+            id: 'sample-plank',
+            name: 'Plank',
+            description:
+                'Start in a push-up position with your forearms on the ground. Keep your body in a straight line from head to heels. Engage your core and hold the position.',
+            imageUrl: '', // Empty string for sample
+            sets: 3,
+            reps: 1, // For timed exercise
+            durationSeconds: 30,
+            restBetweenSeconds: 30,
+            targetArea: 'tums',
+            modifications: [],
+          ),
+        ]);
+        break;
+      case WorkoutCategory.fullBody:
+      default:
+        exercises.addAll([
+          Exercise(
+            id: 'sample-pushups',
+            name: 'Push-ups',
+            description:
+                'Start in a plank position with hands shoulder-width apart. Lower your body by bending your elbows, keeping your back straight. Push back up to the starting position.',
+            imageUrl: '', // Empty string for sample
+            sets: 3,
+            reps: 10,
+            restBetweenSeconds: 30,
+            targetArea: 'upper body',
+            modifications: [],
+          ),
+          Exercise(
+            id: 'sample-squats-fb',
+            name: 'Squats',
+            description:
+                'Stand with feet shoulder-width apart. Lower your body by bending your knees and pushing your hips back, as if sitting in a chair. Keep your chest up and back straight. Return to standing.',
+            imageUrl: '', // Empty string for sample
+            sets: 3,
+            reps: 12,
+            restBetweenSeconds: 30,
+            targetArea: 'lower body',
+            modifications: [],
+          ),
+          Exercise(
+            id: 'sample-plank-fb',
+            name: 'Plank',
+            description:
+                'Start in a push-up position with your forearms on the ground. Keep your body in a straight line from head to heels. Engage your core and hold the position.',
+            imageUrl: '', // Empty string for sample
+            sets: 3,
+            reps: 1, // For timed exercise
+            durationSeconds: 30,
+            restBetweenSeconds: 30,
+            targetArea: 'core',
+            modifications: [],
+          ),
+        ]);
+        break;
+    }
+
+    return exercises;
+  }
+
+  WorkoutCategory _mapFocusAreaToCategory(String area) {
+    switch (area.toLowerCase()) {
+      case 'bums':
+        return WorkoutCategory.bums;
+      case 'tums':
+        return WorkoutCategory.tums;
+      // Since arms, legs, back aren't in the enum, map them to appropriate categories
+      case 'arms':
+      case 'legs':
+      case 'back':
+      case 'upper body':
+      case 'lower body':
+        return WorkoutCategory.fullBody; // Default to full body if not in enum
+      default:
+        return WorkoutCategory.fullBody;
     }
   }
 

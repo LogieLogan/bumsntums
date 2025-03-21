@@ -9,6 +9,7 @@ import '../../../shared/analytics/firebase_analytics_service.dart';
 class WorkoutStatsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AnalyticsService _analytics;
+  final bool _debugMode = true;
 
   WorkoutStatsService(this._analytics);
 
@@ -371,10 +372,18 @@ class WorkoutStatsService {
     DateTime endDate,
   ) async {
     try {
+      // Only print debug logs when in debug mode
+      if (_debugMode) {
+        print('Attempting to fetch workout logs for user: $userId');
+        print('Path: workout_logs/$userId/logs');
+        print('Date range: $startDate to $endDate');
+      }
+
       final snapshot =
           await _firestore
               .collection('workout_logs')
-              .where('userId', isEqualTo: userId)
+              .doc(userId)
+              .collection('logs')
               .where(
                 'completedAt',
                 isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
@@ -383,8 +392,11 @@ class WorkoutStatsService {
                 'completedAt',
                 isLessThanOrEqualTo: Timestamp.fromDate(endDate),
               )
-              .orderBy('completedAt', descending: true)
               .get();
+
+      if (_debugMode) {
+        print('Successfully retrieved ${snapshot.docs.length} workout logs');
+      }
 
       // Group logs by date (ignoring time)
       Map<DateTime, List<WorkoutLog>> workoutsByDate = {};
@@ -404,13 +416,105 @@ class WorkoutStatsService {
         }
       }
 
+      // If we're in debug mode and there's no data, return sample data
+      if (kDebugMode && workoutsByDate.isEmpty) {
+        // Generate and return sample workout data for development
+        if (_debugMode) {
+          print(
+            'No real workout logs found, returning sample data for development',
+          );
+        }
+
+        return await _generateSampleWorkoutData(userId);
+      }
+
+if (kDebugMode && workoutsByDate.isEmpty) {
+  // Generate and return sample workout data for development
+  if (_debugMode) {
+    print('No real workout logs found, returning sample data for development');
+  }
+  
+  return await _generateSampleWorkoutData(userId);
+}
       return workoutsByDate;
     } catch (e) {
-      debugPrint('Error getting workout history by week: $e');
+      if (_debugMode) {
+        print('Error getting workout history by week: $e');
+        print('Stack trace: ${StackTrace.current}');
+      }
       return {};
     }
   }
 
+Future<Map<DateTime, List<WorkoutLog>>> _generateSampleWorkoutData(String userId) async {
+  final Map<DateTime, List<WorkoutLog>> result = {};
+  
+  // Create some sample dates (past few days plus today)
+  final today = DateTime.now();
+  
+  // Generate a workout log for today
+  final todayLog = WorkoutLog(
+    id: 'sample-1',
+    userId: userId,
+    workoutId: 'sample-workout-1',
+    startedAt: today.subtract(const Duration(hours: 1)),
+    completedAt: today,
+    durationMinutes: 45,
+    caloriesBurned: 320,
+    exercisesCompleted: [
+      ExerciseLog(
+        exerciseName: 'Squats',
+        setsCompleted: 3,
+        repsCompleted: 12,
+        difficultyRating: 3,
+      ),
+      ExerciseLog(
+        exerciseName: 'Push-ups',
+        setsCompleted: 3,
+        repsCompleted: 10,
+        difficultyRating: 4,
+      ),
+    ],
+    userFeedback: const UserFeedback(rating: 4),
+  );
+  
+  // Add to map
+  final dateKey = DateTime(today.year, today.month, today.day);
+  result[dateKey] = [todayLog];
+  
+  // Add a workout from 2 days ago
+  final twoDaysAgo = today.subtract(const Duration(days: 2));
+  final twoDaysAgoKey = DateTime(twoDaysAgo.year, twoDaysAgo.month, twoDaysAgo.day);
+  
+  final pastLog = WorkoutLog(
+    id: 'sample-2',
+    userId: userId,
+    workoutId: 'sample-workout-2',
+    startedAt: twoDaysAgo.subtract(const Duration(minutes: 50)),
+    completedAt: twoDaysAgo,
+    durationMinutes: 50,
+    caloriesBurned: 380,
+    exercisesCompleted: [
+      ExerciseLog(
+        exerciseName: 'Lunges',
+        setsCompleted: 3,
+        repsCompleted: 10,
+        difficultyRating: 3,
+      ),
+      ExerciseLog(
+        exerciseName: 'Plank',
+        setsCompleted: 3,
+        repsCompleted: 1,
+        difficultyRating: 4,
+      ),
+    ],
+    userFeedback: const UserFeedback(rating: 5),
+  );
+  
+  result[twoDaysAgoKey] = [pastLog];
+  
+  return result;
+}
   // Get workout frequency data for visualization
   Future<List<Map<String, dynamic>>> getWorkoutFrequencyData(
     String userId,

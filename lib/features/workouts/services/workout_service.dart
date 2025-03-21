@@ -185,6 +185,10 @@ class WorkoutService {
   // Log completed workout
   Future<void> logCompletedWorkout(WorkoutLog log) async {
     try {
+      print('Attempting to log completed workout for user: ${log.userId}');
+      print('Workout ID: ${log.workoutId}');
+      print('Completed at: ${log.completedAt}');
+
       // Save to Firestore
       await _firestore
           .collection('workout_logs')
@@ -192,6 +196,8 @@ class WorkoutService {
           .collection('logs')
           .doc(log.id)
           .set(log.toMap());
+
+      print('Successfully saved workout log to Firestore');
 
       // Log analytics event
       await _analytics.logEvent(
@@ -205,14 +211,23 @@ class WorkoutService {
       );
 
       // Update user stats - increase completed workouts count
-      await _firestore.collection('fitness_profiles').doc(log.userId).update({
-        'completed_workouts': FieldValue.increment(1),
-      });
-
-      // TODO: Check for achievements (e.g., first workout, streak)
+      try {
+        await _firestore.collection('fitness_profiles').doc(log.userId).update({
+          'stats.workoutsCompleted': FieldValue.increment(1),
+        });
+        print('Updated workout count in fitness profile');
+      } catch (e) {
+        // This might fail if the field doesn't exist yet
+        print('Error updating fitness profile workout count: $e');
+        // Try to set instead of update
+        await _firestore.collection('fitness_profiles').doc(log.userId).set({
+          'stats': {'workoutsCompleted': 1},
+        }, SetOptions(merge: true));
+      }
     } catch (e) {
       // Log error
       print('Error logging completed workout: $e');
+      print('Error stack trace: ${StackTrace.current}');
       // For now, just rethrow - in a real app, we might want to save locally for later sync
       rethrow;
     }
