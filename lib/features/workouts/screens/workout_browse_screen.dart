@@ -1,9 +1,14 @@
 // lib/features/workouts/screens/workout_browse_screen.dart
 import 'package:bums_n_tums/features/auth/providers/auth_provider.dart';
+import 'package:bums_n_tums/features/workouts/screens/all_featured_workouts_screen.dart';
+import 'package:bums_n_tums/features/workouts/screens/beginner_workouts_screen.dart';
+import 'package:bums_n_tums/features/workouts/screens/category_workouts_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/custom_workouts_screen.dart';
+import 'package:bums_n_tums/features/workouts/screens/favorite_workouts_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_editor_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_search_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workout.dart';
@@ -46,10 +51,25 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
               );
             },
           ),
+          // In WorkoutBrowseScreen.dart, update the favorites button action:
           IconButton(
             icon: const Icon(Icons.favorite_border),
             onPressed: () {
-              // TODO: Navigate to favorites screen
+              final currentUser = FirebaseAuth.instance.currentUser;
+              if (currentUser == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please log in to view your favorites'),
+                  ),
+                );
+                return;
+              }
+
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const FavoriteWorkoutsScreen(),
+                ),
+              );
             },
           ),
         ],
@@ -121,7 +141,13 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      // TODO: Navigate to all featured workouts
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => const AllFeaturedWorkoutsScreen(),
+                        ),
+                      );
                     },
                     child: const Text('See All'),
                   ),
@@ -165,7 +191,12 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      // TODO: Navigate to beginner workouts
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const BeginnerWorkoutsScreen(),
+                        ),
+                      );
                     },
                     child: const Text('See All'),
                   ),
@@ -341,119 +372,119 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
       parameters: {'category': category.name},
     );
 
-    // TODO: Navigate to category screen
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     builder: (context) => CategoryWorkoutsScreen(category: category),
-    //   ),
-    // );
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CategoryWorkoutsScreen(category: category),
+      ),
+    );
   }
 
   Widget _buildMyWorkoutsSection() {
-  return Padding(
-    padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'My Custom Workouts',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            TextButton(
-              onPressed: () {
-                // Get userId from auth provider
-                final authState = ref.read(authStateProvider);
-                final userId = authState.value?.uid;
-                if (userId != null) {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => CustomWorkoutsScreen(userId: userId),
-                    ),
-                  );
-                }
-              },
-              child: const Text('See All'),
-            ),
-          ],
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'My Custom Workouts',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              TextButton(
+                onPressed: () {
+                  // Get userId from auth provider
+                  final authState = ref.read(authStateProvider);
+                  final userId = authState.value?.uid;
+                  if (userId != null) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder:
+                            (context) => CustomWorkoutsScreen(userId: userId),
+                      ),
+                    );
+                  }
+                },
+                child: const Text('See All'),
               ),
             ],
           ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.deepPurple.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.add_circle_outline,
-                      color: Colors.deepPurple,
-                      size: 32,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Create Your Custom Workout",
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Design workouts tailored to your preferences",
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const WorkoutEditorScreen(),
-                    ),
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 44),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.add, size: 18),
-                    SizedBox(width: 8),
-                    Text("Create New Workout"),
+              ],
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.deepPurple.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.add_circle_outline,
+                        color: Colors.deepPurple,
+                        size: 32,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Create Your Custom Workout",
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Design workouts tailored to your preferences",
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                OutlinedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const WorkoutEditorScreen(),
+                      ),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 44),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.add, size: 18),
+                      SizedBox(width: 8),
+                      Text("Create New Workout"),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }

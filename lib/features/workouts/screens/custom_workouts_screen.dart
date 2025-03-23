@@ -1,10 +1,8 @@
 // features/workouts/screens/custom_workouts_screen.dart
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workout.dart';
 import '../repositories/custom_workout_repository.dart';
-import '../widgets/workout_card.dart';
 import '../screens/workout_editor_screen.dart';
 import '../screens/workout_detail_screen.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
@@ -50,12 +48,8 @@ class CustomWorkoutsScreen extends ConsumerWidget {
           if (workouts.isEmpty) {
             return _buildEmptyState(context);
           }
-
-          Consumer(
-            builder: (context, ref, child) {
-              return _buildWorkoutsList(context, ref, workouts);
-            },
-          );
+          // Fixed: directly return the workout list without the unnecessary Consumer
+          return _buildWorkoutsList(context, ref, workouts);
         },
         loading:
             () => const LoadingIndicator(message: 'Loading your workouts...'),

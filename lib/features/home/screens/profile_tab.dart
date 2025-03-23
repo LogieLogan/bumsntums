@@ -1,4 +1,5 @@
 // lib/features/home/screens/profile_tab.dart
+import 'package:bums_n_tums/features/workouts/screens/workout_history_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,10 +14,7 @@ import '../providers/display_name_provider.dart';
 class ProfileTab extends ConsumerWidget {
   final UserProfile profile;
 
-  const ProfileTab({
-    Key? key,
-    required this.profile,
-  }) : super(key: key);
+  const ProfileTab({Key? key, required this.profile}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,6 +28,21 @@ class ProfileTab extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
+          ListTile(
+            leading: const Icon(Icons.history, color: AppColors.popBlue),
+            title: const Text('Workout History'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const WorkoutHistoryScreen(),
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: 16),
+
           // Fitness goals
           Text('Your Fitness Goals', style: AppTextStyles.h3),
           const SizedBox(height: 8),
@@ -37,16 +50,17 @@ class ProfileTab extends ConsumerWidget {
             profile.goals.isEmpty
                 ? const Text('No goals set yet')
                 : Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: profile.goals.map((goal) {
-                      return Chip(
-                        label: Text(goal.name),
-                        backgroundColor: AppColors.salmon.withOpacity(0.1),
-                        labelStyle: TextStyle(color: AppColors.salmon),
-                      );
-                    }).toList(),
-                  ),
+                  spacing: 8,
+                  runSpacing: 8,
+                  children:
+                      profile.goals.map((goal) {
+                        return Chip(
+                          label: Text(goal.name),
+                          backgroundColor: AppColors.salmon.withOpacity(0.1),
+                          labelStyle: TextStyle(color: AppColors.salmon),
+                        );
+                      }).toList(),
+                ),
           ),
 
           const SizedBox(height: 16),
@@ -58,16 +72,19 @@ class ProfileTab extends ConsumerWidget {
             profile.bodyFocusAreas.isEmpty
                 ? const Text('No focus areas set yet')
                 : Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: profile.bodyFocusAreas.map((area) {
-                      return Chip(
-                        label: Text(area),
-                        backgroundColor: AppColors.popTurquoise.withOpacity(0.1),
-                        labelStyle: TextStyle(color: AppColors.popTurquoise),
-                      );
-                    }).toList(),
-                  ),
+                  spacing: 8,
+                  runSpacing: 8,
+                  children:
+                      profile.bodyFocusAreas.map((area) {
+                        return Chip(
+                          label: Text(area),
+                          backgroundColor: AppColors.popTurquoise.withOpacity(
+                            0.1,
+                          ),
+                          labelStyle: TextStyle(color: AppColors.popTurquoise),
+                        );
+                      }).toList(),
+                ),
           ),
 
           const SizedBox(height: 16),
@@ -79,16 +96,17 @@ class ProfileTab extends ConsumerWidget {
             profile.dietaryPreferences.isEmpty
                 ? const Text('No dietary preferences set')
                 : Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: profile.dietaryPreferences.map((pref) {
-                      return Chip(
-                        label: Text(pref),
-                        backgroundColor: AppColors.popGreen.withOpacity(0.1),
-                        labelStyle: TextStyle(color: AppColors.popGreen),
-                      );
-                    }).toList(),
-                  ),
+                  spacing: 8,
+                  runSpacing: 8,
+                  children:
+                      profile.dietaryPreferences.map((pref) {
+                        return Chip(
+                          label: Text(pref),
+                          backgroundColor: AppColors.popGreen.withOpacity(0.1),
+                          labelStyle: TextStyle(color: AppColors.popGreen),
+                        );
+                      }).toList(),
+                ),
           ),
 
           const SizedBox(height: 16),
@@ -100,16 +118,17 @@ class ProfileTab extends ConsumerWidget {
             profile.allergies.isEmpty
                 ? const Text('No allergies set')
                 : Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: profile.allergies.map((allergy) {
-                      return Chip(
-                        label: Text(allergy),
-                        backgroundColor: AppColors.salmon.withOpacity(0.1),
-                        labelStyle: TextStyle(color: AppColors.salmon),
-                      );
-                    }).toList(),
-                  ),
+                  spacing: 8,
+                  runSpacing: 8,
+                  children:
+                      profile.allergies.map((allergy) {
+                        return Chip(
+                          label: Text(allergy),
+                          backgroundColor: AppColors.salmon.withOpacity(0.1),
+                          labelStyle: TextStyle(color: AppColors.salmon),
+                        );
+                      }).toList(),
+                ),
           ),
 
           const SizedBox(height: 16),
@@ -121,16 +140,17 @@ class ProfileTab extends ConsumerWidget {
             profile.healthConditions.isEmpty
                 ? const Text('No health conditions set')
                 : Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: profile.healthConditions.map((condition) {
-                      return Chip(
-                        label: Text(condition),
-                        backgroundColor: AppColors.popBlue.withOpacity(0.1),
-                        labelStyle: TextStyle(color: AppColors.popBlue),
-                      );
-                    }).toList(),
-                  ),
+                  spacing: 8,
+                  runSpacing: 8,
+                  children:
+                      profile.healthConditions.map((condition) {
+                        return Chip(
+                          label: Text(condition),
+                          backgroundColor: AppColors.popBlue.withOpacity(0.1),
+                          labelStyle: TextStyle(color: AppColors.popBlue),
+                        );
+                      }).toList(),
+                ),
           ),
 
           const SizedBox(height: 16),
@@ -142,29 +162,33 @@ class ProfileTab extends ConsumerWidget {
             profile.motivations.isEmpty
                 ? const Text('No motivations set')
                 : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: profile.motivations.map((motivation) {
-                          return Chip(
-                            label: Text(_getMotivationTitle(motivation)),
-                            backgroundColor: AppColors.popYellow.withOpacity(0.1),
-                            labelStyle: TextStyle(color: AppColors.popYellow),
-                          );
-                        }).toList(),
-                      ),
-                      if (profile.customMotivation != null && profile.customMotivation!.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            'Custom motivation: ${profile.customMotivation}',
-                            style: AppTextStyles.small,
-                          ),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children:
+                          profile.motivations.map((motivation) {
+                            return Chip(
+                              label: Text(_getMotivationTitle(motivation)),
+                              backgroundColor: AppColors.popYellow.withOpacity(
+                                0.1,
+                              ),
+                              labelStyle: TextStyle(color: AppColors.popYellow),
+                            );
+                          }).toList(),
+                    ),
+                    if (profile.customMotivation != null &&
+                        profile.customMotivation!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          'Custom motivation: ${profile.customMotivation}',
+                          style: AppTextStyles.small,
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
+                ),
           ),
 
           const SizedBox(height: 24),
@@ -199,8 +223,12 @@ class ProfileTab extends ConsumerWidget {
                       );
                       return displayNameAsync.when(
                         data: (name) => Text(name, style: AppTextStyles.h2),
-                        loading: () => Text('Fitness Friend', style: AppTextStyles.h2),
-                        error: (_, __) => Text('Fitness Friend', style: AppTextStyles.h2),
+                        loading:
+                            () =>
+                                Text('Fitness Friend', style: AppTextStyles.h2),
+                        error:
+                            (_, __) =>
+                                Text('Fitness Friend', style: AppTextStyles.h2),
                       );
                     },
                   ),
@@ -222,10 +250,7 @@ class ProfileTab extends ConsumerWidget {
 
   Widget _buildChipCard(Widget content) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: content,
-      ),
+      child: Padding(padding: const EdgeInsets.all(16), child: content),
     );
   }
 
@@ -252,13 +277,13 @@ class ProfileTab extends ConsumerWidget {
         OutlinedButton.icon(
           onPressed: () {
             // Show feedback dialog
-            final userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+            final userId =
+                FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
             showDialog(
               context: context,
-              builder: (context) => FeedbackDialog(
-                userId: userId,
-                currentScreen: 'Profile',
-              ),
+              builder:
+                  (context) =>
+                      FeedbackDialog(userId: userId, currentScreen: 'Profile'),
             );
           },
           icon: const Icon(Icons.feedback_outlined),

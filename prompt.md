@@ -1,10 +1,11 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Area of focus:
-workouts 
-need to update the implementation plan to firstly accurately represent what has been done
-what is next 
-steps to get there (basic first moving up to advanced)
+phase 2 of implemntation plan - phase 1 of workouts
+
+Getting error 
+11.8.1 - [FirebaseFirestore][I-FST000001] Listen for query at  failed: Missing or insufficient permissions.
+flutter: Error fetching workout details: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
 
 Project folder structure (use this to request files):
 
@@ -113,9 +114,13 @@ Project folder structure (use this to request files):
 │       ├── repositories
 │       │   └── custom_workout_repository.dart
 │       ├── screens
+│       │   ├── all_featured_workouts_screen.dart
+│       │   ├── beginner_workouts_screen.dart
+│       │   ├── category_workouts_screen.dart
 │       │   ├── custom_workouts_screen.dart
 │       │   ├── exercise_editor_screen.dart
 │       │   ├── exercise_selector_screen.dart
+│       │   ├── favorite_workouts_screen.dart
 │       │   ├── workout_analytics_screen.dart
 │       │   ├── workout_browse_screen.dart
 │       │   ├── workout_calendar_screen.dart
@@ -209,7 +214,6 @@ Project folder structure (use this to request files):
     ├── 05b_ai_integration.md
     ├── 06a_auth_system.md
     ├── 06b_food_scanning.md
-    ├── 06c_workouts.md
     ├── 06d_social_features.md
     ├── 06d_workout_tracking_analytics.md
     ├── 06e_challenges.md
@@ -223,7 +227,8 @@ Project folder structure (use this to request files):
     ├── 10b_advanced_feedback.md
     ├── 11_gamification.md
     ├── 12_accessibility.md
-    └── 13_ux_ui_spec.md
+    ├── 13_ux_ui_spec.md
+    └── 14a_workouts.md
 
 Which of these files do you want to review? 
 

@@ -86,18 +86,45 @@ class WorkoutService {
   // Get workout details
   Future<Workout?> getWorkoutById(String workoutId) async {
     try {
-      // For development, use mock data
+      // First check in standard workouts
       if (kDebugMode) {
-        return _mockRepository.getWorkoutById(workoutId);
+        final mockWorkout = _mockRepository.getWorkoutById(workoutId);
+        if (mockWorkout != null) {
+          return mockWorkout;
+        }
       }
 
-      final doc = await _firestore.collection('workouts').doc(workoutId).get();
-
-      if (!doc.exists) {
-        return null;
+      // Then check in regular workouts
+      try {
+        final doc =
+            await _firestore.collection('workouts').doc(workoutId).get();
+        if (doc.exists) {
+          return Workout.fromMap({'id': doc.id, ...doc.data()!});
+        }
+      } catch (e) {
+        print('Error checking regular workouts: $e');
+        // Continue to try other collections
       }
 
-      return Workout.fromMap({'id': doc.id, ...doc.data()!});
+      // Then check in all users' custom workouts collections
+      try {
+        final customWorkoutQuery =
+            await _firestore
+                .collectionGroup('workouts')
+                .where('id', isEqualTo: workoutId)
+                .limit(1)
+                .get();
+
+        if (customWorkoutQuery.docs.isNotEmpty) {
+          return Workout.fromMap(customWorkoutQuery.docs.first.data());
+        }
+      } catch (e) {
+        print('Error in collectionGroup query: $e');
+        // Continue and try to use mock data as fallback
+      }
+
+      // Not found in any collection
+      return null;
     } catch (e) {
       // Log error
       print('Error fetching workout details: $e');

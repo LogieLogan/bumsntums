@@ -1,6 +1,8 @@
 // lib/features/workouts/screens/workout_calendar_screen.dart
+import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_plan_editor_screen.dart';
 import 'package:bums_n_tums/features/workouts/widgets/workout_progress_chart.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -110,11 +112,15 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
                 child: Column(
                   children: [
                     TableCalendar(
-                      // Keep your existing calendar configuration
                       firstDay: DateTime.utc(2020, 1, 1),
                       lastDay: DateTime.utc(2030, 12, 31),
                       focusedDay: _focusedDay,
                       calendarFormat: _calendarFormat,
+                      availableCalendarFormats: const {
+                        CalendarFormat.month: 'Month',
+                        CalendarFormat.twoWeeks: '2 Weeks',
+                        CalendarFormat.week: 'Week',
+                      },
                       eventLoader: (day) {
                         final date = DateTime(day.year, day.month, day.day);
                         return events[date] ?? [];
@@ -270,159 +276,173 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
   }
 
   Widget _buildCompactPlanView(WorkoutPlan plan) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          Expanded(child: Text(plan.name, style: AppTextStyles.h2)),
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () => _editWorkoutPlan(plan),
-          ),
-        ],
-      ),
-      if (plan.description != null && plan.description!.isNotEmpty) ...[
-        const SizedBox(height: 8),
-        Text(plan.description!, 
-          style: AppTextStyles.body,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: Text(plan.name, style: AppTextStyles.h2)),
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () => _editWorkoutPlan(plan),
+            ),
+          ],
         ),
-      ],
-      const SizedBox(height: 16),
-      Row(
-        children: [
-          Expanded(
-            child: Text(
-              'Goal: ${plan.goal}',
-              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+        if (plan.description != null && plan.description!.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            plan.description!,
+            style: AppTextStyles.body,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
-      ),
-      const SizedBox(height: 8),
-      Row(
-        children: [
-          Expanded(
-            child: Text(
-              'Start: ${plan.startDate.day}/${plan.startDate.month}/${plan.startDate.year}',
-              style: AppTextStyles.small,
-            ),
-          ),
-          if (plan.endDate != null)
+        const SizedBox(height: 16),
+        Row(
+          children: [
             Expanded(
               child: Text(
-                'End: ${plan.endDate!.day}/${plan.endDate!.month}/${plan.endDate!.year}',
+                'Goal: ${plan.goal}',
+                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Start: ${plan.startDate.day}/${plan.startDate.month}/${plan.startDate.year}',
                 style: AppTextStyles.small,
               ),
             ),
-        ],
-      ),
-
-      const SizedBox(height: 24),
-
-      // Add the progress chart here
-      WorkoutProgressChart(plan: plan),
-
-      const SizedBox(height: 24),
-
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Scheduled Workouts', style: AppTextStyles.h3),
-          TextButton(
-            onPressed: () => _editWorkoutPlan(plan),
-            child: const Text('Edit Plan'),
-          ),
-        ],
-      ),
-      const SizedBox(height: 8),
-      
-      // Use a fixed height container for the list
-      Container(
-        height: 300, // Fixed height
-        child: plan.scheduledWorkouts.isEmpty
-            ? Center(
+            if (plan.endDate != null)
+              Expanded(
                 child: Text(
-                  'No workouts scheduled yet',
-                  style: AppTextStyles.body.copyWith(color: Colors.grey[500]),
+                  'End: ${plan.endDate!.day}/${plan.endDate!.month}/${plan.endDate!.year}',
+                  style: AppTextStyles.small,
                 ),
-              )
-            : ListView.builder(
-                itemCount: plan.scheduledWorkouts.length,
-                itemBuilder: (context, index) {
-                  final workout = plan.scheduledWorkouts[index];
-                  final isToday = isSameDay(
-                    workout.scheduledDate,
-                    DateTime.now(),
-                  );
-                  final isPast = workout.scheduledDate.isBefore(
-                    DateTime(
-                      DateTime.now().year,
-                      DateTime.now().month,
-                      DateTime.now().day,
-                    ),
-                  );
+              ),
+          ],
+        ),
 
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      dense: true, // More compact
-                      leading: CircleAvatar(
-                        radius: 16, // Smaller
-                        backgroundColor:
-                            workout.isCompleted
-                                ? AppColors.popGreen
-                                : isPast
-                                ? Colors.grey
-                                : AppColors.popCoral,
-                        child: Icon(
-                          workout.isCompleted
-                              ? Icons.check_circle
-                              : Icons.fitness_center,
-                          size: 14, // Smaller
-                          color: Colors.white,
+        const SizedBox(height: 24),
+
+        // Add the progress chart here
+        WorkoutProgressChart(plan: plan),
+
+        const SizedBox(height: 24),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Scheduled Workouts', style: AppTextStyles.h3),
+            TextButton(
+              onPressed: () => _editWorkoutPlan(plan),
+              child: const Text('Edit Plan'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Use a fixed height container for the list
+        Container(
+          height: 300, // Fixed height
+          child:
+              plan.scheduledWorkouts.isEmpty
+                  ? Center(
+                    child: Text(
+                      'No workouts scheduled yet',
+                      style: AppTextStyles.body.copyWith(
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  )
+                  : ListView.builder(
+                    itemCount: plan.scheduledWorkouts.length,
+                    itemBuilder: (context, index) {
+                      final workout = plan.scheduledWorkouts[index];
+                      final isToday = isSameDay(
+                        workout.scheduledDate,
+                        DateTime.now(),
+                      );
+                      final isPast = workout.scheduledDate.isBefore(
+                        DateTime(
+                          DateTime.now().year,
+                          DateTime.now().month,
+                          DateTime.now().day,
                         ),
-                      ),
-                      title: Text(
-                        workout.title,
-                        style: AppTextStyles.body.copyWith(
-                          fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                          fontSize: 14, // Smaller font
-                        ),
-                      ),
-                      subtitle: Text(
-                        '${workout.scheduledDate.day}/${workout.scheduledDate.month}/${workout.scheduledDate.year}',
-                        style: AppTextStyles.small.copyWith(fontSize: 12),
-                      ),
-                      trailing:
-                          workout.isCompleted
-                              ? const Icon(Icons.check, color: Colors.green, size: 16)
-                              : isPast
-                              ? const Icon(Icons.schedule, color: Colors.grey, size: 16)
-                              : null,
-                      onTap: () {
-                        // Navigate to workout details
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => WorkoutDetailScreen(
-                              workoutId: workout.workoutId,
+                      );
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          dense: true, // More compact
+                          leading: CircleAvatar(
+                            radius: 16, // Smaller
+                            backgroundColor:
+                                workout.isCompleted
+                                    ? AppColors.popGreen
+                                    : isPast
+                                    ? Colors.grey
+                                    : AppColors.popCoral,
+                            child: Icon(
+                              workout.isCompleted
+                                  ? Icons.check_circle
+                                  : Icons.fitness_center,
+                              size: 14, // Smaller
+                              color: Colors.white,
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-      ),
-    ],
-  );
-}
+                          title: Text(
+                            workout.title,
+                            style: AppTextStyles.body.copyWith(
+                              fontWeight:
+                                  isToday ? FontWeight.bold : FontWeight.normal,
+                              fontSize: 14, // Smaller font
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${workout.scheduledDate.day}/${workout.scheduledDate.month}/${workout.scheduledDate.year}',
+                            style: AppTextStyles.small.copyWith(fontSize: 12),
+                          ),
+                          trailing:
+                              workout.isCompleted
+                                  ? const Icon(
+                                    Icons.check,
+                                    color: Colors.green,
+                                    size: 16,
+                                  )
+                                  : isPast
+                                  ? const Icon(
+                                    Icons.schedule,
+                                    color: Colors.grey,
+                                    size: 16,
+                                  )
+                                  : null,
+                          onTap: () {
+                            // Navigate to workout details
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => WorkoutDetailScreen(
+                                      workoutId: workout.workoutId,
+                                    ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildNoPlanView() {
     return Center(
@@ -459,12 +479,7 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
               'No workouts on this day',
               style: AppTextStyles.body.copyWith(color: Colors.grey[500]),
             ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () => _addWorkoutToSelectedDay(),
-              child: const Text('Schedule Workout'),
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.pink),
-            ),
+            // Remove the duplicate button here
           ],
         ),
       );
@@ -641,35 +656,118 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
   }
 
   void _addWorkoutToSelectedDay() {
+    // Log analytics
+    ref
+        .read(analyticsServiceProvider)
+        .logEvent(
+          name: 'schedule_workout_initiated',
+          parameters: {'date': _selectedDay.toIso8601String()},
+        );
+
     // Navigate to workout browse screen
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => WorkoutBrowseScreen()),
+      MaterialPageRoute(builder: (context) => const WorkoutBrowseScreen()),
     ).then((selectedWorkout) {
-      if (selectedWorkout != null) {
-        // Here we would add the workout to the active plan for the selected day
-        // For now, just show a success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Workout added to schedule'),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        // Refresh the data
-        ref.refresh(
-          combinedCalendarEventsProvider((
-            userId: widget.userId,
-            startDate: DateTime(
-              DateTime.now().year,
-              DateTime.now().month - 1,
-              1,
+      if (selectedWorkout != null && selectedWorkout is Workout) {
+        // Get the current user ID
+        final userId = FirebaseAuth.instance.currentUser?.uid;
+        if (userId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('You must be logged in to schedule workouts'),
             ),
-            endDate: DateTime(DateTime.now().year, DateTime.now().month + 2, 0),
-          )),
-        );
+          );
+          return;
+        }
+
+        // Check if there's an active plan
+        final activePlanAsync = ref.read(activeWorkoutPlanProvider(userId));
+
+        activePlanAsync.whenData((plan) async {
+          if (plan == null) {
+            // Create a simple plan if none exists
+            final newPlan = WorkoutPlan(
+              id: 'plan_${DateTime.now().millisecondsSinceEpoch}',
+              userId: userId,
+              name: 'My Workout Plan',
+              startDate: DateTime.now(),
+              goal: 'Stay fit and healthy',
+              scheduledWorkouts: [],
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            );
+
+            // Save the new plan
+            await ref
+                .read(workoutPlanActionsProvider.notifier)
+                .savePlan(newPlan);
+
+            // Schedule the workout
+            _scheduleWorkout(userId, newPlan.id, selectedWorkout, _selectedDay);
+          } else {
+            // Schedule in existing plan
+            _scheduleWorkout(userId, plan.id, selectedWorkout, _selectedDay);
+          }
+        });
       }
     });
+  }
+
+  void _scheduleWorkout(
+    String userId,
+    String planId,
+    Workout workout,
+    DateTime date,
+  ) {
+    // Create scheduled workout
+    final scheduledWorkout = ScheduledWorkout(
+      workoutId: workout.id,
+      title: workout.title,
+      workoutImageUrl: workout.imageUrl,
+      scheduledDate: date,
+    );
+
+    // Save to the plan
+    ref
+        .read(workoutPlanActionsProvider.notifier)
+        .addWorkoutToPlan(userId, planId, scheduledWorkout)
+        .then((success) {
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '${workout.title} scheduled for ${date.day}/${date.month}/${date.year}',
+                ),
+                backgroundColor: Colors.green,
+              ),
+            );
+
+            // Refresh the data
+            ref.refresh(
+              combinedCalendarEventsProvider((
+                userId: userId,
+                startDate: DateTime(
+                  DateTime.now().year,
+                  DateTime.now().month - 1,
+                  1,
+                ),
+                endDate: DateTime(
+                  DateTime.now().year,
+                  DateTime.now().month + 2,
+                  0,
+                ),
+              )),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to schedule workout'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        });
   }
 
   void _createNewWorkoutPlan() {

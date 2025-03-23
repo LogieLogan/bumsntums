@@ -822,93 +822,150 @@
    - Workout favoriting
    - Simple progress tracking
 
-### 6.2 Phase 2: Enhanced Functionality & Creation (Weeks 7-12)
+## 6.2 Phase 2: Enhanced Functionality & Personalization (Weeks 7-12)
 
-#### Focus Areas:
-- Custom workout creation
-- AI workout generation
-- Enhanced execution experience
+### Focus Areas:
+- Custom workout creation and editing
+- AI workout generation with saving capability
+- Enhanced execution experience with personalization
 - Improved tracking and analytics
+- Calendar integration and scheduling
 
-#### Key Deliverables:
-1. **Custom Workout Builder**:
-   - Exercise selection interface
-   - Workout structure editor
-   - Template system
-   - Save and share functionality
+### Key Deliverables:
 
-2. **AI Workout Generator**:
-   - Basic personalized workout creation
-   - Integration with fitness profile
-   - Simple modification options
-   - Conversation-based refinement
+1. **Workout Personalization & Settings**
+   - Exercise-specific setting modifications (weights, reps, speed, resistance)
+   - Context-aware controls based on exercise type (running machines, weights, bodyweight)
+   - Pre-workout configuration options for all exercise parameters
+   - Option to save modified settings as defaults for future workouts
+   - User prompt to save settings after modifying exercises
 
-3. **Enhanced Execution**:
-   - Improved visual guidance
-   - Audio coaching integration
-   - On-the-fly modification options
-   - Enhanced progress visualization
+2. **Custom Workout Builder & Editor**
+   - Complete exercise selection interface with search and filtering
+   - Workout structure editor with drag-and-drop reordering
+   - Ability to save AI-generated workouts to custom workouts collection
+   - Edit functionality for both custom and AI-generated workouts
+   - Template system for quick workout creation
+   - Version history for workout modifications
 
-4. **Expanded Exercise Library**:
-   - 100+ exercises with detailed instructions
-   - Form videos from multiple angles
-   - Modification options for each exercise
-   - Difficulty progression paths
+3. **Enhanced Execution Experience**
+   - Pre-workout setup screen for configuring all exercise settings
+   - In-workout modification options for all exercise parameters
+   - Improved visual guidance with multiple angle demonstrations
+   - On-the-fly difficulty adjustment options
+   - Enhanced rest period customization
+   - Voice guidance system with customizable detail levels
 
-5. **Improved Analytics**:
-   - Workout history timeline
-   - Basic trend visualization
-   - Target area balance analysis
-   - Simple goal tracking
+4. **Expanded Exercise Library**
+   - 100+ exercises with detailed instructions and proper form guidance
+   - Form videos from multiple angles with slow-motion options
+   - Exercise variation and modification options for all fitness levels
+   - Difficulty progression paths for exercise advancement
+   - Equipment alternatives for different workout environments
+   - Muscle group targeting visualization
 
-6. **Advanced Calendar**:
-   - Recurring workout scheduling
-   - Program progression visualization
-   - Rest day recommendations
-   - Improved notification system
+5. **Workout Analytics & History**
+   - Comprehensive workout history interface with filtering options
+   - Detailed workout log with exercise-specific performance metrics
+   - Basic performance trend visualization and progress tracking
+   - Target area balance analysis with visual representation
+   - Exercise improvement tracking over time
+   - Simple goal achievement tracking
 
-### 6.3 Phase 3: Advanced Features & Integration (Weeks 13-18)
+6. **Calendar Integration**
+   - Weekly and monthly calendar views for workout scheduling
+   - Color-coded workout visualization by type/intensity
+   - Drag-and-drop scheduling interface
+   - Recurring workout scheduling options
+   - Workout plan visualization with progress indicators
+   - Basic notification system for scheduled workouts
+   - Rest day recommendations based on workout intensity
 
-#### Focus Areas:
-- Comprehensive progress tracking
-- Advanced AI integration
-- Social features
-- Polished user experience
+7. **AI Workout Generation Enhancements**
+   - Improved personalization based on user profile and preferences
+   - Integration with workout history for progression-aware recommendations
+   - Ability to save AI-generated workouts directly to custom workouts
+   - Conversation-based workout refinement with exercise substitution
+   - Smart difficulty calibration based on user feedback
+   - Workout variation generation to prevent monotony
 
-#### Key Deliverables:
-1. **Advanced Progress Tracking**:
-   - Comprehensive analytics dashboard
-   - Body metrics integration
-   - AI-powered insights
-   - Goal management system
-   - Export and sharing options
+## 6.3 Phase 3: Advanced Features & Integration (Weeks 13-18)
 
-2. **Enhanced AI Integration**:
-   - Advanced personalized recommendations
-   - AI coaching during workouts
-   - Performance pattern recognition
-   - Smart difficulty adaptation
+### Focus Areas:
+- Comprehensive progress tracking and analytics
+- Advanced AI integration and coaching
+- Program creation and adaptive planning
+- Social and community features
+- Polished user experience and performance
+- Recovery and holistic health integration
 
-3. **Workout Programs**:
-   - Multi-week structured programs
-   - Personalized program recommendations
-   - Progress tracking within programs
-   - Program adaptation based on performance
+### Key Deliverables:
 
-4. **Social Features** (if applicable):
-   - Workout sharing
-   - Community challenges
-   - Achievement showcasing
-   - Friend activity feed
+1. **Advanced Progress Tracking & Analytics**
+   - Comprehensive analytics dashboard with customizable metrics
+   - Body measurements integration and tracking over time
+   - Visual progress representations with before/after comparisons
+   - AI-powered performance insights and trend analysis
+   - Goal management system with milestone tracking
+   - Export and sharing options for progress data
+   - Advanced filtering and time period analysis
+   - Personal records tracking and celebration
 
-5. **Experience Polish**:
-   - Celebration animations
-   - Enhanced visual feedback
-   - Streamlined user flows
-   - Performance optimization
+2. **Enhanced AI Integration & Coaching**
+   - Advanced real-time form guidance and correction suggestions
+   - AI coaching during workouts with contextual tips
+   - Performance pattern recognition for plateau detection
+   - Smart difficulty adaptation based on real-time feedback
+   - Personalized motivation messages based on user preferences
+   - Exercise recommendation engine based on progress patterns
+   - Automatic workout adjustment based on available time/equipment
 
-6. **Recovery Integration**:
-   - Rest day management
-   - Active recovery suggestions
-   - Sleep quality integration (if available)
-   - Holistic health view
+3. **Comprehensive Program Management**
+   - Multi-week structured progressive programs
+   - Personalized program recommendations based on goals
+   - Custom program creation tools with progression planning
+   - Progress tracking within specific programs
+   - Program adaptation based on performance feedback
+   - Mid-program adjustment recommendations
+   - Program completion celebrations and achievements
+   - Next program suggestions based on completed programs
+
+4. **Social & Community Features**
+   - Workout sharing with friends and community
+   - Community challenges with leaderboards
+   - Achievement showcasing and social recognition
+   - Friend activity feed and progress comparison
+   - Workout buddy system for accountability
+   - Community workout ratings and reviews
+   - Team-based challenges and competitions
+   - Private group workout planning
+
+5. **Experience Polish & Performance**
+   - Animated workout transitions and feedback
+   - Enhanced visual celebration for achievements and milestones
+   - Advanced haptic feedback integration
+   - Streamlined user flows with reduced friction
+   - Performance optimization for older devices
+   - Offline mode with full functionality
+   - Battery optimization for long workout sessions
+   - Advanced accessibility features
+
+6. **Recovery & Holistic Health Integration**
+   - Smart rest day recommendations based on workout intensity
+   - Active recovery workout suggestions
+   - Stretching and mobility routine integration
+   - Recovery tracking and readiness assessment
+   - Sleep quality integration (if available through device APIs)
+   - Nutrition suggestion integration with workout schedule
+   - Stress and energy level tracking correlation
+   - Injury prevention recommendations
+
+7. **Advanced Calendar & Planning Tools**
+   - Intelligent workout scheduling based on recovery needs
+   - Full device calendar integration with details
+   - Long-term planning tools with periodization
+   - Balanced workout distribution across muscle groups
+   - Visual intensity mapping across weekly/monthly views
+   - Smart conflict resolution for scheduling
+   - Vacation and travel workout planning
+   - Adaptation tools for missed workouts

@@ -1,6 +1,7 @@
 // lib/shared/navigation/navigation.dart
 import 'package:bums_n_tums/features/workouts/screens/workout_analytics_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_calendar_screen.dart';
+import 'package:bums_n_tums/features/workouts/screens/workout_history_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/workouts/screens/workout_detail_screen.dart';
@@ -118,6 +119,12 @@ class AppNavigation {
       MaterialPageRoute(
         builder: (context) => WorkoutAnalyticsScreen(userId: userId),
       ),
+    );
+  }
+
+  static void navigateToWorkoutHistory(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const WorkoutHistoryScreen()),
     );
   }
 }

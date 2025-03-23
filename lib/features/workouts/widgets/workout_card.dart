@@ -100,43 +100,46 @@ class WorkoutCard extends StatelessWidget {
                       if (!isCompact) const SizedBox(height: 4),
 
                       // Difficulty & duration row
-                      Row(
-                        children: [
-                          // Difficulty badge
-                          _buildInfoBadge(
-                            getDifficultyIcon(workout.difficulty),
-                            getDifficultyText(workout.difficulty),
-                            getDifficultyColor(workout.difficulty),
-                          ),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            // Difficulty badge
+                            _buildInfoBadge(
+                              getDifficultyIcon(workout.difficulty),
+                              getDifficultyText(workout.difficulty),
+                              getDifficultyColor(workout.difficulty),
+                            ),
 
-                          const SizedBox(width: 8),
-
-                          // Duration badge
-                          _buildInfoBadge(
-                            Icons.timer,
-                            '${workout.durationMinutes} min',
-                            AppColors.popTurquoise,
-                          ),
-
-                          if (workout.equipment.isNotEmpty) ...[
                             const SizedBox(width: 8),
-                            // Equipment badge (simplified for compact mode)
-                            if (isCompact)
-                              _buildInfoBadge(
-                                Icons.fitness_center,
-                                workout.equipment.length > 1
-                                    ? 'Equipment'
-                                    : workout.equipment.first,
-                                AppColors.popBlue,
-                              )
-                            else
-                              _buildInfoBadge(
-                                Icons.fitness_center,
-                                workout.equipment.join(', '),
-                                AppColors.popBlue,
-                              ),
+
+                            // Duration badge
+                            _buildInfoBadge(
+                              Icons.timer,
+                              '${workout.durationMinutes} min',
+                              AppColors.popTurquoise,
+                            ),
+
+                            if (workout.equipment.isNotEmpty) ...[
+                              const SizedBox(width: 8),
+                              // Equipment badge (simplified for compact mode)
+                              if (isCompact)
+                                _buildInfoBadge(
+                                  Icons.fitness_center,
+                                  workout.equipment.length > 1
+                                      ? 'Equipment'
+                                      : workout.equipment.first,
+                                  AppColors.popBlue,
+                                )
+                              else
+                                _buildInfoBadge(
+                                  Icons.fitness_center,
+                                  workout.equipment.join(', '),
+                                  AppColors.popBlue,
+                                ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ],
                   ),
