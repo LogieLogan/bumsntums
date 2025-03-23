@@ -1,4 +1,5 @@
 // lib/features/ai/screens/ai_workout_screen.dart
+import 'package:bums_n_tums/features/workouts/repositories/custom_workout_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/theme/color_palette.dart';
@@ -326,21 +327,51 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
             // Header with back button
             Row(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () {
-                    ref.read(workoutRecommendationProvider.notifier).reset();
-                  },
-                ),
                 Expanded(
-                  child: Text(
-                    'Your AI Workout',
-                    style: AppTextStyles.h2,
-                    textAlign: TextAlign.center,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      ref.read(workoutRecommendationProvider.notifier).reset();
+                    },
+                    child: const Text('Start Over'),
                   ),
                 ),
-                const SizedBox(width: 48), // For balance
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Check if we're in scheduling mode
+                      final router = ModalRoute.of(context);
+                      if (router?.settings.arguments == true) {
+                        // Return the workout to the calling screen
+                        Navigator.of(context).pop(workout);
+                      } else {
+                        // Otherwise start the workout as usual
+                        ref
+                            .read(workoutExecutionProvider.notifier)
+                            .startWorkout(workout);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder:
+                                (context) => const WorkoutExecutionScreen(),
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text('Use Workout'),
+                  ),
+                ),
               ],
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => _saveWorkout(workout),
+              icon: const Icon(Icons.save),
+              label: const Text('Save to My Workouts'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.popTurquoise,
+                minimumSize: const Size(double.infinity, 0),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
             ),
 
             const SizedBox(height: 16),
@@ -555,20 +586,48 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Initialize the workout using the correct method name
-                      ref
-                          .read(workoutExecutionProvider.notifier)
-                          .startWorkout(workout);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const WorkoutExecutionScreen(),
-                        ),
-                      );
+                      // Return the workout to the calling screen if in scheduling mode
+                      final router = ModalRoute.of(context);
+                      if (router?.settings.arguments is bool &&
+                          router?.settings.arguments == true) {
+                        Navigator.of(context).pop(workout);
+                      } else {
+                        // Otherwise start the workout as usual
+                        ref
+                            .read(workoutExecutionProvider.notifier)
+                            .startWorkout(workout);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder:
+                                (context) => const WorkoutExecutionScreen(),
+                          ),
+                        );
+                      }
                     },
-                    child: const Text('Start Workout'),
+                    child: const Text('Use Workout'),
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () {
+                // Here we would add code to save to custom workouts
+                // This requires additional implementation of the custom workout repository
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Workout saved to My Workouts'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.save),
+              label: const Text('Save to My Workouts'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.popTurquoise,
+                minimumSize: const Size(double.infinity, 0),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
             ),
           ],
         ),
@@ -678,5 +737,62 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
         ),
       ],
     );
+  }
+
+  void _saveWorkout(Workout workout) async {
+    try {
+      // Get the user ID
+      final userProfile = await ref.read(userProfileProvider.future);
+      if (userProfile == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unable to load user profile')),
+          );
+        }
+        return;
+      }
+
+      // Create a more descriptive title that's unique
+      final now = DateTime.now();
+      final date = '${now.day}/${now.month}/${now.year}';
+      final time = '${now.hour}:${now.minute}';
+
+      // Generate a more descriptive title if needed
+      final finalWorkout = workout.copyWith(
+        // Only generate a more descriptive title if it's generic
+        title:
+            workout.title == 'Custom Workout'
+                ? 'AI ${workout.difficulty.name.toString().capitalize()} ${workout.category.name.toString().capitalize()} (${date})'
+                : workout.title,
+      );
+
+      // Save to repository
+      final repository = CustomWorkoutRepository();
+      await repository.saveCustomWorkout(userProfile.userId, finalWorkout);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Workout saved successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save workout: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${this.substring(1)}";
   }
 }

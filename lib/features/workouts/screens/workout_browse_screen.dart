@@ -28,11 +28,22 @@ class WorkoutBrowseScreen extends ConsumerStatefulWidget {
 
 class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
   final AnalyticsService _analytics = AnalyticsService();
+  bool _isSelectionMode = false;
 
   @override
   void initState() {
     super.initState();
     _analytics.logScreenView(screenName: 'workout_browse');
+
+    // Check if we're in selection mode from arguments
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is Map && args['selectionMode'] == true) {
+        setState(() {
+          _isSelectionMode = true;
+        });
+      }
+    });
   }
 
   @override
@@ -354,6 +365,13 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
   }
 
   void _navigateToWorkoutDetail(Workout workout) {
+    if (_isSelectionMode) {
+      // If in selection mode, return the workout to the calling screen
+      Navigator.of(context).pop(workout);
+      return;
+    }
+
+    // Normal flow
     _analytics.logEvent(
       name: 'workout_viewed',
       parameters: {'workout_id': workout.id, 'workout_name': workout.title},

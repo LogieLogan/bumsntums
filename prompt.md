@@ -1,13 +1,10 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Area of focus:
-phase 2 of implemntation plan - phase 1 of workouts
+phase 2 of implemntation plan - phase 2 of workouts - 
 
-Getting error 
-11.8.1 - [FirebaseFirestore][I-FST000001] Listen for query at  failed: Missing or insufficient permissions.
-flutter: Error fetching workout details: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
 
-Project folder structure (use this to request files):
+project structure: 
 
 ├── app.dart
 ├── features
@@ -128,7 +125,9 @@ Project folder structure (use this to request files):
 │       │   ├── workout_detail_screen.dart
 │       │   ├── workout_editor_screen.dart
 │       │   ├── workout_execution_screen.dart
+│       │   ├── workout_history_screen.dart
 │       │   ├── workout_plan_editor_screen.dart
+│       │   ├── workout_scheduling_screen.dart
 │       │   └── workout_search_screen.dart
 │       ├── services
 │       │   ├── exercise_db_service.dart
@@ -137,6 +136,10 @@ Project folder structure (use this to request files):
 │       │   ├── workout_service.dart
 │       │   └── workout_stats_service.dart
 │       └── widgets
+│           ├── calendar
+│           │   ├── recurring_workout_dialog.dart
+│           │   ├── rest_day_indicator.dart
+│           │   └── workout_event_card.dart
 │           ├── category_card.dart
 │           ├── execution
 │           │   ├── exercise_completion_animation.dart
@@ -211,7 +214,6 @@ Project folder structure (use this to request files):
     ├── 03_technical_architecture.md
     ├── 04_firebase_architecture.md
     ├── 05a_ai_integration.md
-    ├── 05b_ai_integration.md
     ├── 06a_auth_system.md
     ├── 06b_food_scanning.md
     ├── 06d_social_features.md
@@ -229,6 +231,7 @@ Project folder structure (use this to request files):
     ├── 12_accessibility.md
     ├── 13_ux_ui_spec.md
     └── 14a_workouts.md
+
 
 Which of these files do you want to review? 
 
