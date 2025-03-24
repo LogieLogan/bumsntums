@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/exercise.dart';
-import '../../../shared/theme/color_palette.dart';
 
 class ExerciseEditorScreen extends ConsumerStatefulWidget {
   final Exercise? exercise;
@@ -49,10 +48,6 @@ class _ExerciseEditorScreenState extends ConsumerState<ExerciseEditorScreen> {
   int _difficultyLevel = 3;
   bool _isDurationBased = false;
   String _targetArea = 'bums';
-  
-  final List<String> _targetAreaOptions = [
-    'bums', 'tums', 'legs', 'arms', 'chest', 'back', 'shoulders', 'fullBody'
-  ];
 
   @override
   void initState() {
@@ -228,46 +223,6 @@ class _ExerciseEditorScreenState extends ConsumerState<ExerciseEditorScreen> {
             return null;
           },
         ),
-        const SizedBox(height: 16),
-        
-        // Target area dropdown
-        DropdownButtonFormField<String>(
-          value: _targetArea,
-          decoration: const InputDecoration(
-            labelText: 'Target Area',
-          ),
-          items: _targetAreaOptions.map((area) {
-            return DropdownMenuItem(
-              value: area,
-              child: Text(_getDisplayNameForTargetArea(area)),
-            );
-          }).toList(),
-          onChanged: (value) {
-            if (value != null) {
-              setState(() {
-                _targetArea = value;
-              });
-            }
-          },
-        ),
-        
-        // Difficulty level slider
-        const SizedBox(height: 16),
-        Text('Difficulty Level: $_difficultyLevel',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        Slider(
-          value: _difficultyLevel.toDouble(),
-          min: 1,
-          max: 5,
-          divisions: 4,
-          label: _getDifficultyLabel(_difficultyLevel),
-          onChanged: (value) {
-            setState(() {
-              _difficultyLevel = value.toInt();
-            });
-          },
-        ),
       ],
     );
   }
@@ -392,62 +347,11 @@ class _ExerciseEditorScreenState extends ConsumerState<ExerciseEditorScreen> {
         TextFormField(
           controller: _resistanceController,
           decoration: const InputDecoration(
-            labelText: 'Resistance Level (1-5) - Optional',
+            labelText: 'Resistance Level (1-10) - Optional',
             hintText: 'For resistance bands or machines',
           ),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        ),
-        
-        const SizedBox(height: 24),
-        
-        // Tempo section
-        const Text('Exercise Tempo',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const Text('Seconds for each phase of the movement',
-          style: TextStyle(fontSize: 12),
-        ),
-        const SizedBox(height: 8),
-        
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _tempoDownController,
-                decoration: const InputDecoration(
-                  labelText: 'Down',
-                  hintText: 'e.g., 2',
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextFormField(
-                controller: _tempoHoldController,
-                decoration: const InputDecoration(
-                  labelText: 'Hold',
-                  hintText: 'e.g., 1',
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextFormField(
-                controller: _tempoUpController,
-                decoration: const InputDecoration(
-                  labelText: 'Up',
-                  hintText: 'e.g., 2',
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-            ),
-          ],
         ),
       ],
     );
@@ -698,46 +602,6 @@ class _ExerciseEditorScreenState extends ConsumerState<ExerciseEditorScreen> {
       
       // Return the exercise to the calling screen
       Navigator.pop(context, exercise);
-    }
-  }
-
-  String _getDisplayNameForTargetArea(String targetArea) {
-    switch (targetArea) {
-      case 'bums':
-        return 'Bums';
-      case 'tums':
-        return 'Tums';
-      case 'legs':
-        return 'Legs';
-      case 'arms':
-        return 'Arms';
-      case 'chest':
-        return 'Chest';
-      case 'back':
-        return 'Back';
-      case 'shoulders':
-        return 'Shoulders';
-      case 'fullBody':
-        return 'Full Body';
-      default:
-        return targetArea;
-    }
-  }
-
-  String _getDifficultyLabel(int level) {
-    switch (level) {
-      case 1:
-        return 'Very Easy';
-      case 2:
-        return 'Easy';
-      case 3:
-        return 'Moderate';
-      case 4:
-        return 'Hard';
-      case 5:
-        return 'Very Hard';
-      default:
-        return 'Moderate';
     }
   }
 }

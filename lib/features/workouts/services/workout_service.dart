@@ -344,35 +344,57 @@ class WorkoutService {
         return [];
       }
 
-      // For development, use mock data
-      if (kDebugMode) {
-        return _mockRepository
-            .getAllWorkouts()
-            .where((workout) => workoutIds.contains(workout.id))
-            .toList();
-      }
-
-      // Get the full workout details for each ID
-      // Note: Firestore doesn't support direct 'where in' for large arrays,
-      // so we may need to batch this for large collections
       List<Workout> favorites = [];
 
-      // Batch into groups of 10 (Firestore limit)
-      for (int i = 0; i < workoutIds.length; i += 10) {
-        final end = (i + 10 < workoutIds.length) ? i + 10 : workoutIds.length;
-        final batch = workoutIds.sublist(i, end);
+      // For development, use mock data
+      if (kDebugMode) {
+        favorites =
+            _mockRepository
+                .getAllWorkouts()
+                .where((workout) => workoutIds.contains(workout.id))
+                .toList();
+      } else {
+        // Batch into groups of 10 (Firestore limit)
+        for (int i = 0; i < workoutIds.length; i += 10) {
+          final end = (i + 10 < workoutIds.length) ? i + 10 : workoutIds.length;
+          final batch = workoutIds.sublist(i, end);
 
-        final workoutsSnapshot =
-            await _firestore
-                .collection('workouts')
-                .where(FieldPath.documentId, whereIn: batch)
-                .get();
+          // Check standard workouts
+          final workoutsSnapshot =
+              await _firestore
+                  .collection('workouts')
+                  .where(FieldPath.documentId, whereIn: batch)
+                  .get();
 
-        favorites.addAll(
-          workoutsSnapshot.docs.map(
-            (doc) => Workout.fromMap({'id': doc.id, ...doc.data()}),
-          ),
-        );
+          favorites.addAll(
+            workoutsSnapshot.docs.map(
+              (doc) => Workout.fromMap({'id': doc.id, ...doc.data()}),
+            ),
+          );
+        }
+      }
+
+      // Also check for favorited custom workouts
+      for (final workoutId in workoutIds) {
+        if (!favorites.any((w) => w.id == workoutId)) {
+          // Search in custom workouts (collectionGroup query)
+          try {
+            final customWorkoutQuery =
+                await _firestore
+                    .collectionGroup('workouts')
+                    .where('id', isEqualTo: workoutId)
+                    .limit(1)
+                    .get();
+
+            if (customWorkoutQuery.docs.isNotEmpty) {
+              favorites.add(
+                Workout.fromMap(customWorkoutQuery.docs.first.data()),
+              );
+            }
+          } catch (e) {
+            print('Error fetching custom workout: $e');
+          }
+        }
       }
 
       return favorites;

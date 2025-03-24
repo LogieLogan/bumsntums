@@ -1,6 +1,7 @@
 // lib/features/workouts/screens/workout_editor_screen.dart
 import 'package:bums_n_tums/features/workouts/screens/exercise_editor_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/exercise_selector_screen.dart';
+import 'package:bums_n_tums/shared/theme/color_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -60,157 +61,226 @@ class _WorkoutEditorScreenState extends ConsumerState<WorkoutEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_isNewWorkout ? 'Create Workout' : 'Edit Workout'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveWorkout, // No parameters needed
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Basic info section
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Workout Title',
-                hintText: 'e.g., Booty Blast Workout',
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                hintText: 'Describe what this workout focuses on',
-              ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 16),
-
-            // Category selection
-            DropdownButtonFormField<WorkoutCategory>(
-              value: _selectedCategory,
-              decoration: const InputDecoration(labelText: 'Category'),
-              items:
-                  WorkoutCategory.values.map((category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(_categoryToString(category)),
-                    );
-                  }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedCategory = value;
-                  });
-                }
-              },
-            ),
-
-            // Difficulty selection
-            const SizedBox(height: 16),
-            DropdownButtonFormField<WorkoutDifficulty>(
-              value: _selectedDifficulty,
-              decoration: const InputDecoration(labelText: 'Difficulty'),
-              items:
-                  WorkoutDifficulty.values.map((difficulty) {
-                    return DropdownMenuItem(
-                      value: difficulty,
-                      child: Text(_difficultyToString(difficulty)),
-                    );
-                  }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedDifficulty = value;
-                  });
-                }
-              },
-            ),
-
-            // Exercises section
-            const SizedBox(height: 24),
-            const Text(
-              'Exercises',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            _buildExerciseList(),
-
-            OutlinedButton.icon(
-              icon: const Icon(Icons.add),
-              label: const Text('Add Exercise'),
-              onPressed: () => _addExercise(), // Also make this explicit
-            ),
-
-            // Equipment section
-            const SizedBox(height: 24),
-            const Text(
-              'Equipment',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: [
-                ..._equipment.map(
-                  (item) => Chip(
-                    label: Text(item),
-                    onDeleted: () {
-                      setState(() {
-                        _equipment.remove(item);
-                      });
-                    },
-                  ),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.add, size: 16),
-                  label: const Text('Add'),
-                  onPressed: () => _addEquipment(), // Explicit function call
-                ),
-              ],
-            ),
-
-            // Tags section
-            const SizedBox(height: 24),
-            const Text(
-              'Tags',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: [
-                ..._tags.map(
-                  (tag) => Chip(
-                    label: Text(tag),
-                    onDeleted: () {
-                      setState(() {
-                        _tags.remove(tag);
-                      });
-                    },
-                  ),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.add, size: 16),
-                  label: const Text('Add'),
-                  onPressed: () => _addTag(), // Explicit function call
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(_isNewWorkout ? 'Create Workout' : 'Edit Workout'),
+          actions: [
+            IconButton(icon: const Icon(Icons.save), onPressed: _saveWorkout),
           ],
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Basic info section
+              TextField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Workout Title',
+                  hintText: 'e.g., Booty Blast Workout',
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  hintText: 'Describe what this workout focuses on',
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+
+              // Category selection
+              DropdownButtonFormField<WorkoutCategory>(
+                value: _selectedCategory,
+                decoration: const InputDecoration(labelText: 'Category'),
+                items:
+                    WorkoutCategory.values.map((category) {
+                      return DropdownMenuItem(
+                        value: category,
+                        child: Text(_categoryToString(category)),
+                      );
+                    }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _selectedCategory = value;
+                    });
+                  }
+                },
+              ),
+
+              // Difficulty selection
+              const SizedBox(height: 16),
+              DropdownButtonFormField<WorkoutDifficulty>(
+                value: _selectedDifficulty,
+                decoration: const InputDecoration(labelText: 'Difficulty'),
+                items:
+                    WorkoutDifficulty.values.map((difficulty) {
+                      return DropdownMenuItem(
+                        value: difficulty,
+                        child: Text(_difficultyToString(difficulty)),
+                      );
+                    }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _selectedDifficulty = value;
+                    });
+                  }
+                },
+              ),
+
+              // Exercises section
+              const SizedBox(height: 24),
+              const Text(
+                'Exercises',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              _buildExerciseList(),
+
+              OutlinedButton.icon(
+                icon: const Icon(Icons.add),
+                label: const Text('Add Exercise'),
+                onPressed: () => _addExercise(), // Also make this explicit
+              ),
+
+              // Equipment section
+              const SizedBox(height: 24),
+              const Text(
+                'Equipment',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ..._equipment.map(
+                    (item) => Chip(
+                      label: Text(item),
+                      onDeleted: () {
+                        setState(() {
+                          _equipment.remove(item);
+                        });
+                      },
+                    ),
+                  ),
+                  ActionChip(
+                    avatar: const Icon(Icons.add, size: 16),
+                    label: const Text('Add'),
+                    onPressed: () => _addEquipment(), // Explicit function call
+                  ),
+                ],
+              ),
+
+              // Tags section
+              const SizedBox(height: 24),
+              const Text(
+                'Tags',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ..._tags.map(
+                    (tag) => Chip(
+                      label: Text(tag),
+                      onDeleted: () {
+                        setState(() {
+                          _tags.remove(tag);
+                        });
+                      },
+                    ),
+                  ),
+                  ActionChip(
+                    avatar: const Icon(Icons.add, size: 16),
+                    label: const Text('Add'),
+                    onPressed: () => _addTag(), // Explicit function call
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<bool> _onWillPop() async {
+    // Check if there are unsaved changes
+    bool hasUnsavedChanges = false;
+
+    // For new workouts, check if any fields have been filled
+    if (_isNewWorkout) {
+      hasUnsavedChanges =
+          _titleController.text.isNotEmpty ||
+          _descriptionController.text.isNotEmpty ||
+          _exercises.isNotEmpty ||
+          _equipment.isNotEmpty ||
+          _tags.isNotEmpty;
+    } else {
+      // For editing existing workouts, check if anything changed
+      hasUnsavedChanges =
+          _titleController.text != widget.originalWorkout!.title ||
+          _descriptionController.text != widget.originalWorkout!.description ||
+          _selectedCategory != widget.originalWorkout!.category ||
+          _selectedDifficulty != widget.originalWorkout!.difficulty ||
+          _exercises.length != widget.originalWorkout!.exercises.length ||
+          _equipment.length != widget.originalWorkout!.equipment.length ||
+          _tags.length != widget.originalWorkout!.tags.length;
+    }
+
+    if (!hasUnsavedChanges) {
+      return true; // No changes, allow pop
+    }
+
+    // Show confirmation dialog
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Unsaved Changes'),
+          content: const Text(
+            'You have unsaved changes. Are you sure you want to discard them?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Don't discard
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Discard
+              },
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              child: const Text('Discard'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Don't discard yet
+                _saveWorkout(); // Save the workout
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.salmon,
+              ),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return shouldPop ?? false;
   }
 
   Widget _buildExerciseList() {
@@ -476,6 +546,11 @@ class _WorkoutEditorScreenState extends ConsumerState<WorkoutEditorScreen> {
 
     // Save the workout using the provider
     ref.read(workoutEditorProvider.notifier).saveWorkout(workout);
+
+    // Show success message
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Workout saved successfully')));
 
     // Close the screen and return the workout
     Navigator.pop(context, workout);

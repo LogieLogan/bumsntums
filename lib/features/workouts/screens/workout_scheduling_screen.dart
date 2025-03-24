@@ -605,7 +605,7 @@ class _WorkoutSchedulingScreenState
   Widget _buildMyWorkoutsTab() {
     // Use the existing custom workouts provider to get user's workouts
     final customWorkoutsAsync = ref.watch(
-      customWorkoutsProvider(widget.userId),
+      customWorkoutsStreamProvider(widget.userId),
     );
 
     return customWorkoutsAsync.when(
@@ -684,7 +684,7 @@ class _WorkoutSchedulingScreenState
                 const SizedBox(height: 8),
                 ElevatedButton(
                   onPressed:
-                      () => ref.refresh(customWorkoutsProvider(widget.userId)),
+                      () => ref.refresh(customWorkoutsStreamProvider(widget.userId)),
                   child: const Text('Retry'),
                 ),
               ],
@@ -914,7 +914,7 @@ class _WorkoutSchedulingScreenState
         )
         .then((_) {
           // Refresh the custom workouts list
-          ref.refresh(customWorkoutsProvider(widget.userId));
+          ref.refresh(customWorkoutsStreamProvider(widget.userId));
         });
   }
 
@@ -934,7 +934,7 @@ class _WorkoutSchedulingScreenState
             _toggleWorkoutSelection(workout);
           }
           // Refresh the custom workouts list either way
-          ref.refresh(customWorkoutsProvider(widget.userId));
+          ref.refresh(customWorkoutsStreamProvider(widget.userId));
         });
   }
 

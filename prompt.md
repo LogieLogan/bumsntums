@@ -2,11 +2,6 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 
 Area of focus:
 phase 2 of implemntation plan - phase 2 of workouts
-   - editing exercises doesnt save. Do we need to discuss how this can be done and the best way to do it? 
-   - Option to use stock workout as a base tempalte to make a custom workout
-   - Need to add access to exercises in the workout browse screen. 
-   - move my custom workouts add button to the title row on the left of 'workouts'. My custom workouts section should show a selection of custom workouts on the browse screen and then see al take you to the my custom workouts screen (similar to the other sections i.e. beginner friendly)
-
 
 project structure: 
 

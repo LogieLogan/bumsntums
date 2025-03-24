@@ -1,6 +1,7 @@
-// features/workouts/screens/custom_workouts_screen.dart
+// lib/features/workouts/screens/custom_workouts_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/workout.dart';
 import '../repositories/custom_workout_repository.dart';
 import '../screens/workout_editor_screen.dart';
@@ -8,30 +9,65 @@ import '../screens/workout_detail_screen.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
+import '../../../shared/analytics/firebase_analytics_service.dart';
 
-final customWorkoutsProvider = FutureProvider.autoDispose
-    .family<List<Workout>, String>((ref, userId) async {
-      final repository = CustomWorkoutRepository();
-      return repository.getUserWorkouts(userId);
+final customWorkoutsStreamProvider = StreamProvider.autoDispose
+    .family<List<Workout>, String>((ref, userId) {
+      return FirebaseFirestore.instance
+          .collection('user_custom_workouts')
+          .doc(userId)
+          .collection('workouts')
+          .snapshots()
+          .map(
+            (snapshot) =>
+                snapshot.docs
+                    .map((doc) => Workout.fromMap(doc.data()))
+                    .toList(),
+          );
     });
 
-class CustomWorkoutsScreen extends ConsumerWidget {
+class CustomWorkoutsScreen extends ConsumerStatefulWidget {
   final String userId;
 
   const CustomWorkoutsScreen({Key? key, required this.userId})
     : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final workoutsAsync = ref.watch(customWorkoutsProvider(userId));
+  ConsumerState<CustomWorkoutsScreen> createState() =>
+      _CustomWorkoutsScreenState();
+}
+
+class _CustomWorkoutsScreenState extends ConsumerState<CustomWorkoutsScreen> {
+  final AnalyticsService _analytics = AnalyticsService();
+
+  @override
+  void initState() {
+    super.initState();
+    _analytics.logScreenView(screenName: 'custom_workouts');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final workoutsAsync = ref.watch(
+      customWorkoutsStreamProvider(widget.userId),
+    );
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('My Custom Workouts'),
+        backgroundColor: AppColors.pink,
+        title: const Text(
+          'My Custom Workouts',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         actions: [
+          // Create workout button
           IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Create New Workout',
+            icon: const Icon(Icons.add, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
@@ -48,103 +84,92 @@ class CustomWorkoutsScreen extends ConsumerWidget {
           if (workouts.isEmpty) {
             return _buildEmptyState(context);
           }
-          // Fixed: directly return the workout list without the unnecessary Consumer
-          return _buildWorkoutsList(context, ref, workouts);
+
+          return _buildWorkoutsList(context, workouts);
         },
         loading:
             () => const LoadingIndicator(message: 'Loading your workouts...'),
-        error:
-            (error, stackTrace) => Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 48, color: AppColors.error),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error loading workouts',
-                    style: AppTextStyles.body.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    error.toString(),
-                    style: AppTextStyles.small.copyWith(
-                      color: AppColors.mediumGrey,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed:
-                        () => ref.refresh(customWorkoutsProvider(userId)),
-                    child: const Text('Try Again'),
-                  ),
-                ],
-              ),
-            ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const WorkoutEditorScreen(),
-            ),
-          );
-        },
-        backgroundColor: AppColors.salmon,
-        child: const Icon(Icons.add),
+        error: (error, stackTrace) => _buildErrorState(context, error, ref),
       ),
     );
   }
 
   Widget _buildEmptyState(BuildContext context) {
     return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.fitness_center, size: 64, color: AppColors.mediumGrey),
+            const SizedBox(height: 16),
+            Text(
+              'You haven\'t created any custom workouts yet',
+              style: AppTextStyles.body,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Create your own workout routines tailored to your preferences',
+              style: AppTextStyles.small.copyWith(color: AppColors.mediumGrey),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text('Create First Workout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.salmon,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const WorkoutEditorScreen(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, Object error, WidgetRef ref) {
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.fitness_center, size: 64, color: AppColors.mediumGrey),
+          Icon(Icons.error_outline, size: 48, color: AppColors.error),
           const SizedBox(height: 16),
           Text(
-            'You haven\'t created any custom workouts yet',
-            style: AppTextStyles.body,
-            textAlign: TextAlign.center,
+            'Error loading workouts',
+            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            'Create your own workout routines tailored to your preferences',
+            error.toString(),
             style: AppTextStyles.small.copyWith(color: AppColors.mediumGrey),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.add),
-            label: const Text('Create First Workout'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.salmon,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const WorkoutEditorScreen(),
-                ),
-              );
-            },
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed:
+                () => ref.refresh(customWorkoutsStreamProvider(widget.userId)),
+            child: const Text('Try Again'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWorkoutsList(
-    BuildContext context,
-    WidgetRef ref,
-    List<Workout> workouts,
-  ) {
+  Widget _buildWorkoutsList(BuildContext context, List<Workout> workouts) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: workouts.length,
@@ -184,7 +209,7 @@ class CustomWorkoutsScreen extends ConsumerWidget {
           onDismissed: (direction) async {
             // Delete the workout
             final repository = CustomWorkoutRepository();
-            await repository.deleteCustomWorkout(userId, workout.id);
+            await repository.deleteCustomWorkout(widget.userId, workout.id);
 
             // Show snackbar with undo option
             ScaffoldMessenger.of(context).showSnackBar(
@@ -194,17 +219,13 @@ class CustomWorkoutsScreen extends ConsumerWidget {
                   label: 'Undo',
                   onPressed: () async {
                     // Re-add the workout
-                    await repository.saveCustomWorkout(userId, workout);
-                    ref.refresh(customWorkoutsProvider(userId));
+                    await repository.saveCustomWorkout(widget.userId, workout);
                   },
                 ),
               ),
             );
           },
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: _buildWorkoutCard(context, workout),
-          ),
+          child: _buildWorkoutCard(context, workout),
         );
       },
     );
@@ -212,149 +233,125 @@ class CustomWorkoutsScreen extends ConsumerWidget {
 
   Widget _buildWorkoutCard(BuildContext context, Workout workout) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WorkoutDetailScreen(workoutId: workout.id),
-            ),
-          );
-        },
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Workout image or placeholder
-            Container(
-              height: 120,
-              decoration: BoxDecoration(
-                color: AppColors.salmon.withOpacity(0.2),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.fitness_center,
-                  size: 48,
-                  color: AppColors.salmon,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Workout title
-                  Text(
-                    workout.title,
-                    style: AppTextStyles.body.copyWith(
-                      fontWeight: FontWeight.bold,
+            // Header row with image and title
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Workout icon/image
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: AppColors.pink.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.fitness_center,
+                      size: 32,
+                      color: AppColors.pink,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                ),
 
-                  // Workout stats
-                  Row(
+                const SizedBox(width: 16),
+
+                // Title and basic info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.timer, size: 16, color: AppColors.mediumGrey),
-                      const SizedBox(width: 4),
                       Text(
-                        '${workout.durationMinutes} min',
-                        style: AppTextStyles.small.copyWith(
-                          color: AppColors.mediumGrey,
-                        ),
+                        workout.title,
+                        style: AppTextStyles.h3,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(width: 16),
-                      Icon(
-                        Icons.fitness_center,
-                        size: 16,
-                        color: AppColors.mediumGrey,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${workout.exercises.length} exercises',
-                        style: AppTextStyles.small.copyWith(
-                          color: AppColors.mediumGrey,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Workout category and difficulty
-                  Row(
-                    children: [
-                      _buildChip(
-                        workout.category.name,
-                        AppColors.salmon.withOpacity(0.1),
-                        AppColors.salmon,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildChip(
-                        workout.difficulty.name,
-                        AppColors.popBlue.withOpacity(0.1),
-                        AppColors.popBlue,
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Action buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => WorkoutEditorScreen(
-                                      originalWorkout: workout,
-                                    ),
-                              ),
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.salmon,
-                            side: BorderSide(color: AppColors.salmon),
+                      const SizedBox(height: 8),
+                      // Workout stats
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.timer,
+                            size: 16,
+                            color: AppColors.mediumGrey,
                           ),
-                          child: const Text('Edit'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => WorkoutDetailScreen(
-                                      workoutId: workout.id,
-                                    ),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.salmon,
-                            foregroundColor: Colors.white,
+                          const SizedBox(width: 4),
+                          Text(
+                            '${workout.durationMinutes} min',
+                            style: AppTextStyles.small.copyWith(
+                              color: AppColors.mediumGrey,
+                            ),
                           ),
-                          child: const Text('Start'),
-                        ),
+                          const SizedBox(width: 16),
+                          Icon(
+                            Icons.fitness_center,
+                            size: 16,
+                            color: AppColors.mediumGrey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${workout.exercises.length} exercises',
+                            style: AppTextStyles.small.copyWith(
+                              color: AppColors.mediumGrey,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
+              ],
+            ),
+
+            // Description
+            if (workout.description.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                workout.description,
+                style: AppTextStyles.small.copyWith(color: AppColors.darkGrey),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
+            ],
+            // Action buttons row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  label: const Text('Edit'),
+                  onPressed: () => _navigateToWorkoutEditor(workout),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.popBlue,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.play_arrow, size: 18),
+                  label: const Text('Start'),
+                  onPressed: () => _navigateToWorkoutDetail(workout),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.pink,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -362,17 +359,71 @@ class CustomWorkoutsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildChip(String label, Color backgroundColor, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label.substring(0, 1).toUpperCase() + label.substring(1),
-        style: AppTextStyles.caption.copyWith(color: textColor),
+  void _navigateToWorkoutDetail(Workout workout) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WorkoutDetailScreen(workoutId: workout.id),
       ),
     );
+  }
+
+  void _navigateToWorkoutEditor(Workout workout) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WorkoutEditorScreen(originalWorkout: workout),
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteWorkout(Workout workout) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Workout'),
+            content: Text(
+              'Are you sure you want to delete "${workout.title}"? This action cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true) {
+      // Delete the workout
+      final repository = CustomWorkoutRepository();
+      final success = await repository.deleteCustomWorkout(
+        widget.userId,
+        workout.id,
+      );
+
+      if (success) {
+        // Show confirmation
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${workout.title} deleted'),
+            action: SnackBarAction(
+              label: 'Undo',
+              onPressed: () async {
+                // Re-add the workout
+                await repository.saveCustomWorkout(widget.userId, workout);
+              },
+            ),
+          ),
+        );
+      }
+    }
   }
 }

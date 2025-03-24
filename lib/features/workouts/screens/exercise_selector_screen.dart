@@ -666,27 +666,6 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        OutlinedButton.icon(
-                          icon: const Icon(Icons.edit),
-                          label: const Text('Edit'),
-                          onPressed: () {
-                            Navigator.pop(context);
-                            Navigator.push<Exercise>(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => ExerciseEditorScreen(
-                                      exercise: exercise,
-                                      isNewExercise: false,
-                                    ),
-                              ),
-                            ).then((updatedExercise) {
-                              if (updatedExercise != null) {
-                                Navigator.pop(context, updatedExercise);
-                              }
-                            });
-                          },
-                        ),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.add),
                           label: const Text('Add to Workout'),
