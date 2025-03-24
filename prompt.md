@@ -3,6 +3,9 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 Area of focus:
 phase 2 of implemntation plan - phase 2 of workouts
 
+Main specs
+14a, 06d
+
 
 project structure: 
 
