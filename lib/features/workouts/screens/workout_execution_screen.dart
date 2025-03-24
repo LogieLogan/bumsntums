@@ -1,8 +1,7 @@
 // lib/features/workouts/screens/workout_execution_screen.dart
+import 'package:bums_n_tums/features/workouts/models/workout_section.dart';
 import 'package:bums_n_tums/features/workouts/providers/workout_calendar_provider.dart';
-import 'package:bums_n_tums/features/workouts/providers/workout_stats_provider.dart';
-import 'package:bums_n_tums/features/workouts/widgets/execution/exercise_completion_animation.dart';
-import 'package:bums_n_tums/shared/services/fallback_image_provider.dart';
+import 'package:bums_n_tums/features/workouts/widgets/execution/exercise_settings_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,12 +12,13 @@ import '../models/workout_log.dart';
 import '../providers/workout_execution_provider.dart';
 import '../widgets/execution/exercise_timer.dart';
 import '../widgets/execution/workout_progress_indicator.dart';
+import '../widgets/execution/exercise_completion_animation.dart';
+import '../widgets/execution/rest_timer.dart';
+import '../widgets/execution/set_rest_timer.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
-import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/theme/color_palette.dart';
 import 'workout_completion_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../widgets/execution/rest_timer.dart';
 
 class WorkoutExecutionScreen extends ConsumerStatefulWidget {
   const WorkoutExecutionScreen({super.key});
@@ -33,15 +33,20 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
   final AnalyticsService _analytics = AnalyticsService();
   Timer? _timer;
   int _secondsElapsed = 0;
-  bool _showRestTimer = false;
   bool _showCompletionAnimation = false;
   bool _isMusicPlaying = false;
+
+  // Countdown timer for reps-based exercises
+  Timer? _repCountdownTimer;
+  int _repCountdownSeconds = 0;
+  final int _defaultRepCountdown = 45; // Default 45 seconds per set
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _startTimer();
+    _startRepCountdownIfNeeded();
     _analytics.logScreenView(
       screenName: 'workout_execution',
       screenClass: 'WorkoutExecutionScreen',
@@ -57,6 +62,7 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
   @override
   void dispose() {
     _timer?.cancel();
+    _repCountdownTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
 
     // Reset system UI
@@ -65,6 +71,39 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
       overlays: SystemUiOverlay.values,
     );
     super.dispose();
+  }
+
+  void _startRepCountdownIfNeeded() {
+    final state = ref.read(workoutExecutionProvider);
+    if (state == null) return;
+
+    // Only start countdown for rep-based exercises (not timed)
+    if (state.currentExercise.durationSeconds == null &&
+        !state.isInRestPeriod &&
+        !state.isInSetRestPeriod) {
+      // Cancel existing timer if any
+      _repCountdownTimer?.cancel();
+
+      // Reset countdown
+      setState(() {
+        _repCountdownSeconds = _defaultRepCountdown;
+      });
+
+      // Start countdown
+      _repCountdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!state.isPaused && _repCountdownSeconds > 0) {
+          setState(() {
+            _repCountdownSeconds--;
+          });
+        }
+
+        // Auto-complete when countdown reaches 0
+        if (_repCountdownSeconds <= 0) {
+          _completeSet();
+          timer.cancel();
+        }
+      });
+    }
   }
 
   @override
@@ -139,18 +178,18 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
 
                   // Exercise content or rest timer
                   Expanded(
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child:
-                            executionState.isInRestPeriod
-                                ? _buildRestTimer(executionState)
-                                : _buildExerciseContent(
-                                  executionState,
-                                  currentExercise,
-                                  isPaused,
-                                ),
-                      ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child:
+                          executionState.isInRestPeriod
+                              ? _buildRestTimer(executionState)
+                              : executionState.isInSetRestPeriod
+                              ? _buildSetRestTimer(executionState)
+                              : _buildExerciseContent(
+                                executionState,
+                                currentExercise,
+                                isPaused,
+                              ),
                     ),
                   ),
 
@@ -174,17 +213,339 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     );
   }
 
+  Widget _buildSetRestTimer(WorkoutExecutionState state) {
+    final currentExercise = state.currentExercise;
+
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SetRestTimer(
+            durationSeconds: state.setRestTimeRemaining,
+            isPaused: state.isPaused,
+            currentSet: state.currentSet,
+            totalSets: currentExercise.sets,
+            onComplete: () {
+              ref.read(workoutExecutionProvider.notifier).endSetRestPeriod();
+              _startRepCountdownIfNeeded();
+            },
+            onAddTime: () {
+              // Add 15 seconds to rest time
+              ref.read(workoutExecutionProvider.notifier).adjustSetRestTime(15);
+            },
+            onReduceTime: () {
+              // Reduce rest time by 15 seconds, but don't go below 5
+              ref
+                  .read(workoutExecutionProvider.notifier)
+                  .adjustSetRestTime(-15, minimum: 5);
+            },
+          ),
+
+          const SizedBox(height: 24),
+
+          // Exercise reminder
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Current Exercise',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.salmon,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Form tips reminder
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.popTurquoise.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.popTurquoise, width: 1),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.lightbulb_outline,
+                            color: AppColors.popTurquoise,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Remember',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.popTurquoise,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        currentExercise.formTips.isNotEmpty
+                            ? currentExercise.formTips.first
+                            : _extractFormTips(currentExercise.description),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Next set motivation
+                      Text(
+                        state.currentSet < currentExercise.sets
+                            ? 'Next up: Set ${state.currentSet + 1} of ${currentExercise.sets}'
+                            : 'This is your last set - give it your all!',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.salmon,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRestTimer(WorkoutExecutionState state) {
     final nextExercise = state.nextExercise;
     final nextExerciseName = nextExercise?.name ?? 'Done';
 
-    return RestTimer(
-      durationSeconds: state.restTimeRemaining,
-      isPaused: state.isPaused,
-      nextExerciseName: nextExerciseName,
-      onComplete: () {
-        ref.read(workoutExecutionProvider.notifier).endRestPeriod();
-      },
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          RestTimer(
+            durationSeconds: state.restTimeRemaining,
+            isPaused: state.isPaused,
+            nextExerciseName: nextExerciseName,
+            onComplete: () {
+              ref.read(workoutExecutionProvider.notifier).endRestPeriod();
+              _startRepCountdownIfNeeded();
+            },
+            onAddTime: () {
+              // Add 15 seconds to rest time
+              print("Adding 15 seconds to rest time"); // Debug print
+              ref.read(workoutExecutionProvider.notifier).adjustRestTime(15);
+            },
+            onReduceTime: () {
+              // Reduce rest time by 15 seconds, but don't go below 5
+              print("Reducing rest time by 15 seconds"); // Debug print
+              ref
+                  .read(workoutExecutionProvider.notifier)
+                  .adjustRestTime(-15, minimum: 5);
+            },
+          ),
+
+          if (nextExercise != null) ...[
+            const SizedBox(height: 24),
+
+            // Next exercise preview
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Coming Up Next',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: AppColors.salmon,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Exercise image and info
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Exercise image
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          nextExercise.imageUrl,
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 100,
+                              height: 100,
+                              color: AppColors.paleGrey,
+                              child: const Icon(Icons.fitness_center),
+                            );
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(width: 16),
+
+                      // Exercise info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              nextExercise.name,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            // Exercise stats
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.fitness_center,
+                                  size: 16,
+                                  color: AppColors.mediumGrey,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  nextExercise.durationSeconds != null
+                                      ? '${nextExercise.durationSeconds} seconds'
+                                      : '${nextExercise.sets} sets × ${nextExercise.reps} reps',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 4),
+
+                            // Target area
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.track_changes,
+                                  size: 16,
+                                  color: AppColors.mediumGrey,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Targets: ${nextExercise.targetArea}',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Full instructions
+                  Text(
+                    'Instructions:',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Show full description, not truncated
+                  Text(
+                    nextExercise.description,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+
+                  // Show all form tips, not just the first one
+                  if (nextExercise.formTips.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'Form Tips:',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.popTurquoise,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...nextExercise.formTips
+                        .map(
+                          (tip) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.check_circle_outline,
+                                  size: 16,
+                                  color: AppColors.popTurquoise,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    tip,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(color: AppColors.darkGrey),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ] else ...[
+                    // If no specific form tips, show extracted tips
+                    const SizedBox(height: 16),
+                    Text(
+                      'Form Tips:',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.popTurquoise,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _extractFormTips(nextExercise.description),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.darkGrey,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -196,6 +557,7 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        // Exercise name and header info
         Text(
           currentExercise.name,
           style: Theme.of(
@@ -203,35 +565,134 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
           ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 24),
 
-        // Exercise image
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Image.asset(
-            currentExercise.imageUrl,
-            height: 200,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                height: 200,
-                width: double.infinity,
-                color: AppColors.paleGrey,
-                child: Center(
-                  child: Icon(
-                    Icons.fitness_center,
-                    size: 64,
-                    color: AppColors.salmon,
-                  ),
-                ),
-              );
-            },
+        // Set indicator
+        Text(
+          'Set ${state.currentSet} of ${currentExercise.sets}',
+          style: TextStyle(
+            color: AppColors.salmon,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
           ),
         ),
-        const SizedBox(height: 24),
 
-        // Timer or rep counter
+        const SizedBox(height: 8),
+
+        // Exercise countdown timer / settings row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Time remaining
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.paleGrey,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.timer, color: AppColors.popBlue, size: 20),
+                  const SizedBox(width: 4),
+                  Text(
+                    currentExercise.durationSeconds != null
+                        ? 'Timed'
+                        : _formatTime(_repCountdownSeconds),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.popBlue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 8),
+
+            // Settings button (cog)
+            IconButton(
+              icon: Icon(Icons.settings, color: AppColors.darkGrey),
+              onPressed: isPaused ? () => _showExerciseSettings() : null,
+              tooltip: 'Exercise Settings',
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 16),
+
+        // Exercise image
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.asset(
+              currentExercise.imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: AppColors.paleGrey,
+                  child: Center(
+                    child: Icon(
+                      Icons.fitness_center,
+                      size: 64,
+                      color: AppColors.salmon,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Set progress indicator
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(currentExercise.sets, (index) {
+            final isCompleted =
+                index <
+                (state
+                        .completedExercises[state.currentExerciseIndex]
+                        ?.setsCompleted ??
+                    0);
+            final isCurrent = index == state.currentSet - 1;
+
+            return Container(
+              width: 40,
+              height: 40,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color:
+                    isCompleted
+                        ? AppColors.popGreen
+                        : isCurrent
+                        ? AppColors.salmon
+                        : AppColors.paleGrey,
+                border:
+                    isCurrent
+                        ? Border.all(color: AppColors.salmon, width: 3)
+                        : null,
+              ),
+              child: Center(
+                child: Text(
+                  '${index + 1}',
+                  style: TextStyle(
+                    color:
+                        isCompleted || isCurrent
+                            ? Colors.white
+                            : AppColors.darkGrey,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Rep counter or timer based on exercise type
         if (currentExercise.durationSeconds != null)
           ExerciseTimer(
             durationSeconds: currentExercise.durationSeconds!,
@@ -239,158 +700,45 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
             onComplete: _onExerciseComplete,
           )
         else
-          _buildRepCounter(currentExercise),
-
-        const SizedBox(height: 16),
-
-        // Exercise description
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.paleGrey,
-            borderRadius: BorderRadius.circular(16),
+          Center(
+            child: Text(
+              '${currentExercise.reps} reps',
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Instructions',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+
+        const SizedBox(height: 24),
+
+        // Complete set button
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: _completeSet,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.salmon,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
               ),
-              const SizedBox(height: 8),
-              Text(
-                currentExercise.description,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
+            ),
+            child: Text(
+              'COMPLETE SET',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
-        const SizedBox(height: 16),
 
-        // Modifications if available
-        if (currentExercise.modifications.isNotEmpty)
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.popGreen.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.popGreen, width: 1),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Modifications',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.popGreen,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ...currentExercise.modifications.map(
-                  (mod) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          color: AppColors.popGreen,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                mod.title,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                mod.description,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-        // Form tips section
-        if (currentExercise.description.contains("keeping") ||
-            currentExercise.description.length > 100)
-          Column(
-            children: [
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.popTurquoise.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.popTurquoise, width: 1),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.lightbulb_outline,
-                          color: AppColors.popTurquoise,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Form Tips',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.popTurquoise,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Extract form tips from description
-                    Text(
-                      _extractFormTips(currentExercise.description),
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        // Instructions button - simple and won't cause layout issues
+        const SizedBox(height: 8),
+        TextButton.icon(
+          icon: Icon(Icons.info_outline, size: 18),
+          label: Text('View Instructions & Tips'),
+          onPressed: () => _showInstructionsDialog(currentExercise),
+          style: TextButton.styleFrom(foregroundColor: AppColors.popBlue),
+        ),
       ],
     );
-  }
-
-  String _extractFormTips(String description) {
-    final sentences = description.split('. ');
-    final tips =
-        sentences
-            .where(
-              (sentence) =>
-                  sentence.toLowerCase().contains('keep') ||
-                  sentence.toLowerCase().contains('maintain') ||
-                  sentence.toLowerCase().contains('ensure') ||
-                  sentence.toLowerCase().contains('focus on'),
-            )
-            .toList();
-
-    return tips.isNotEmpty
-        ? tips.join('. ') + '.'
-        : "Focus on proper form and controlled movements.";
   }
 
   Widget _buildTopBar(Workout workout, WorkoutExecutionState state) {
@@ -449,39 +797,80 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
             ],
           ),
 
-          IconButton(
-            icon: Icon(
-              _isMusicPlaying ? Icons.music_note : Icons.music_off,
-              color:
-                  _isMusicPlaying ? AppColors.popYellow : AppColors.mediumGrey,
-            ),
-            onPressed: _toggleBackgroundMusic,
-            tooltip:
-                _isMusicPlaying
-                    ? 'Turn off background music'
-                    : 'Turn on background music',
-          ),
-
+          // Music and elapsed time row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Elapsed time
-              Text(
-                _formatTime(_secondsElapsed),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.salmon,
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.paleGrey,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.timer, size: 16, color: AppColors.salmon),
+                    const SizedBox(width: 4),
+                    Text(
+                      _formatTime(_secondsElapsed),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.salmon,
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
-              if (!state.isInRestPeriod &&
-                  state.currentExercise.durationSeconds == null)
-                Text(
-                  'Sets: ${state.completedExercises[state.currentExerciseIndex]?.setsCompleted ?? 0}/${state.currentExercise.sets}',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+              // Music toggle - FIXED VERSION
+              GestureDetector(
+                onTap: _toggleBackgroundMusic,
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color:
+                        _isMusicPlaying
+                            ? AppColors.popYellow.withOpacity(0.2)
+                            : AppColors.paleGrey,
+                    borderRadius: BorderRadius.circular(16),
+                    border:
+                        _isMusicPlaying
+                            ? Border.all(color: AppColors.popYellow)
+                            : null,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _isMusicPlaying ? Icons.music_note : Icons.music_off,
+                        size: 16,
+                        color:
+                            _isMusicPlaying
+                                ? AppColors.popYellow
+                                : AppColors.mediumGrey,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _isMusicPlaying ? 'Music On' : 'Music Off',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color:
+                              _isMusicPlaying
+                                  ? AppColors.popYellow
+                                  : AppColors.mediumGrey,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+              ),
             ],
           ),
 
@@ -493,68 +882,20 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
             totalExercises: workout.exercises.length,
             progressPercentage: state.progressPercentage,
           ),
+
+          // Exercise progress text
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              'Exercise ${state.currentExerciseIndex + 1} of ${workout.exercises.length}',
+              style: TextStyle(color: AppColors.mediumGrey, fontSize: 12),
+            ),
+          ),
+
+          // Section indicator
+          if (workout.sections.isNotEmpty) _buildSectionIndicator(state),
         ],
       ),
-    );
-  }
-
-  Widget _buildRepCounter(Exercise exercise) {
-    return Column(
-      children: [
-        Text(
-          '${exercise.sets} sets of ${exercise.reps} reps',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (int i = 0; i < exercise.sets; i++)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor:
-                      i <
-                              (ref
-                                      .watch(workoutExecutionProvider)
-                                      ?.completedExercises[ref
-                                          .watch(workoutExecutionProvider)!
-                                          .currentExerciseIndex]
-                                      ?.setsCompleted ??
-                                  0)
-                          ? AppColors.popGreen
-                          : AppColors.paleGrey,
-                  child: Text(
-                    '${i + 1}',
-                    style: TextStyle(
-                      color:
-                          i <
-                                  (ref
-                                          .watch(workoutExecutionProvider)
-                                          ?.completedExercises[ref
-                                              .watch(workoutExecutionProvider)!
-                                              .currentExerciseIndex]
-                                          ?.setsCompleted ??
-                                      0)
-                              ? Colors.white
-                              : Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        PrimaryButton(
-          text: 'Complete Set',
-          onPressed: () {
-            HapticFeedback.mediumImpact();
-            _completeSet();
-          },
-        ),
-      ],
     );
   }
 
@@ -604,6 +945,139 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     );
   }
 
+  void _showExerciseSettings() {
+    final state = ref.read(workoutExecutionProvider);
+    if (state == null) return;
+
+    final currentExerciseIndex = state.currentExerciseIndex;
+    final currentExercise = state.currentExercise;
+
+    print("Opening exercise settings modal for: ${currentExercise.name}");
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows for a larger modal
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return FractionallySizedBox(
+          heightFactor: 0.9, // Takes up 90% of the screen
+          child: ExerciseSettingsModal(
+            exercise: currentExercise,
+            onSave: (updatedExercise) {
+              print("Saving updated exercise: ${updatedExercise.name}");
+              print(
+                "New settings - sets: ${updatedExercise.sets}, reps: ${updatedExercise.reps}, duration: ${updatedExercise.durationSeconds}",
+              );
+
+              ref
+                  .read(workoutExecutionProvider.notifier)
+                  .updateExercise(currentExerciseIndex, updatedExercise);
+
+              // Restart the rep countdown if applicable
+              if (updatedExercise.durationSeconds == null) {
+                setState(() {
+                  _repCountdownSeconds = _defaultRepCountdown;
+                });
+              }
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _showInstructionsDialog(Exercise exercise) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
+                maxWidth: MediaQuery.of(context).size.width * 0.9,
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Dialog title and close button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            exercise.name,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+
+                    // Instructions
+                    Text(
+                      'Instructions',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      exercise.description,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Form tips
+                    Text(
+                      'Form Tips',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.popTurquoise,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      exercise.formTips.isNotEmpty
+                          ? exercise.formTips.join('\n\n')
+                          : _extractFormTips(exercise.description),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Close button at bottom
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.salmon,
+                        ),
+                        child: const Text('Close'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+  }
+
   void _pauseWorkout() {
     HapticFeedback.mediumImpact();
     ref.read(workoutExecutionProvider.notifier).pauseWorkout();
@@ -649,69 +1123,26 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
 
   void _completeSet() {
     HapticFeedback.mediumImpact();
+    ref.read(workoutExecutionProvider.notifier).completeSet();
 
+    // Show completion animation if appropriate
     final state = ref.read(workoutExecutionProvider);
-    if (state == null) return;
+    if (state != null) {
+      final currentExercise = state.currentExercise;
+      final currentSet = state.currentSet;
 
-    final currentExercise = state.currentExercise;
-    final currentExerciseIndex = state.currentExerciseIndex;
-
-    // Get the existing log or create a new one
-    final existingLog = state.completedExercises[currentExerciseIndex];
-    final completedSets = (existingLog?.setsCompleted ?? 0) + 1;
-
-    // Update the log
-    ref
-        .read(workoutExecutionProvider.notifier)
-        .logExerciseCompletion(
-          currentExerciseIndex,
-          ExerciseLog(
-            exerciseName: currentExercise.name,
-            setsCompleted:
-                completedSets > currentExercise.sets
-                    ? currentExercise.sets
-                    : completedSets,
-            repsCompleted: currentExercise.reps,
-            difficultyRating: 3, // Default middle difficulty
-          ),
-        );
-
-    // If all sets are completed
-    if (completedSets >= currentExercise.sets) {
-      // Show completion animation
-      setState(() {
-        _showCompletionAnimation = true;
-      });
-
-      // If voice guidance is enabled, announce completion
-      if (state.voiceGuidanceEnabled) {
-        ref.read(voiceGuidanceProvider).announceComplete();
-      }
-
-      // If this is the last exercise, complete workout after animation
-      if (state.isLastExercise) {
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            setState(() {
-              _showCompletionAnimation = false;
-            });
-            _completeWorkout();
-          }
+      // If this was the last set, show the completion animation
+      if (currentSet >= currentExercise.sets) {
+        setState(() {
+          _showCompletionAnimation = true;
         });
-      } else {
-        // Otherwise, start rest period after animation
+
+        // Hide the animation after a delay
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
             setState(() {
               _showCompletionAnimation = false;
             });
-            ref
-                .read(workoutExecutionProvider.notifier)
-                .startRestPeriod(
-                  currentExercise.restBetweenSeconds > 0
-                      ? currentExercise.restBetweenSeconds
-                      : 30, // Default rest period if not specified
-                );
           }
         });
       }
@@ -877,6 +1308,142 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
             ],
           ),
     );
+  }
+
+  String _extractFormTips(String description) {
+    final sentences = description.split('. ');
+    final tips =
+        sentences
+            .where(
+              (sentence) =>
+                  sentence.toLowerCase().contains('keep') ||
+                  sentence.toLowerCase().contains('maintain') ||
+                  sentence.toLowerCase().contains('ensure') ||
+                  sentence.toLowerCase().contains('focus on'),
+            )
+            .toList();
+
+    return tips.isNotEmpty
+        ? tips.join('. ') + '.'
+        : "Focus on proper form and controlled movements.";
+  }
+
+  ({int sectionIndex, int localExerciseIndex})? _getSectionIndices(
+    int globalIndex,
+  ) {
+    final state = ref.read(workoutExecutionProvider);
+    if (state == null || state.workout.sections.isEmpty) return null;
+
+    int exerciseCount = 0;
+    for (int i = 0; i < state.workout.sections.length; i++) {
+      final section = state.workout.sections[i];
+      if (globalIndex < exerciseCount + section.exercises.length) {
+        return (
+          sectionIndex: i,
+          localExerciseIndex: globalIndex - exerciseCount,
+        );
+      }
+      exerciseCount += section.exercises.length;
+    }
+
+    return null;
+  }
+
+  Widget _buildSectionIndicator(WorkoutExecutionState state) {
+    // Get current section if using sections
+    if (state.workout.sections.isEmpty) return const SizedBox.shrink();
+
+    // Find current section
+    final indices = _getSectionIndices(state.currentExerciseIndex);
+    if (indices == null) return const SizedBox.shrink();
+
+    final section = state.workout.sections[indices.sectionIndex];
+    final sectionType = section.type;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: _getSectionColor(sectionType).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _getSectionColor(sectionType), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _getSectionTypeIcon(sectionType),
+            color: _getSectionColor(sectionType),
+            size: 16,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            section.name,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: _getSectionColor(sectionType),
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: _getSectionColor(sectionType),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              _getSectionTypeName(sectionType),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper methods for section styling
+  Color _getSectionColor(SectionType type) {
+    switch (type) {
+      case SectionType.normal:
+        return AppColors.popBlue;
+      case SectionType.circuit:
+        return AppColors.popGreen;
+      case SectionType.superset:
+        return AppColors.popCoral;
+      default:
+        return AppColors.popBlue;
+    }
+  }
+
+  String _getSectionTypeName(SectionType type) {
+    switch (type) {
+      case SectionType.normal:
+        return 'Standard';
+      case SectionType.circuit:
+        return 'Circuit';
+      case SectionType.superset:
+        return 'Superset';
+      default:
+        return 'Standard';
+    }
+  }
+
+  IconData _getSectionTypeIcon(SectionType type) {
+    switch (type) {
+      case SectionType.normal:
+        return Icons.list;
+      case SectionType.circuit:
+        return Icons.loop;
+      case SectionType.superset:
+        return Icons.swap_horiz;
+      default:
+        return Icons.list;
+    }
   }
 
   String _formatTime(int seconds) {

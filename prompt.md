@@ -97,6 +97,7 @@ project structure:
 │       │   ├── workout.dart
 │       │   ├── workout_log.dart
 │       │   ├── workout_plan.dart
+│       │   ├── workout_section.dart
 │       │   ├── workout_stats.dart
 │       │   └── workout_streak.dart
 │       ├── providers
@@ -117,6 +118,7 @@ project structure:
 │       │   ├── exercise_editor_screen.dart
 │       │   ├── exercise_selector_screen.dart
 │       │   ├── favorite_workouts_screen.dart
+│       │   ├── pre_workout_setup_screen.dart
 │       │   ├── workout_analytics_screen.dart
 │       │   ├── workout_browse_screen.dart
 │       │   ├── workout_calendar_screen.dart
@@ -127,7 +129,9 @@ project structure:
 │       │   ├── workout_history_screen.dart
 │       │   ├── workout_plan_editor_screen.dart
 │       │   ├── workout_scheduling_screen.dart
-│       │   └── workout_search_screen.dart
+│       │   ├── workout_search_screen.dart
+│       │   ├── workout_templates_screen.dart
+│       │   └── workout_version_history_screen.dart
 │       ├── services
 │       │   ├── exercise_db_service.dart
 │       │   ├── voice_guidance_service.dart
@@ -142,8 +146,10 @@ project structure:
 │           ├── category_card.dart
 │           ├── execution
 │           │   ├── exercise_completion_animation.dart
+│           │   ├── exercise_settings_modal.dart
 │           │   ├── exercise_timer.dart
 │           │   ├── rest_timer.dart
+│           │   ├── set_rest_timer.dart
 │           │   └── workout_progress_indicator.dart
 │           ├── exercise_list_item.dart
 │           ├── workout_card.dart

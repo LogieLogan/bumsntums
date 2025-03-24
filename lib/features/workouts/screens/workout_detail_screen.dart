@@ -1,4 +1,5 @@
 // lib/features/workouts/screens/workout_detail_screen.dart
+import 'package:bums_n_tums/features/workouts/screens/pre_workout_setup_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_editor_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_execution_screen.dart';
 import 'package:flutter/material.dart';
@@ -197,7 +198,7 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
             ),
 
             // Bottom space for the floating button
-            const SliverToBoxAdapter(child: SizedBox(height: 80)),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
 
@@ -245,14 +246,36 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
           ),
         ),
 
-        // Start workout button
+        // Fixed START WORKOUT button at the bottom
         Positioned(
           bottom: 16,
           left: 16,
           right: 16,
-          child: PrimaryButton(
-            text: 'Start Workout',
-            onPressed: () => _startWorkout(workout),
+          child: SafeArea(
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => PreWorkoutSetupScreen(workout: workout),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.salmon,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 3,
+              ),
+              child: const Text(
+                'START WORKOUT',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
           ),
         ),
       ],
@@ -410,15 +433,23 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
     }
   }
 
-  void _startWorkout(Workout workout) {
+  void _startWorkout(Workout workout) async {
     // Log analytics event
     _analytics.logWorkoutStarted(
       workoutId: workout.id,
       workoutName: workout.title,
     );
 
+    // Get the latest version of the workout (to include any modifications)
+    Workout? latestWorkout = await ref
+        .read(workoutServiceProvider)
+        .getWorkoutById(workout.id);
+
+    // Use the latest workout if available, otherwise use the provided one
+    final workoutToStart = latestWorkout ?? workout;
+
     // Start workout execution using the provider
-    ref.read(workoutExecutionProvider.notifier).startWorkout(workout);
+    ref.read(workoutExecutionProvider.notifier).startWorkout(workoutToStart);
 
     // Navigate to workout execution screen
     Navigator.of(context).push(

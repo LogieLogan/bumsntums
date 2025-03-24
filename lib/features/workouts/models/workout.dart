@@ -1,6 +1,7 @@
-// lib/features/workouts/models/workout.dart
+// lib/features/workouts/models/workout.dart (updated)
 import 'package:equatable/equatable.dart';
 import 'exercise.dart';
+import 'workout_section.dart';
 
 enum WorkoutDifficulty { beginner, intermediate, advanced }
 enum WorkoutCategory { bums, tums, fullBody, cardio, quickWorkout }
@@ -18,15 +19,24 @@ class Workout extends Equatable {
   final bool featured;
   final bool isAiGenerated;
   final DateTime createdAt;
-  final String createdBy; // admin, ai, userId
-  final List<Exercise> exercises;
-  final List<String> equipment; // none, mat, dumbbells, etc.
-  final List<String> tags; // quick, intense, recovery, etc.
-  final bool downloadsAvailable; // for offline access
+  final String createdBy; 
+  final List<Exercise> exercises; 
+  final List<String> equipment; 
+  final List<String> tags; 
+  final bool downloadsAvailable; 
   
-  // Accessibility and personalization
+  
+  final String? parentTemplateId; 
+  final String? previousVersionId; 
+  final String versionNotes; 
+  final bool isTemplate; 
+  final List<WorkoutSection> sections; 
+  final int timesUsed; 
+  final DateTime? lastUsed; 
+  
+  
   final bool hasAccessibilityOptions;
-  final List<String> intensityModifications; // options to modify intensity
+  final List<String> intensityModifications; 
 
   const Workout({
     required this.id,
@@ -48,6 +58,13 @@ class Workout extends Equatable {
     this.downloadsAvailable = false,
     this.hasAccessibilityOptions = false,
     this.intensityModifications = const [],
+    this.parentTemplateId,
+    this.previousVersionId,
+    this.versionNotes = '',
+    this.isTemplate = false,
+    this.sections = const [],
+    this.timesUsed = 0,
+    this.lastUsed,
   });
 
   @override
@@ -71,7 +88,22 @@ class Workout extends Equatable {
     downloadsAvailable,
     hasAccessibilityOptions,
     intensityModifications,
+    parentTemplateId,
+    previousVersionId,
+    versionNotes,
+    isTemplate,
+    sections,
+    timesUsed,
+    lastUsed,
   ];
+
+  // Method to get all exercises, either from sections or the exercises list
+  List<Exercise> getAllExercises() {
+    if (sections.isNotEmpty) {
+      return sections.expand((section) => section.exercises).toList();
+    }
+    return exercises;
+  }
 
   Workout copyWith({
     String? id,
@@ -93,6 +125,13 @@ class Workout extends Equatable {
     bool? downloadsAvailable,
     bool? hasAccessibilityOptions,
     List<String>? intensityModifications,
+    String? parentTemplateId,
+    String? previousVersionId,
+    String? versionNotes,
+    bool? isTemplate,
+    List<WorkoutSection>? sections,
+    int? timesUsed,
+    DateTime? lastUsed,
   }) {
     return Workout(
       id: id ?? this.id,
@@ -114,6 +153,13 @@ class Workout extends Equatable {
       downloadsAvailable: downloadsAvailable ?? this.downloadsAvailable,
       hasAccessibilityOptions: hasAccessibilityOptions ?? this.hasAccessibilityOptions,
       intensityModifications: intensityModifications ?? this.intensityModifications,
+      parentTemplateId: parentTemplateId ?? this.parentTemplateId,
+      previousVersionId: previousVersionId ?? this.previousVersionId,
+      versionNotes: versionNotes ?? this.versionNotes,
+      isTemplate: isTemplate ?? this.isTemplate,
+      sections: sections ?? this.sections,
+      timesUsed: timesUsed ?? this.timesUsed,
+      lastUsed: lastUsed ?? this.lastUsed,
     );
   }
 
@@ -138,6 +184,13 @@ class Workout extends Equatable {
       'downloadsAvailable': downloadsAvailable,
       'hasAccessibilityOptions': hasAccessibilityOptions,
       'intensityModifications': intensityModifications,
+      'parentTemplateId': parentTemplateId,
+      'previousVersionId': previousVersionId,
+      'versionNotes': versionNotes,
+      'isTemplate': isTemplate,
+      'sections': sections.map((s) => s.toMap()).toList(),
+      'timesUsed': timesUsed,
+      'lastUsed': lastUsed?.millisecondsSinceEpoch,
     };
   }
 
@@ -171,6 +224,64 @@ class Workout extends Equatable {
       downloadsAvailable: map['downloadsAvailable'] ?? false,
       hasAccessibilityOptions: map['hasAccessibilityOptions'] ?? false,
       intensityModifications: List<String>.from(map['intensityModifications'] ?? []),
+      parentTemplateId: map['parentTemplateId'],
+      previousVersionId: map['previousVersionId'],
+      versionNotes: map['versionNotes'] ?? '',
+      isTemplate: map['isTemplate'] ?? false,
+      sections: map['sections'] != null
+          ? List<WorkoutSection>.from(
+              map['sections']?.map((x) => WorkoutSection.fromMap(x)))
+          : [],
+      timesUsed: map['timesUsed']?.toInt() ?? 0,
+      lastUsed: map['lastUsed'] != null 
+          ? DateTime.fromMillisecondsSinceEpoch(map['lastUsed']) 
+          : null,
     );
+  }
+
+  // Create a copy as a template
+  Workout asTemplate() {
+    return copyWith(
+      id: 'template-${id.split('-').last}',
+      isTemplate: true,
+      timesUsed: 0,
+      lastUsed: null,
+    );
+  }
+
+  // Create a new version with a reference to this one as previous
+  Workout createNewVersion({
+    required String newVersionId,
+    String? versionNotes,
+  }) {
+    return copyWith(
+      id: newVersionId,
+      previousVersionId: id,
+      versionNotes: versionNotes ?? 'Updated version',
+      createdAt: DateTime.now(),
+    );
+  }
+
+  // Convert sections to exercises for backward compatibility
+  List<Exercise> getSectionsAsExercises() {
+    if (sections.isEmpty) {
+      return exercises;
+    }
+    return sections.expand((section) => section.exercises).toList();
+  }
+
+  // Create sections from exercises (for upgrading old workouts)
+  static List<WorkoutSection> createSectionsFromExercises(List<Exercise> exercises) {
+    if (exercises.isEmpty) {
+      return [];
+    }
+    
+    return [
+      WorkoutSection(
+        id: 'section-${DateTime.now().millisecondsSinceEpoch}',
+        name: 'Main Workout',
+        exercises: exercises,
+      )
+    ];
   }
 }
