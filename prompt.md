@@ -2,9 +2,10 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 
 Area of focus:
 phase 2 of implemntation plan - phase 2 of workouts
-
-Main specs
-14a, 06d
+   - editing exercises doesnt save. Do we need to discuss how this can be done and the best way to do it? 
+   - Option to use stock workout as a base tempalte to make a custom workout
+   - Need to add access to exercises in the workout browse screen. 
+   - move my custom workouts add button to the title row on the left of 'workouts'. My custom workouts section should show a selection of custom workouts on the browse screen and then see al take you to the my custom workouts screen (similar to the other sections i.e. beginner friendly)
 
 
 project structure: 
@@ -220,7 +221,6 @@ project structure:
     ├── 06a_auth_system.md
     ├── 06b_food_scanning.md
     ├── 06d_social_features.md
-    ├── 06d_workout_tracking_analytics.md
     ├── 06e_challenges.md
     ├── 06f_in_app_purchases.md
     ├── 07_analytics_and_monitoring.md
@@ -233,7 +233,8 @@ project structure:
     ├── 11_gamification.md
     ├── 12_accessibility.md
     ├── 13_ux_ui_spec.md
-    └── 14a_workouts.md
+    ├── 14a_workouts.md
+    └── 14b_workout_tracking_analytics.md
 
 Which of these files do you want to review? 
 
@@ -249,3 +250,5 @@ user journey after onboarding
 - demonstrate workput extrapolation every day, week, month (custom) for how long?
 - demonstrate workout intensity increase automation (is there a max reps/weight/sets)
 - demonstrate
+
+user should be asked how they want to do measuremens - height, body weight, exercise weight and this then sets the app for that (can be configured in edit profile section)

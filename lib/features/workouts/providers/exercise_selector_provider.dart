@@ -2,133 +2,150 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/exercise.dart';
 import '../services/exercise_db_service.dart';
-import '../../../shared/repositories/mock_workout_repository.dart';
 
-// State class for exercise selector
+// State class for the exercise selector
 class ExerciseSelectorState {
+  final List<Exercise> allExercises;
   final List<Exercise> exercises;
-  final List<Exercise> filteredExercises;
+  final String searchQuery;
+  final String? filterTargetArea;
   final bool isLoading;
-  final bool hasApiError;
-  final String searchTerm;
-  final String? targetArea;
+  final String? errorMessage;
 
   ExerciseSelectorState({
+    this.allExercises = const [],
     this.exercises = const [],
-    this.filteredExercises = const [],
+    this.searchQuery = '',
+    this.filterTargetArea,
     this.isLoading = false,
-    this.hasApiError = false,
-    this.searchTerm = '',
-    this.targetArea,
+    this.errorMessage,
   });
 
   ExerciseSelectorState copyWith({
+    List<Exercise>? allExercises,
     List<Exercise>? exercises,
-    List<Exercise>? filteredExercises,
+    String? searchQuery,
+    String? filterTargetArea,
     bool? isLoading,
-    bool? hasApiError,
-    String? searchTerm,
-    String? targetArea,
+    String? errorMessage,
   }) {
     return ExerciseSelectorState(
+      allExercises: allExercises ?? this.allExercises,
       exercises: exercises ?? this.exercises,
-      filteredExercises: filteredExercises ?? this.filteredExercises,
+      searchQuery: searchQuery ?? this.searchQuery,
+      filterTargetArea: filterTargetArea,
       isLoading: isLoading ?? this.isLoading,
-      hasApiError: hasApiError ?? this.hasApiError,
-      searchTerm: searchTerm ?? this.searchTerm,
-      targetArea: targetArea,
+      errorMessage: errorMessage,
     );
   }
 }
 
+// Provider for the exercise selector
 class ExerciseSelectorNotifier extends StateNotifier<ExerciseSelectorState> {
-  final ExerciseDBService _localService;
-  final MockWorkoutRepository _mockRepository;
+  final ExerciseDBService _exerciseService;
 
-  ExerciseSelectorNotifier(this._localService, this._mockRepository)
-    : super(ExerciseSelectorState());
+  ExerciseSelectorNotifier(this._exerciseService)
+      : super(ExerciseSelectorState());
 
+  // Load all exercises
   Future<void> loadExercises() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, errorMessage: null);
 
-    // Just load local exercises from mock repository
-    final allWorkouts = _mockRepository.getAllWorkouts();
-    final localExercises = <Exercise>[];
+    try {
+      final exercises = await _exerciseService.getAllExercises();
+      state = state.copyWith(
+        allExercises: exercises,
+        exercises: exercises,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to load exercises: ${e.toString()}',
+      );
+    }
+  }
 
-    // Extract unique exercises from all workouts
-    for (final workout in allWorkouts) {
-      for (final exercise in workout.exercises) {
-        // Check if this exercise is already in our list by ID
-        if (!localExercises.any((e) => e.id == exercise.id)) {
-          localExercises.add(exercise);
-        }
-      }
+  // Search exercises by name or description
+  void searchExercises(String query) {
+    if (state.allExercises.isEmpty) return;
+
+    state = state.copyWith(searchQuery: query);
+    _applyFilters();
+  }
+
+  // Filter exercises by target area
+  void filterByTargetArea(String? targetArea) {
+    state = state.copyWith(filterTargetArea: targetArea);
+    _applyFilters();
+  }
+
+  // Filter exercises by difficulty level
+  void filterByDifficultyLevel(int? difficultyLevel) {
+    if (state.allExercises.isEmpty) return;
+
+    if (difficultyLevel == null) {
+      _applyFilters();
+      return;
     }
 
-    state = state.copyWith(
-      exercises: localExercises,
-      filteredExercises: localExercises,
-      isLoading: false,
-    );
-  }
-
-  void searchExercises(String searchTerm) {
-    state = state.copyWith(
-      searchTerm: searchTerm,
-      filteredExercises: _filterExercises(
-        state.exercises,
-        searchTerm,
-        state.targetArea,
-      ),
-    );
-  }
-
-  void filterByTargetArea(String? targetArea) {
-    state = state.copyWith(
-      targetArea: targetArea,
-      filteredExercises: _filterExercises(
-        state.exercises,
-        state.searchTerm,
-        targetArea,
-      ),
-    );
-  }
-
-  List<Exercise> _filterExercises(
-    List<Exercise> exercises,
-    String searchTerm,
-    String? targetArea,
-  ) {
-    return exercises.where((exercise) {
-      // Apply search filter
-      final matchesSearch =
-          searchTerm.isEmpty ||
-          exercise.name.toLowerCase().contains(searchTerm.toLowerCase());
-
-      // Apply target area filter
-      final matchesTarget =
-          targetArea == null ||
-          exercise.targetArea.toLowerCase() == targetArea.toLowerCase();
-
-      return matchesSearch && matchesTarget;
+    final filtered = state.allExercises.where((exercise) {
+      return exercise.difficultyLevel == difficultyLevel;
     }).toList();
+
+    state = state.copyWith(exercises: filtered);
+  }
+
+  // Filter exercises by equipment
+  void filterByEquipment(String? equipment) {
+    if (state.allExercises.isEmpty) return;
+
+    if (equipment == null) {
+      _applyFilters();
+      return;
+    }
+
+    final filtered = state.allExercises.where((exercise) {
+      return exercise.equipmentOptions.contains(equipment.toLowerCase());
+    }).toList();
+
+    state = state.copyWith(exercises: filtered);
+  }
+
+  // Apply all filters (search query and target area)
+  void _applyFilters() {
+    if (state.allExercises.isEmpty) return;
+
+    var filtered = List<Exercise>.from(state.allExercises);
+
+    // Apply search filter if any
+    if (state.searchQuery.isNotEmpty) {
+      final query = state.searchQuery.toLowerCase();
+      filtered = filtered.where((exercise) {
+        return exercise.name.toLowerCase().contains(query) ||
+            exercise.description.toLowerCase().contains(query) ||
+            exercise.targetMuscles.any((muscle) => muscle.toLowerCase().contains(query));
+      }).toList();
+    }
+
+    // Apply target area filter if any
+    if (state.filterTargetArea != null && state.filterTargetArea!.isNotEmpty) {
+      filtered = filtered.where((exercise) {
+        return exercise.targetArea.toLowerCase() == state.filterTargetArea!.toLowerCase();
+      }).toList();
+    }
+
+    state = state.copyWith(exercises: filtered);
   }
 }
 
-// Simplified providers without environment dependency
+// Providers
 final exerciseDBServiceProvider = Provider<ExerciseDBService>((ref) {
   return ExerciseDBService();
 });
 
-final mockWorkoutRepositoryProvider = Provider<MockWorkoutRepository>((ref) {
-  return MockWorkoutRepository();
-});
-
 final exerciseSelectorProvider =
-    StateNotifierProvider<ExerciseSelectorNotifier, ExerciseSelectorState>((
-      ref,
-    ) {
-      final localService = ref.watch(exerciseDBServiceProvider);
-      final mockRepository = ref.watch(mockWorkoutRepositoryProvider);
-      return ExerciseSelectorNotifier(localService, mockRepository);
-    });
+    StateNotifierProvider<ExerciseSelectorNotifier, ExerciseSelectorState>((ref) {
+  final exerciseService = ref.watch(exerciseDBServiceProvider);
+  return ExerciseSelectorNotifier(exerciseService);
+});

@@ -4,12 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/exercise.dart';
-import '../services/exercise_db_service.dart';
+import '../../../shared/theme/color_palette.dart';
 
 class ExerciseEditorScreen extends ConsumerStatefulWidget {
   final Exercise? exercise;
   final bool isNewExercise;
-  
+
   const ExerciseEditorScreen({
     Key? key,
     this.exercise,
@@ -21,250 +21,723 @@ class ExerciseEditorScreen extends ConsumerStatefulWidget {
 }
 
 class _ExerciseEditorScreenState extends ConsumerState<ExerciseEditorScreen> {
+  late Exercise _currentExercise;
   final _formKey = GlobalKey<FormState>();
+  
+  // Controllers for basic fields
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
-  late TextEditingController _imageUrlController;
   late TextEditingController _setsController;
   late TextEditingController _repsController;
   late TextEditingController _restController;
-  String _selectedTargetArea = 'bums';
-  final List<String> _targetAreas = ['bums', 'tums', 'arms', 'legs', 'back', 'chest', 'shoulders'];
-  bool _isLoadingImage = false;
   
+  // Controllers for enhanced fields
+  late TextEditingController _weightController;
+  late TextEditingController _resistanceController;
+  late TextEditingController _tempoDownController;
+  late TextEditingController _tempoHoldController;
+  late TextEditingController _tempoUpController;
+  
+  // State for form tips and common mistakes
+  List<String> _formTips = [];
+  List<String> _commonMistakes = [];
+  List<String> _targetMuscles = [];
+  List<String> _equipmentOptions = [];
+  List<String> _progressionExercises = [];
+  List<String> _regressionExercises = [];
+  
+  int _difficultyLevel = 3;
+  bool _isDurationBased = false;
+  String _targetArea = 'bums';
+  
+  final List<String> _targetAreaOptions = [
+    'bums', 'tums', 'legs', 'arms', 'chest', 'back', 'shoulders', 'fullBody'
+  ];
+
   @override
   void initState() {
     super.initState();
-    final exercise = widget.exercise;
-    _nameController = TextEditingController(text: exercise?.name ?? '');
-    _descriptionController = TextEditingController(text: exercise?.description ?? '');
-    _imageUrlController = TextEditingController(text: exercise?.imageUrl ?? '');
-    _setsController = TextEditingController(text: (exercise?.sets ?? 3).toString());
-    _repsController = TextEditingController(text: (exercise?.reps ?? 12).toString());
-    _restController = TextEditingController(
-      text: (exercise?.restBetweenSeconds ?? 60).toString(),
+    
+    _initializeExercise();
+    
+    // Initialize controllers for the fields
+    _nameController = TextEditingController(text: _currentExercise.name);
+    _descriptionController = TextEditingController(text: _currentExercise.description);
+    _setsController = TextEditingController(text: _currentExercise.sets.toString());
+    _repsController = TextEditingController(
+      text: _currentExercise.reps.toString()
     );
-    _selectedTargetArea = exercise?.targetArea ?? 'bums';
+    _restController = TextEditingController(
+      text: _currentExercise.restBetweenSeconds.toString()
+    );
+    
+    // Initialize enhanced field controllers
+    _weightController = TextEditingController(
+      text: _currentExercise.weight?.toString() ?? ''
+    );
+    _resistanceController = TextEditingController(
+      text: _currentExercise.resistanceLevel?.toString() ?? ''
+    );
+    
+    // Initialize tempo controllers
+    final tempoMap = _currentExercise.tempo ?? {'down': 2, 'hold': 0, 'up': 2};
+    _tempoDownController = TextEditingController(
+      text: tempoMap['down']?.toString() ?? '2'
+    );
+    _tempoHoldController = TextEditingController(
+      text: tempoMap['hold']?.toString() ?? '0'
+    );
+    _tempoUpController = TextEditingController(
+      text: tempoMap['up']?.toString() ?? '2'
+    );
+    
+    // Initialize other fields
+    _formTips = List.from(_currentExercise.formTips);
+    _commonMistakes = List.from(_currentExercise.commonMistakes);
+    _targetMuscles = List.from(_currentExercise.targetMuscles);
+    _equipmentOptions = List.from(_currentExercise.equipmentOptions);
+    _progressionExercises = List.from(_currentExercise.progressionExercises);
+    _regressionExercises = List.from(_currentExercise.regressionExercises);
+    
+    _difficultyLevel = _currentExercise.difficultyLevel;
+    _isDurationBased = _currentExercise.durationSeconds != null;
+    _targetArea = _currentExercise.targetArea;
   }
-  
+
+  void _initializeExercise() {
+    if (widget.exercise != null) {
+      _currentExercise = widget.exercise!;
+    } else {
+      // Create a new empty exercise
+      _currentExercise = Exercise(
+        id: '',
+        name: '',
+        description: '',
+        imageUrl: 'assets/images/exercises/default.jpg',
+        sets: 3,
+        reps: 12,
+        restBetweenSeconds: 60,
+        targetArea: 'bums',
+      );
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _imageUrlController.dispose();
     _setsController.dispose();
     _repsController.dispose();
     _restController.dispose();
+    _weightController.dispose();
+    _resistanceController.dispose();
+    _tempoDownController.dispose();
+    _tempoHoldController.dispose();
+    _tempoUpController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isNewExercise ? 'Create Exercise' : 'Edit Exercise'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
+          TextButton(
             onPressed: _saveExercise,
+            child: const Text('Save'),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Exercise Name',
-                  hintText: 'e.g., Squats',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter exercise name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  hintText: 'Describe how to perform this exercise',
-                ),
-                maxLines: 5,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a description';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Target area selection
-              DropdownButtonFormField<String>(
-                value: _selectedTargetArea,
-                decoration: const InputDecoration(labelText: 'Target Area'),
-                items: _targetAreas.map((area) {
-                  return DropdownMenuItem(
-                    value: area,
-                    child: Text(area.substring(0, 1).toUpperCase() + area.substring(1)),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedTargetArea = value;
-                    });
-                  }
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select a target area';
-                  }
-                  return null;
-                },
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Sets, reps, and rest inputs in a row
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _setsController,
-                      decoration: const InputDecoration(
-                        labelText: 'Sets',
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required';
-                        }
-                        final sets = int.tryParse(value);
-                        if (sets == null || sets < 1) {
-                          return 'Min 1';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _repsController,
-                      decoration: const InputDecoration(
-                        labelText: 'Reps',
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required';
-                        }
-                        final reps = int.tryParse(value);
-                        if (reps == null || reps < 1) {
-                          return 'Min 1';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _restController,
-                      decoration: const InputDecoration(
-                        labelText: 'Rest (sec)',
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required';
-                        }
-                        final rest = int.tryParse(value);
-                        if (rest == null || rest < 5) {
-                          return 'Min 5';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
+              // Basic information section
+              _buildBasicInfoSection(),
               
               const SizedBox(height: 24),
+              const Divider(),
               
-              // Image section
-              const Text(
-                'Exercise Image',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
+              // Exercise details section
+              _buildExerciseDetailsSection(),
               
-              // Image preview
-              if (_imageUrlController.text.isNotEmpty) ...[
-                Center(
-                  child: _imageUrlController.text.startsWith('http')
-                      ? Image.network(
-                          _imageUrlController.text,
-                          height: 200,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, e, s) => 
-                              const Icon(Icons.broken_image, size: 100),
-                        )
-                      : Image.asset(
-                          _imageUrlController.text,
-                          height: 200,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, e, s) => 
-                              const Icon(Icons.broken_image, size: 100),
-                        ),
-                ),
-                const SizedBox(height: 16),
-              ],
+              const SizedBox(height: 24),
+              const Divider(),
               
-              TextFormField(
-                controller: _imageUrlController,
-                decoration: const InputDecoration(
-                  labelText: 'Image URL',
-                  hintText: 'https://example.com/image.jpg or assets/images/...',
+              // Advanced options section - collapsible
+              _buildAdvancedOptionsSection(),
+              
+              const SizedBox(height: 32),
+              
+              // Save button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _saveExercise,
+                  child: const Text('Save Exercise'),
                 ),
               ),
-              
             ],
           ),
         ),
       ),
     );
   }
-  
+
+  Widget _buildBasicInfoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Basic Information',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        
+        TextFormField(
+          controller: _nameController,
+          decoration: const InputDecoration(
+            labelText: 'Exercise Name',
+            hintText: 'e.g., Squats, Push-ups',
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter an exercise name';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        
+        // Exercise description
+        TextFormField(
+          controller: _descriptionController,
+          decoration: const InputDecoration(
+            labelText: 'Description',
+            hintText: 'Describe the exercise and its execution',
+          ),
+          maxLines: 3,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a description';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        
+        // Target area dropdown
+        DropdownButtonFormField<String>(
+          value: _targetArea,
+          decoration: const InputDecoration(
+            labelText: 'Target Area',
+          ),
+          items: _targetAreaOptions.map((area) {
+            return DropdownMenuItem(
+              value: area,
+              child: Text(_getDisplayNameForTargetArea(area)),
+            );
+          }).toList(),
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                _targetArea = value;
+              });
+            }
+          },
+        ),
+        
+        // Difficulty level slider
+        const SizedBox(height: 16),
+        Text('Difficulty Level: $_difficultyLevel',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        Slider(
+          value: _difficultyLevel.toDouble(),
+          min: 1,
+          max: 5,
+          divisions: 4,
+          label: _getDifficultyLabel(_difficultyLevel),
+          onChanged: (value) {
+            setState(() {
+              _difficultyLevel = value.toInt();
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExerciseDetailsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Exercise Details',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        
+        // Duration vs Reps toggle
+        SwitchListTile(
+          title: const Text('Duration-based Exercise'),
+          subtitle: Text(_isDurationBased 
+            ? 'Exercise is timed (e.g., Plank)' 
+            : 'Exercise is rep-based (e.g., Squats)'
+          ),
+          value: _isDurationBased,
+          onChanged: (value) {
+            setState(() {
+              _isDurationBased = value;
+            });
+          },
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Sets input
+        TextFormField(
+          controller: _setsController,
+          decoration: const InputDecoration(
+            labelText: 'Sets',
+            hintText: 'Number of sets',
+          ),
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter number of sets';
+            }
+            return null;
+          },
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Reps or Duration based on toggle
+        if (_isDurationBased) 
+          TextFormField(
+            controller: _repsController,
+            decoration: const InputDecoration(
+              labelText: 'Duration (seconds)',
+              hintText: 'e.g., 30, 45, 60',
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter the duration';
+              }
+              return null;
+            },
+          )
+        else
+          TextFormField(
+            controller: _repsController,
+            decoration: const InputDecoration(
+              labelText: 'Reps per Set',
+              hintText: 'e.g., 10, 12, 15',
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter number of reps';
+              }
+              return null;
+            },
+          ),
+        
+        const SizedBox(height: 16),
+        
+        // Rest between sets
+        TextFormField(
+          controller: _restController,
+          decoration: const InputDecoration(
+            labelText: 'Rest Between Sets (seconds)',
+            hintText: 'e.g., 30, 45, 60',
+          ),
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter rest time';
+            }
+            return null;
+          },
+        ),
+        
+        const SizedBox(height: 24),
+        
+        // Weight input (if applicable)
+        TextFormField(
+          controller: _weightController,
+          decoration: const InputDecoration(
+            labelText: 'Weight (kg/lbs) - Optional',
+            hintText: 'Leave empty if bodyweight only',
+          ),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+          ],
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Resistance level (if applicable)
+        TextFormField(
+          controller: _resistanceController,
+          decoration: const InputDecoration(
+            labelText: 'Resistance Level (1-5) - Optional',
+            hintText: 'For resistance bands or machines',
+          ),
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        ),
+        
+        const SizedBox(height: 24),
+        
+        // Tempo section
+        const Text('Exercise Tempo',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const Text('Seconds for each phase of the movement',
+          style: TextStyle(fontSize: 12),
+        ),
+        const SizedBox(height: 8),
+        
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _tempoDownController,
+                decoration: const InputDecoration(
+                  labelText: 'Down',
+                  hintText: 'e.g., 2',
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextFormField(
+                controller: _tempoHoldController,
+                decoration: const InputDecoration(
+                  labelText: 'Hold',
+                  hintText: 'e.g., 1',
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextFormField(
+                controller: _tempoUpController,
+                decoration: const InputDecoration(
+                  labelText: 'Up',
+                  hintText: 'e.g., 2',
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdvancedOptionsSection() {
+    return ExpansionTile(
+      title: const Text(
+        'Advanced Options',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Target muscles section
+              const SizedBox(height: 16),
+              const Text('Target Muscles',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              _buildStringListEditor(
+                _targetMuscles, 
+                'Add Target Muscle',
+                'e.g., gluteus maximus, quadriceps',
+                (value) {
+                  setState(() {
+                    _targetMuscles.add(value);
+                  });
+                },
+                (index) {
+                  setState(() {
+                    _targetMuscles.removeAt(index);
+                  });
+                },
+              ),
+              
+              // Equipment options section
+              const SizedBox(height: 24),
+              const Text('Equipment Options',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              _buildStringListEditor(
+                _equipmentOptions, 
+                'Add Equipment Option',
+                'e.g., dumbbells, resistance band',
+                (value) {
+                  setState(() {
+                    _equipmentOptions.add(value);
+                  });
+                },
+                (index) {
+                  setState(() {
+                    _equipmentOptions.removeAt(index);
+                  });
+                },
+              ),
+              
+              // Form tips section
+              const SizedBox(height: 24),
+              const Text('Form Tips',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              _buildStringListEditor(
+                _formTips, 
+                'Add Form Tip',
+                'e.g., Keep your back straight',
+                (value) {
+                  setState(() {
+                    _formTips.add(value);
+                  });
+                },
+                (index) {
+                  setState(() {
+                    _formTips.removeAt(index);
+                  });
+                },
+              ),
+              
+              // Common mistakes section
+              const SizedBox(height: 24),
+              const Text('Common Mistakes',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              _buildStringListEditor(
+                _commonMistakes, 
+                'Add Common Mistake',
+                'e.g., Knees caving inward',
+                (value) {
+                  setState(() {
+                    _commonMistakes.add(value);
+                  });
+                },
+                (index) {
+                  setState(() {
+                    _commonMistakes.removeAt(index);
+                  });
+                },
+              ),
+              
+              // Progression exercises section
+              const SizedBox(height: 24),
+              const Text('Progression Exercises (Harder Variations)',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              _buildStringListEditor(
+                _progressionExercises, 
+                'Add Progression',
+                'e.g., Single-leg variation',
+                (value) {
+                  setState(() {
+                    _progressionExercises.add(value);
+                  });
+                },
+                (index) {
+                  setState(() {
+                    _progressionExercises.removeAt(index);
+                  });
+                },
+              ),
+              
+              // Regression exercises section
+              const SizedBox(height: 24),
+              const Text('Regression Exercises (Easier Variations)',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              _buildStringListEditor(
+                _regressionExercises, 
+                'Add Regression',
+                'e.g., Assisted variation',
+                (value) {
+                  setState(() {
+                    _regressionExercises.add(value);
+                  });
+                },
+                (index) {
+                  setState(() {
+                    _regressionExercises.removeAt(index);
+                  });
+                },
+              ),
+              
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStringListEditor(
+    List<String> items,
+    String addButtonText,
+    String hintText,
+    Function(String) onAdd,
+    Function(int) onRemove,
+  ) {
+    // Text controller for adding new items
+    final TextEditingController controller = TextEditingController();
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // List of existing items
+        if (items.isNotEmpty)
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(items[index]),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  onPressed: () => onRemove(index),
+                ),
+              );
+            },
+          ),
+          
+        // Add new item section
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  isDense: true,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline),
+              onPressed: () {
+                if (controller.text.isNotEmpty) {
+                  onAdd(controller.text);
+                  controller.clear();
+                }
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   void _saveExercise() {
     if (_formKey.currentState!.validate()) {
+      // Create/update the exercise object
       final exercise = Exercise(
-        id: widget.exercise?.id ?? 'custom-${const Uuid().v4()}',
+        id: _currentExercise.id.isNotEmpty 
+            ? _currentExercise.id 
+            : 'custom-${const Uuid().v4()}',
         name: _nameController.text,
         description: _descriptionController.text,
-        imageUrl: _imageUrlController.text.isEmpty
-            ? 'assets/images/exercises/placeholder.jpg'
-            : _imageUrlController.text,
-        sets: int.parse(_setsController.text),
-        reps: int.parse(_repsController.text),
-        restBetweenSeconds: int.parse(_restController.text),
-        targetArea: _selectedTargetArea,
-        modifications: widget.exercise?.modifications ?? [],
+        imageUrl: _currentExercise.imageUrl,
+        youtubeVideoId: _currentExercise.youtubeVideoId,
+        sets: int.tryParse(_setsController.text) ?? 3,
+        reps: int.tryParse(_repsController.text) ?? 12,
+        durationSeconds: _isDurationBased 
+            ? int.tryParse(_repsController.text) 
+            : null,
+        restBetweenSeconds: int.tryParse(_restController.text) ?? 60,
+        targetArea: _targetArea,
+        weight: _weightController.text.isNotEmpty 
+            ? double.tryParse(_weightController.text)
+            : null,
+        resistanceLevel: _resistanceController.text.isNotEmpty
+            ? int.tryParse(_resistanceController.text)
+            : null,
+        tempo: {
+          'down': int.tryParse(_tempoDownController.text) ?? 2,
+          'hold': int.tryParse(_tempoHoldController.text) ?? 0,
+          'up': int.tryParse(_tempoUpController.text) ?? 2,
+        },
+        difficultyLevel: _difficultyLevel,
+        targetMuscles: _targetMuscles,
+        formTips: _formTips,
+        commonMistakes: _commonMistakes,
+        progressionExercises: _progressionExercises,
+        regressionExercises: _regressionExercises,
+        equipmentOptions: _equipmentOptions,
       );
       
+      // Return the exercise to the calling screen
       Navigator.pop(context, exercise);
+    }
+  }
+
+  String _getDisplayNameForTargetArea(String targetArea) {
+    switch (targetArea) {
+      case 'bums':
+        return 'Bums';
+      case 'tums':
+        return 'Tums';
+      case 'legs':
+        return 'Legs';
+      case 'arms':
+        return 'Arms';
+      case 'chest':
+        return 'Chest';
+      case 'back':
+        return 'Back';
+      case 'shoulders':
+        return 'Shoulders';
+      case 'fullBody':
+        return 'Full Body';
+      default:
+        return targetArea;
+    }
+  }
+
+  String _getDifficultyLabel(int level) {
+    switch (level) {
+      case 1:
+        return 'Very Easy';
+      case 2:
+        return 'Easy';
+      case 3:
+        return 'Moderate';
+      case 4:
+        return 'Hard';
+      case 5:
+        return 'Very Hard';
+      default:
+        return 'Moderate';
     }
   }
 }

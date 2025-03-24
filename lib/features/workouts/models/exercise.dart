@@ -13,8 +13,22 @@ class Exercise extends Equatable {
   final int restBetweenSeconds;
   final String targetArea; // bums, tums, etc.
   
+  // Enhanced personalization fields
+  final double? weight; // Weight used for the exercise (kg/lbs)
+  final int? resistanceLevel; // For resistance bands (1-5)
+  final Map<String, dynamic>? tempo; // Tempo for the exercise (down-hold-up)
+  final int difficultyLevel; // More granular difficulty (1-5)
+  final List<String> targetMuscles; // Specific muscles targeted
+  final List<String> formTips; // Tips for proper form
+  final List<String> commonMistakes; // Common mistakes to avoid
+  final List<String> progressionExercises; // Harder variations
+  final List<String> regressionExercises; // Easier variations
+  
   // Accessibility features
   final List<ExerciseModification> modifications;
+  
+  // Equipment options
+  final List<String> equipmentOptions; // Alternative equipment that can be used
 
   const Exercise({
     required this.id,
@@ -27,7 +41,17 @@ class Exercise extends Equatable {
     this.durationSeconds,
     required this.restBetweenSeconds,
     required this.targetArea,
+    this.weight,
+    this.resistanceLevel,
+    this.tempo,
+    this.difficultyLevel = 3, // Default to middle difficulty
+    this.targetMuscles = const [],
+    this.formTips = const [],
+    this.commonMistakes = const [],
+    this.progressionExercises = const [],
+    this.regressionExercises = const [],
     this.modifications = const [],
+    this.equipmentOptions = const [],
   });
 
   @override
@@ -42,7 +66,17 @@ class Exercise extends Equatable {
     durationSeconds,
     restBetweenSeconds,
     targetArea,
+    weight,
+    resistanceLevel,
+    tempo,
+    difficultyLevel,
+    targetMuscles,
+    formTips,
+    commonMistakes,
+    progressionExercises,
+    regressionExercises,
     modifications,
+    equipmentOptions,
   ];
 
   Exercise copyWith({
@@ -56,7 +90,17 @@ class Exercise extends Equatable {
     int? durationSeconds,
     int? restBetweenSeconds,
     String? targetArea,
+    double? weight,
+    int? resistanceLevel,
+    Map<String, dynamic>? tempo,
+    int? difficultyLevel,
+    List<String>? targetMuscles,
+    List<String>? formTips,
+    List<String>? commonMistakes,
+    List<String>? progressionExercises,
+    List<String>? regressionExercises,
     List<ExerciseModification>? modifications,
+    List<String>? equipmentOptions,
   }) {
     return Exercise(
       id: id ?? this.id,
@@ -69,7 +113,17 @@ class Exercise extends Equatable {
       durationSeconds: durationSeconds ?? this.durationSeconds,
       restBetweenSeconds: restBetweenSeconds ?? this.restBetweenSeconds,
       targetArea: targetArea ?? this.targetArea,
+      weight: weight ?? this.weight,
+      resistanceLevel: resistanceLevel ?? this.resistanceLevel,
+      tempo: tempo ?? this.tempo,
+      difficultyLevel: difficultyLevel ?? this.difficultyLevel,
+      targetMuscles: targetMuscles ?? this.targetMuscles,
+      formTips: formTips ?? this.formTips,
+      commonMistakes: commonMistakes ?? this.commonMistakes,
+      progressionExercises: progressionExercises ?? this.progressionExercises,
+      regressionExercises: regressionExercises ?? this.regressionExercises,
       modifications: modifications ?? this.modifications,
+      equipmentOptions: equipmentOptions ?? this.equipmentOptions,
     );
   }
 
@@ -85,7 +139,17 @@ class Exercise extends Equatable {
       'durationSeconds': durationSeconds,
       'restBetweenSeconds': restBetweenSeconds,
       'targetArea': targetArea,
+      'weight': weight,
+      'resistanceLevel': resistanceLevel,
+      'tempo': tempo,
+      'difficultyLevel': difficultyLevel,
+      'targetMuscles': targetMuscles,
+      'formTips': formTips,
+      'commonMistakes': commonMistakes,
+      'progressionExercises': progressionExercises,
+      'regressionExercises': regressionExercises,
       'modifications': modifications.map((m) => m.toMap()).toList(),
+      'equipmentOptions': equipmentOptions,
     };
   }
 
@@ -101,9 +165,31 @@ class Exercise extends Equatable {
       durationSeconds: map['durationSeconds']?.toInt(),
       restBetweenSeconds: map['restBetweenSeconds']?.toInt() ?? 0,
       targetArea: map['targetArea'] ?? '',
+      weight: map['weight']?.toDouble(),
+      resistanceLevel: map['resistanceLevel']?.toInt(),
+      tempo: map['tempo'] != null ? Map<String, dynamic>.from(map['tempo']) : null,
+      difficultyLevel: map['difficultyLevel']?.toInt() ?? 3,
+      targetMuscles: map['targetMuscles'] != null 
+          ? List<String>.from(map['targetMuscles']) 
+          : [],
+      formTips: map['formTips'] != null 
+          ? List<String>.from(map['formTips']) 
+          : [],
+      commonMistakes: map['commonMistakes'] != null 
+          ? List<String>.from(map['commonMistakes']) 
+          : [],
+      progressionExercises: map['progressionExercises'] != null 
+          ? List<String>.from(map['progressionExercises']) 
+          : [],
+      regressionExercises: map['regressionExercises'] != null 
+          ? List<String>.from(map['regressionExercises']) 
+          : [],
       modifications: map['modifications'] != null
           ? List<ExerciseModification>.from(
               map['modifications']?.map((x) => ExerciseModification.fromMap(x)))
+          : [],
+      equipmentOptions: map['equipmentOptions'] != null 
+          ? List<String>.from(map['equipmentOptions']) 
           : [],
     );
   }
