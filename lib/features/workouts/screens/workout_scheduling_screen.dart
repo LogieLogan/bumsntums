@@ -1050,6 +1050,11 @@ class _WorkoutSchedulingScreenState
     );
 
     try {
+      print(
+        '🏋️ Scheduling ${selectedWorkouts.length} workouts for ${widget.selectedDate}',
+      );
+      print('🏋️ Using plan ID: ${widget.planId} for user: ${widget.userId}');
+
       // Schedule each workout
       bool allSuccessful = true;
 
@@ -1086,6 +1091,10 @@ class _WorkoutSchedulingScreenState
             break;
         }
 
+        print(
+          '🏋️ Scheduling workout: ${item.workout.title} for time: $scheduledTime',
+        );
+
         // Use the calendar provider to schedule the workout
         final success = await ref
             .read(calendarStateProvider.notifier)
@@ -1097,6 +1106,10 @@ class _WorkoutSchedulingScreenState
               reminderEnabled: true,
               reminderTime: scheduledTime.subtract(const Duration(minutes: 30)),
             );
+
+        print(
+          '🏋️ Scheduling ${item.workout.title} ${success ? "succeeded" : "failed"}',
+        );
 
         if (!success) {
           allSuccessful = false;
@@ -1131,7 +1144,10 @@ class _WorkoutSchedulingScreenState
           );
         }
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print('❌ Error scheduling workouts: $e');
+      print('❌ Stack trace: $stack');
+
       // Close loading dialog
       if (mounted) Navigator.pop(context);
 

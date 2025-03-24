@@ -5,8 +5,6 @@ import 'package:bums_n_tums/features/workouts/screens/workout_scheduling_screen.
 import 'package:bums_n_tums/features/workouts/widgets/calendar/recurring_workout_dialog.dart';
 import 'package:bums_n_tums/features/workouts/widgets/calendar/rest_day_indicator.dart';
 import 'package:bums_n_tums/features/workouts/widgets/calendar/workout_event_card.dart';
-import 'package:bums_n_tums/features/workouts/widgets/workout_progress_chart.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -14,12 +12,10 @@ import '../models/workout_log.dart';
 import '../models/workout_plan.dart';
 import '../providers/workout_calendar_provider.dart';
 import '../providers/workout_planning_provider.dart';
-import '../providers/workout_stats_provider.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/providers/analytics_provider.dart';
-import 'workout_browse_screen.dart';
 import 'workout_detail_screen.dart';
 import 'workout_analytics_screen.dart';
 
@@ -40,6 +36,9 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
   DateTime _selectedDay = DateTime.now();
   CalendarFormat _calendarFormat = CalendarFormat.month;
   late TabController _tabController;
+  bool _hasLoggedInitialBuild = false;
+  DateTime? _lastLoggedDate;
+  final Set<String> _loggedDays = {};
 
   @override
   void initState() {
@@ -90,6 +89,11 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
 
     // Watch calendar state
     final calendarState = ref.watch(calendarStateProvider);
+
+    if (!_hasLoggedInitialBuild) {
+      print('Building calendar with selected day: ${_selectedDay.toString()}');
+      _hasLoggedInitialBuild = true;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -294,7 +298,14 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
                 ),
               ),
               const SizedBox(height: 16),
-              _buildDayEventsSection(events[_selectedDay] ?? []),
+              _buildDayEventsSection(
+                events[DateTime(
+                      _selectedDay.year,
+                      _selectedDay.month,
+                      _selectedDay.day,
+                    )] ??
+                    [],
+              ),
             ],
           ),
         ),
@@ -355,6 +366,9 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
     Map<DateTime, List<dynamic>> events,
     CalendarState calendarState,
   ) {
+    // Add a set to track which days we've already logged
+    final Set<String> _loggedDays = {};
+
     return TableCalendar(
       firstDay: DateTime.utc(2020, 1, 1),
       lastDay: DateTime.utc(2030, 12, 31),
@@ -366,9 +380,16 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
         CalendarFormat.week: 'Week',
       },
       eventLoader: (day) {
-        final date = DateTime(day.year, day.month, day.day);
-        return events[date] ?? [];
+        // Normalize the day to remove time component for comparison
+        final normalizedDay = DateTime(day.year, day.month, day.day);
+        final dateKey = normalizedDay.toString();
+
+        // Get events
+        final eventsForDay = events[normalizedDay] ?? [];
+
+        return eventsForDay;
       },
+
       selectedDayPredicate: (day) {
         return isSameDay(_selectedDay, day);
       },
@@ -377,8 +398,19 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
           _selectedDay = selectedDay;
           _focusedDay = focusedDay;
         });
+
+        // Clear the day from logged days to allow re-logging
+        final selectedDayKey =
+            DateTime(
+              selectedDay.year,
+              selectedDay.month,
+              selectedDay.day,
+            ).toString();
+        _loggedDays.remove(selectedDayKey);
+
         ref.read(calendarStateProvider.notifier).selectDate(selectedDay);
       },
+      // Rest of the method remains unchanged
       onFormatChanged: (format) {
         setState(() {
           _calendarFormat = format;
@@ -439,19 +471,13 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
   }
 
   Widget _buildDayEventsSection(List<dynamic> events) {
-    // Filter out rest day markers for display
     final filteredEvents = events.where((e) => e != 'REST_DAY').toList();
 
-    // Debug log to see what events are available
-    print('Events for selected day: ${filteredEvents.length}');
-    for (var event in filteredEvents) {
-      print(
-        'Event type: ${event.runtimeType}, ${event is WorkoutLog
-            ? "WorkoutLog"
-            : event is ScheduledWorkout
-            ? "ScheduledWorkout"
-            : "Unknown"}',
-      );
+    // Debug log only once per selection to reduce spam
+    if (_lastLoggedDate == null || !isSameDay(_lastLoggedDate!, _selectedDay)) {
+      print('Building day events section for ${_selectedDay.toString()}');
+      print('Events for selected day: ${filteredEvents.length}');
+      _lastLoggedDate = _selectedDay;
     }
 
     // Check if this day is a recommended rest day
@@ -533,13 +559,37 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
                 itemBuilder: (context, index) {
                   final event = filteredEvents[index];
 
+                  // Only log the first few items to reduce spam
+                  if (index < 2 &&
+                      (_lastLoggedDate == null ||
+                          !isSameDay(_lastLoggedDate!, _selectedDay))) {
+                    print('Event type: ${event.runtimeType}');
+                  } else if (index == 2 &&
+                      filteredEvents.length > 3 &&
+                      (_lastLoggedDate == null ||
+                          !isSameDay(_lastLoggedDate!, _selectedDay))) {
+                    print('... and ${filteredEvents.length - 2} more events');
+                  }
+
                   if (event is WorkoutLog) {
+                    // Only log the first few for each type
+                    if (index < 2 &&
+                        (_lastLoggedDate == null ||
+                            !isSameDay(_lastLoggedDate!, _selectedDay))) {
+                      print('Rendering WorkoutLog: ${event.workoutId}');
+                    }
                     return WorkoutEventCard(
                       workout: event,
                       isDraggable: false,
                       onTap: () => _navigateToWorkoutDetail(event.workoutId),
                     );
                   } else if (event is ScheduledWorkout) {
+                    // Only log the first few for each type
+                    if (index < 2 &&
+                        (_lastLoggedDate == null ||
+                            !isSameDay(_lastLoggedDate!, _selectedDay))) {
+                      print('Rendering ScheduledWorkout: ${event.title}');
+                    }
                     return WorkoutEventCard(
                       workout: event,
                       onTap: () => _navigateToWorkoutDetail(event.workoutId),

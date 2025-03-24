@@ -27,25 +27,45 @@ final activeWorkoutPlanProvider = FutureProvider.family<WorkoutPlan?, String>((
   final firestore = FirebaseFirestore.instance;
 
   try {
-    final snapshot =
-        await firestore
-            .collection('workout_plans')
-            .doc(userId)
-            .collection('plans')
-            .where('isActive', isEqualTo: true)
-            .limit(1)
-            .get();
+    print("Fetching active workout plan for user: $userId");
 
-    if (snapshot.docs.isEmpty) {
+    // First, verify if the path exists
+    final userPlansRef = firestore
+        .collection('workout_plans')
+        .doc(userId)
+        .collection('plans');
+
+    // Add debug logs to track what's happening
+    final planQuerySnapshot =
+        await userPlansRef.where('isActive', isEqualTo: true).limit(1).get();
+
+    print("Found ${planQuerySnapshot.docs.length} active plans");
+
+    if (planQuerySnapshot.docs.isEmpty) {
+      print("No active workout plan found for user: $userId");
       return null;
     }
 
-    return WorkoutPlan.fromMap({
-      'id': snapshot.docs.first.id,
-      ...snapshot.docs.first.data(),
-    });
-  } catch (e) {
+    final planDoc = planQuerySnapshot.docs.first;
+    print("Active plan ID: ${planDoc.id}");
+
+    // Add debug output to check the data structure
+    final planData = planDoc.data();
+    print("Plan data: ${planData.keys.toList()}");
+    print(
+      "Scheduled workouts count: ${planData['scheduledWorkouts']?.length ?? 'null'}",
+    );
+
+    // Try to parse the workout plan
+    final plan = WorkoutPlan.fromMap({'id': planDoc.id, ...planData});
+
+    print(
+      "Successfully parsed workout plan with ${plan.scheduledWorkouts.length} scheduled workouts",
+    );
+    return plan;
+  } catch (e, stackTrace) {
     print('Error fetching active workout plan: $e');
+    print('Stack trace: $stackTrace');
     return null;
   }
 });

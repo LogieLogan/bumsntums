@@ -10,6 +10,8 @@ import 'workout_planning_provider.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../../shared/providers/analytics_provider.dart';
 
+final Set<String> _loggedRanges = {};
+
 // Provider for workout planning service
 final workoutPlanningServiceProvider = Provider<WorkoutPlanningService>((ref) {
   final analytics = ref.watch(analyticsServiceProvider);
@@ -45,6 +47,14 @@ final combinedCalendarEventsProvider = FutureProvider.family<
       workoutCalendarDataProvider(params).future,
     );
 
+    // Log only once per unique date range
+    final rangeKey = '${params.startDate}-${params.endDate}';
+    if (!_loggedRanges.contains(rangeKey)) {
+      print('📆 Fetching calendar events for date range: ${params.startDate} to ${params.endDate}');
+      print('📆 Found ${workoutsByDate.length} dates with completed workouts');
+      _loggedRanges.add(rangeKey);
+    }
+
     // Process events from both sources
     final Map<DateTime, List<dynamic>> events = {};
 
@@ -55,6 +65,9 @@ final combinedCalendarEventsProvider = FutureProvider.family<
         ...logs,
       ]; // Create a new list to avoid type issues
     });
+    
+        print('📆 Attempting to get active workout plan for user: ${params.userId}');
+    
 
     // Get active workout plan
     final activePlan = await ref.watch(
@@ -67,7 +80,10 @@ final combinedCalendarEventsProvider = FutureProvider.family<
 
     // Add scheduled workouts from active plan
     if (activePlan != null) {
+      print('📆 Scheduled workouts dates:');
+
       for (final scheduled in activePlan.scheduledWorkouts) {
+        // Normalize the date (remove time component)
         final date = DateTime(
           scheduled.scheduledDate.year,
           scheduled.scheduledDate.month,
@@ -75,17 +91,32 @@ final combinedCalendarEventsProvider = FutureProvider.family<
         );
 
         print(
-          "Adding scheduled workout: ${scheduled.title} for date: ${date.toString()}",
+          "Processing scheduled workout: ${scheduled.title} for date: ${date.toString()}",
         );
 
-        if (events.containsKey(date)) {
-          events[date]!.add(scheduled);
+        // Check if the scheduled date falls within our requested range
+        if ((date.isAfter(params.startDate) ||
+                date.isAtSameMomentAs(params.startDate)) &&
+            (date.isBefore(params.endDate) ||
+                date.isAtSameMomentAs(params.endDate))) {
+          print(
+            "Adding workout to calendar: ${scheduled.title} on ${date.toString()}",
+          );
+
+          if (events.containsKey(date)) {
+            events[date]!.add(scheduled);
+          } else {
+            events[date] = [scheduled];
+          }
         } else {
-          events[date] = [scheduled];
+          print(
+            "Workout date ${date.toString()} outside range: ${params.startDate.toString()} to ${params.endDate.toString()}",
+          );
         }
       }
     }
 
+    // Debug log the final events
     print("Combined events: ${events.length} dates with events");
     events.forEach((date, dayEvents) {
       print("Date: ${date.toString()}, events: ${dayEvents.length}");
@@ -258,7 +289,6 @@ class CalendarStateNotifier extends StateNotifier<CalendarState> {
     state = state.copyWith(highlightedDates: dates);
   }
 
-  // Schedule a workout on a specific date
   Future<bool> scheduleWorkout({
     required String userId,
     required String planId,
@@ -268,9 +298,21 @@ class CalendarStateNotifier extends StateNotifier<CalendarState> {
     DateTime? reminderTime,
   }) async {
     try {
+      print(
+        '⭐ Attempting to schedule workout: ${workout.title} on ${date.toString()}',
+      );
+      print('⭐ Using planId: $planId for user: $userId');
+
       // Get current plan
       final plan = await _planningService.getWorkoutPlan(userId, planId);
-      if (plan == null) return false;
+      if (plan == null) {
+        print('❌ Plan not found with ID: $planId');
+        return false;
+      }
+
+      print(
+        '✅ Found plan: ${plan.name} with ${plan.scheduledWorkouts.length} existing workouts',
+      );
 
       // Create scheduled workout
       final scheduledWorkout = ScheduledWorkout(
@@ -290,6 +332,8 @@ class CalendarStateNotifier extends StateNotifier<CalendarState> {
             ),
       );
 
+      print('✅ Created scheduled workout object: ${scheduledWorkout.toMap()}');
+
       // Add to plan's scheduled workouts
       final updatedScheduled = [...plan.scheduledWorkouts, scheduledWorkout];
       final updatedPlan = plan.copyWith(
@@ -297,8 +341,13 @@ class CalendarStateNotifier extends StateNotifier<CalendarState> {
         updatedAt: DateTime.now(),
       );
 
+      print(
+        '✅ Updated plan now has ${updatedPlan.scheduledWorkouts.length} workouts',
+      );
+
       // Update plan in database
       await _planningService.updateWorkoutPlan(updatedPlan);
+      print('✅ Plan successfully updated in database');
 
       // Log analytics
       _analytics.logEvent(
@@ -312,7 +361,7 @@ class CalendarStateNotifier extends StateNotifier<CalendarState> {
 
       return true;
     } catch (e) {
-      print('Error scheduling workout: $e');
+      print('❌ Error scheduling workout: $e');
       return false;
     }
   }
