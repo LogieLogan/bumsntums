@@ -1,17 +1,18 @@
 // lib/features/workouts/screens/workout_detail_screen.dart
+import 'package:bums_n_tums/features/workouts/repositories/custom_workout_repository.dart';
 import 'package:bums_n_tums/features/workouts/screens/pre_workout_setup_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_editor_screen.dart';
-import 'package:bums_n_tums/features/workouts/screens/workout_execution_screen.dart';
+import 'package:bums_n_tums/features/workouts/screens/workout_templates_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workout.dart';
+import '../models/workout_section.dart';
 import '../providers/workout_provider.dart';
-import '../providers/workout_execution_provider.dart';
 import '../widgets/exercise_list_item.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
-import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/text_styles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class WorkoutDetailScreen extends ConsumerStatefulWidget {
@@ -65,44 +66,53 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
       body: workoutAsync.when(
         data: (workout) {
           if (workout == null) {
-            return const Center(child: Text('Workout not found'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: AppColors.lightGrey,
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Workout not found', style: AppTextStyles.h3),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            );
           }
-
-          ElevatedButton.icon(
-            icon: const Icon(Icons.edit),
-            label: const Text('Customize'),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) => WorkoutEditorScreen(
-                        originalWorkout: workout, // Pass the current workout
-                      ),
-                ),
-              ).then((customizedWorkout) {
-                if (customizedWorkout != null) {
-                  // Handle refreshing the UI with the customized workout
-                  setState(() {
-                    // If you're using a provider, you'd refresh the provider state here
-                    // For example: ref.refresh(specificWorkoutProvider(workout.id));
-                  });
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Workout customized successfully!'),
-                    ),
-                  );
-                }
-              });
-            },
-          );
           return _buildWorkoutDetail(workout);
         },
         loading: () => const Center(child: LoadingIndicator()),
         error:
-            (error, stack) =>
-                Center(child: Text('Error loading workout: $error')),
+            (error, stack) => Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: AppColors.error),
+                  const SizedBox(height: 16),
+                  Text('Error loading workout', style: AppTextStyles.h3),
+                  const SizedBox(height: 8),
+                  Text(
+                    error.toString(),
+                    style: AppTextStyles.small.copyWith(
+                      color: AppColors.mediumGrey,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            ),
       ),
     );
   }
@@ -116,6 +126,40 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
             // Workout image and basic info
             _buildWorkoutHeader(workout),
 
+            // Action buttons - Customize, Save as Template
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.edit),
+                        label: const Text('Customize'),
+                        onPressed: () => _customizeWorkout(workout),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.save_alt),
+                        label: const Text('Save as Template'),
+                        onPressed: () => _saveAsTemplate(workout),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.popBlue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             // Workout description
             SliverToBoxAdapter(
               child: Padding(
@@ -123,15 +167,9 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Description',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
+                    Text('Description', style: AppTextStyles.h3),
                     const SizedBox(height: 8),
-                    Text(
-                      workout.description,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
+                    Text(workout.description, style: AppTextStyles.body),
                   ],
                 ),
               ),
@@ -145,10 +183,7 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Equipment Needed',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
+                      Text('Equipment Needed', style: AppTextStyles.h3),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
@@ -169,33 +204,28 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
             // Exercises list
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Exercises',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: Text('Exercises', style: AppTextStyles.h3),
               ),
             ),
 
-            // Exercise list items
-            SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final exercise = workout.exercises[index];
-                return ExerciseListItem(
-                  exercise: exercise,
-                  index: index,
-                  onTap: () {
-                    // TODO: Show exercise detail or preview
-                  },
-                );
-              }, childCount: workout.exercises.length),
-            ),
+            // If workout has sections, show them
+            if (workout.sections.isNotEmpty)
+              _buildSectionsList(workout)
+            else
+              // Otherwise show the flat exercise list
+              SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final exercise = workout.exercises[index];
+                  return ExerciseListItem(
+                    exercise: exercise,
+                    index: index,
+                    onTap: () {
+                      // TODO: Show exercise detail or preview
+                    },
+                  );
+                }, childCount: workout.exercises.length),
+              ),
 
             // Bottom space for the floating button
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -207,41 +237,39 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
           top: 0,
           left: 0,
           right: 0,
-          child: Container(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top,
-              left: 4,
-              right: 4,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      shape: BoxShape.circle,
+          child: SafeArea(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black26,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
-                    child: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      shape: BoxShape.circle,
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black26,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: _isFavorite ? AppColors.salmon : Colors.white,
+                      ),
                     ),
-                    child: Icon(
-                      _isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: _isFavorite ? AppColors.salmon : Colors.white,
-                    ),
+                    onPressed: () => _toggleFavorite(workout),
                   ),
-                  onPressed: () => _toggleFavorite(workout),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -279,6 +307,69 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSectionsList(Workout workout) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate((context, sectionIndex) {
+        final section = workout.sections[sectionIndex];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section header
+            Container(
+              margin: const EdgeInsets.only(top: 16, bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: _getSectionColor(section.type).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: _getSectionColor(section.type),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _getSectionTypeIcon(section.type),
+                    color: _getSectionColor(section.type),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    section.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _getSectionColor(section.type),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _getSectionTypeName(section.type),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _getSectionColor(section.type),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Section exercises
+            ...List.generate(
+              section.exercises.length,
+              (exerciseIndex) => ExerciseListItem(
+                exercise: section.exercises[exerciseIndex],
+                index: exerciseIndex,
+                onTap: () {
+                  // TODO: Show exercise detail or preview
+                },
+              ),
+            ),
+          ],
+        );
+      }, childCount: workout.sections.length),
     );
   }
 
@@ -390,6 +481,45 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
     }
   }
 
+  Color _getSectionColor(SectionType type) {
+    switch (type) {
+      case SectionType.normal:
+        return AppColors.popBlue;
+      case SectionType.circuit:
+        return AppColors.popGreen;
+      case SectionType.superset:
+        return AppColors.popCoral;
+      default:
+        return AppColors.popBlue;
+    }
+  }
+
+  String _getSectionTypeName(SectionType type) {
+    switch (type) {
+      case SectionType.normal:
+        return 'Standard';
+      case SectionType.circuit:
+        return 'Circuit';
+      case SectionType.superset:
+        return 'Superset';
+      default:
+        return 'Standard';
+    }
+  }
+
+  IconData _getSectionTypeIcon(SectionType type) {
+    switch (type) {
+      case SectionType.normal:
+        return Icons.list;
+      case SectionType.circuit:
+        return Icons.loop;
+      case SectionType.superset:
+        return Icons.swap_horiz;
+      default:
+        return Icons.list;
+    }
+  }
+
   void _toggleFavorite(Workout workout) async {
     // Get the current user ID
     final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -433,27 +563,142 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
     }
   }
 
-  void _startWorkout(Workout workout) async {
-    // Log analytics event
-    _analytics.logWorkoutStarted(
-      workoutId: workout.id,
-      workoutName: workout.title,
+  void _customizeWorkout(Workout workout) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WorkoutEditorScreen(originalWorkout: workout),
+      ),
+    ).then((customizedWorkout) {
+      if (customizedWorkout != null) {
+        // Handle refreshing the UI with the customized workout
+        setState(() {
+          // If you're using a provider, you'd refresh the provider state here
+          ref.refresh(workoutDetailsProvider(workout.id));
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Workout customized successfully!')),
+        );
+      }
+    });
+  }
+
+  Future<void> _saveAsTemplate(Workout workout) async {
+    // First confirm with the user
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Save as Template'),
+            content: Text(
+              'Do you want to save "${workout.title}" as a template?\n\n'
+              'This will allow you to create your own workouts based on this one.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.salmon,
+                ),
+                child: const Text('Save as Template'),
+              ),
+            ],
+          ),
     );
 
-    // Get the latest version of the workout (to include any modifications)
-    Workout? latestWorkout = await ref
-        .read(workoutServiceProvider)
-        .getWorkoutById(workout.id);
+    if (confirm != true) return;
 
-    // Use the latest workout if available, otherwise use the provided one
-    final workoutToStart = latestWorkout ?? workout;
-
-    // Start workout execution using the provider
-    ref.read(workoutExecutionProvider.notifier).startWorkout(workoutToStart);
-
-    // Navigate to workout execution screen
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const WorkoutExecutionScreen()),
+    // Prepare the workout as a template
+    final templateWorkout = workout.copyWith(
+      id: 'template-${DateTime.now().millisecondsSinceEpoch}',
+      isTemplate: true,
+      createdAt: DateTime.now(),
+      createdBy: FirebaseAuth.instance.currentUser?.uid ?? 'user',
     );
+
+    try {
+      // Save to user_custom_workouts collection as a workaround
+      // until the user_workout_templates security rules are updated
+      final repository = CustomWorkoutRepository();
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You must be logged in to save templates'),
+          ),
+        );
+        return;
+      }
+
+      // Use saveCustomWorkout instead of saveWorkoutTemplate
+      // This will save it to user_custom_workouts collection which has proper permissions
+      final customWorkout = templateWorkout.copyWith(isTemplate: true);
+      final success = await repository.saveCustomWorkout(userId, customWorkout);
+
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Saved as template successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Optionally, ask if they want to view their custom workouts
+        _showViewTemplatesDialog();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save template')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving template: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  void _showViewTemplatesDialog() {
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text('View Templates'),
+              content: const Text('Would you like to view your templates now?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Not Now'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close dialog
+                    // Navigate to templates screen using MaterialPageRoute instead of named route
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const WorkoutTemplatesScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.salmon,
+                  ),
+                  child: const Text('View Templates'),
+                ),
+              ],
+            ),
+      );
+    });
   }
 }

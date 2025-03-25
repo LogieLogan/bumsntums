@@ -10,7 +10,10 @@ import '../../../shared/theme/color_palette.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 
 class WorkoutTemplatesScreen extends ConsumerWidget {
-  const WorkoutTemplatesScreen({Key? key}) : super(key: key);
+  final bool selectionMode;
+
+  const WorkoutTemplatesScreen({Key? key, this.selectionMode = false})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -267,24 +270,33 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // Edit button
-                    TextButton.icon(
-                      icon: const Icon(Icons.edit),
-                      label: const Text('Edit'),
-                      onPressed: () => _editTemplate(context, template),
-                    ),
-
-                    const SizedBox(width: 8),
-
-                    // Use Template button
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.add),
-                      label: const Text('Use Template'),
-                      onPressed: () => _useTemplate(context, template, ref),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.salmon,
+                    if (selectionMode)
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.check),
+                        label: const Text('Select Template'),
+                        onPressed:
+                            () => _selectTemplate(context, template, ref),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.salmon,
+                        ),
+                      )
+                    else ...[
+                      // Original buttons for edit and use template
+                      TextButton.icon(
+                        icon: const Icon(Icons.edit),
+                        label: const Text('Edit'),
+                        onPressed: () => _editTemplate(context, template),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.add),
+                        label: const Text('Use Template'),
+                        onPressed: () => _useTemplate(context, template, ref),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.salmon,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -293,6 +305,26 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  void _selectTemplate(
+    BuildContext context,
+    Workout template,
+    WidgetRef ref,
+  ) async {
+    final editorNotifier = ref.read(workoutEditorProvider.notifier);
+    final newWorkout = await editorNotifier.createFromTemplate(template);
+
+    if (newWorkout != null && context.mounted) {
+      Navigator.pop(context); // Close template selection screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => WorkoutEditorScreen(originalWorkout: newWorkout),
+        ),
+      );
+    }
   }
 
   void _createNewTemplate(BuildContext context) {

@@ -1,9 +1,11 @@
 // lib/features/workouts/models/workout.dart (updated)
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'exercise.dart';
 import 'workout_section.dart';
 
 enum WorkoutDifficulty { beginner, intermediate, advanced }
+
 enum WorkoutCategory { bums, tums, fullBody, cardio, quickWorkout }
 
 class Workout extends Equatable {
@@ -19,24 +21,22 @@ class Workout extends Equatable {
   final bool featured;
   final bool isAiGenerated;
   final DateTime createdAt;
-  final String createdBy; 
-  final List<Exercise> exercises; 
-  final List<String> equipment; 
-  final List<String> tags; 
-  final bool downloadsAvailable; 
-  
-  
-  final String? parentTemplateId; 
-  final String? previousVersionId; 
-  final String versionNotes; 
-  final bool isTemplate; 
-  final List<WorkoutSection> sections; 
-  final int timesUsed; 
-  final DateTime? lastUsed; 
-  
-  
+  final String createdBy;
+  final List<Exercise> exercises;
+  final List<String> equipment;
+  final List<String> tags;
+  final bool downloadsAvailable;
+
+  final String? parentTemplateId;
+  final String? previousVersionId;
+  final String versionNotes;
+  final bool isTemplate;
+  final List<WorkoutSection> sections;
+  final int timesUsed;
+  final DateTime? lastUsed;
+
   final bool hasAccessibilityOptions;
-  final List<String> intensityModifications; 
+  final List<String> intensityModifications;
 
   const Workout({
     required this.id,
@@ -142,7 +142,8 @@ class Workout extends Equatable {
       category: category ?? this.category,
       difficulty: difficulty ?? this.difficulty,
       durationMinutes: durationMinutes ?? this.durationMinutes,
-      estimatedCaloriesBurn: estimatedCaloriesBurn ?? this.estimatedCaloriesBurn,
+      estimatedCaloriesBurn:
+          estimatedCaloriesBurn ?? this.estimatedCaloriesBurn,
       featured: featured ?? this.featured,
       isAiGenerated: isAiGenerated ?? this.isAiGenerated,
       createdAt: createdAt ?? this.createdAt,
@@ -151,8 +152,10 @@ class Workout extends Equatable {
       equipment: equipment ?? this.equipment,
       tags: tags ?? this.tags,
       downloadsAvailable: downloadsAvailable ?? this.downloadsAvailable,
-      hasAccessibilityOptions: hasAccessibilityOptions ?? this.hasAccessibilityOptions,
-      intensityModifications: intensityModifications ?? this.intensityModifications,
+      hasAccessibilityOptions:
+          hasAccessibilityOptions ?? this.hasAccessibilityOptions,
+      intensityModifications:
+          intensityModifications ?? this.intensityModifications,
       parentTemplateId: parentTemplateId ?? this.parentTemplateId,
       previousVersionId: previousVersionId ?? this.previousVersionId,
       versionNotes: versionNotes ?? this.versionNotes,
@@ -213,29 +216,45 @@ class Workout extends Equatable {
       estimatedCaloriesBurn: map['estimatedCaloriesBurn']?.toInt() ?? 0,
       featured: map['featured'] ?? false,
       isAiGenerated: map['isAiGenerated'] ?? false,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
+      createdAt:
+          map['createdAt'] is Timestamp
+              ? (map['createdAt'] as Timestamp).toDate()
+              : (map['createdAt'] is int
+                  ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'])
+                  : DateTime.now()),
       createdBy: map['createdBy'] ?? '',
-      exercises: map['exercises'] != null
-          ? List<Exercise>.from(
-              map['exercises']?.map((x) => Exercise.fromMap(x)))
-          : [],
+      exercises:
+          map['exercises'] != null
+              ? List<Exercise>.from(
+                map['exercises']?.map((x) => Exercise.fromMap(x)),
+              )
+              : [],
       equipment: List<String>.from(map['equipment'] ?? []),
       tags: List<String>.from(map['tags'] ?? []),
       downloadsAvailable: map['downloadsAvailable'] ?? false,
       hasAccessibilityOptions: map['hasAccessibilityOptions'] ?? false,
-      intensityModifications: List<String>.from(map['intensityModifications'] ?? []),
+      intensityModifications: List<String>.from(
+        map['intensityModifications'] ?? [],
+      ),
       parentTemplateId: map['parentTemplateId'],
       previousVersionId: map['previousVersionId'],
       versionNotes: map['versionNotes'] ?? '',
       isTemplate: map['isTemplate'] ?? false,
-      sections: map['sections'] != null
-          ? List<WorkoutSection>.from(
-              map['sections']?.map((x) => WorkoutSection.fromMap(x)))
-          : [],
+      sections:
+          map['sections'] != null
+              ? List<WorkoutSection>.from(
+                map['sections']?.map((x) => WorkoutSection.fromMap(x)),
+              )
+              : [],
       timesUsed: map['timesUsed']?.toInt() ?? 0,
-      lastUsed: map['lastUsed'] != null 
-          ? DateTime.fromMillisecondsSinceEpoch(map['lastUsed']) 
-          : null,
+      lastUsed:
+          map['lastUsed'] != null
+              ? (map['lastUsed'] is Timestamp
+                  ? (map['lastUsed'] as Timestamp).toDate()
+                  : (map['lastUsed'] is int
+                      ? DateTime.fromMillisecondsSinceEpoch(map['lastUsed'])
+                      : null))
+              : null,
     );
   }
 
@@ -271,17 +290,19 @@ class Workout extends Equatable {
   }
 
   // Create sections from exercises (for upgrading old workouts)
-  static List<WorkoutSection> createSectionsFromExercises(List<Exercise> exercises) {
+  static List<WorkoutSection> createSectionsFromExercises(
+    List<Exercise> exercises,
+  ) {
     if (exercises.isEmpty) {
       return [];
     }
-    
+
     return [
       WorkoutSection(
         id: 'section-${DateTime.now().millisecondsSinceEpoch}',
         name: 'Main Workout',
         exercises: exercises,
-      )
+      ),
     ];
   }
 }

@@ -1,4 +1,5 @@
 // lib/features/workouts/screens/workout_browse_screen.dart
+import 'package:bums_n_tums/features/ai/screens/ai_workout_screen.dart';
 import 'package:bums_n_tums/features/auth/providers/auth_provider.dart';
 import 'package:bums_n_tums/features/workouts/screens/all_featured_workouts_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/beginner_workouts_screen.dart';
@@ -8,6 +9,8 @@ import 'package:bums_n_tums/features/workouts/screens/favorite_workouts_screen.d
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_editor_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_search_screen.dart';
+import 'package:bums_n_tums/features/workouts/screens/workout_templates_screen.dart';
+import 'package:bums_n_tums/shared/theme/color_palette.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,14 +56,8 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
         title: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const WorkoutEditorScreen(),
-                  ),
-                );
-              },
+              icon: const Icon(Icons.add),
+              onPressed: () => _showWorkoutCreationOptions(context),
             ),
             const Text('Workouts'),
           ],
@@ -484,13 +481,7 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const WorkoutEditorScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: () => _showWorkoutCreationOptions(context),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 44),
                   ),
@@ -565,13 +556,7 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
           ),
           const SizedBox(height: 16),
           OutlinedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const WorkoutEditorScreen(),
-                ),
-              );
-            },
+            onPressed: () => _showWorkoutCreationOptions(context),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 44),
             ),
@@ -586,6 +571,79 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // Add this method to the _WorkoutBrowseScreenState class
+  void _showWorkoutCreationOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (context) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Create Workout',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: Icon(Icons.create, color: AppColors.pink),
+                  title: const Text('Create from Scratch'),
+                  subtitle: const Text('Start with a blank workout'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const WorkoutEditorScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.copy, color: AppColors.popBlue),
+                  title: const Text('Use Template'),
+                  subtitle: const Text(
+                    'Start with one of your saved templates',
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => const WorkoutTemplatesScreen(
+                              selectionMode: true,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.psychology, color: AppColors.popGreen),
+                  title: const Text('Create with AI'),
+                  subtitle: const Text(
+                    'Let AI generate a personalized workout',
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AIWorkoutScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
     );
   }
 }

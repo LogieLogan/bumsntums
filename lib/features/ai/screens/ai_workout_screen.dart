@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
+import '../../../shared/providers/analytics_provider.dart';
 import '../../../features/auth/providers/user_provider.dart';
 import '../../../features/workouts/models/workout.dart';
 import '../../../features/workouts/models/exercise.dart';
 import '../providers/workout_recommendation_provider.dart';
 import '../../../features/workouts/screens/workout_execution_screen.dart';
+import '../../../features/workouts/screens/pre_workout_setup_screen.dart';
 import '../../workouts/providers/workout_execution_provider.dart';
 
 class AIWorkoutScreen extends ConsumerStatefulWidget {
@@ -21,10 +23,7 @@ class AIWorkoutScreen extends ConsumerStatefulWidget {
 class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
   WorkoutCategory _selectedCategory = WorkoutCategory.fullBody;
   int _selectedDuration = 30;
-  final TextEditingController _customRequestController =
-      TextEditingController();
-
-  ProviderListenable? get analyticsProvider => null;
+  final TextEditingController _customRequestController = TextEditingController();
 
   @override
   void dispose() {
@@ -43,15 +42,12 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
       return;
     }
 
-    final customRequest =
-        _customRequestController.text.trim().isNotEmpty
-            ? _customRequestController.text.trim()
-            : null;
+    final customRequest = _customRequestController.text.trim().isNotEmpty
+        ? _customRequestController.text.trim()
+        : null;
 
     // Use userId instead of userProfile
-    await ref
-        .read(workoutRecommendationProvider.notifier)
-        .generateWorkout(
+    await ref.read(workoutRecommendationProvider.notifier).generateWorkout(
           userId: userProfile.userId,
           category: _selectedCategory,
           maxMinutes: _selectedDuration,
@@ -65,10 +61,9 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('AI Workout Creator')),
-      body:
-          recommendationState.workoutData != null
-              ? _buildWorkoutResult(recommendationState.workoutData!)
-              : _buildWorkoutForm(recommendationState),
+      body: recommendationState.workoutData != null
+          ? _buildWorkoutResult(recommendationState.workoutData!)
+          : _buildWorkoutForm(recommendationState),
     );
   }
 
@@ -128,8 +123,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
           TextField(
             controller: _customRequestController,
             decoration: InputDecoration(
-              hintText:
-                  'E.g., "Include resistance bands" or "Focus on stretching"',
+              hintText: 'E.g., "Include resistance bands" or "Focus on stretching"',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -147,17 +141,16 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child:
-                  state.isLoading
-                      ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                      : const Text('Create My Workout'),
+              child: state.isLoading
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Create My Workout'),
             ),
           ),
 
@@ -224,8 +217,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color:
-              isSelected ? AppColors.salmon : AppColors.salmon.withOpacity(0.1),
+          color: isSelected ? AppColors.salmon : AppColors.salmon.withOpacity(0.1),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Text(
@@ -272,8 +264,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
                   sets: safelyParseInt(e['sets']) ?? 1,
                   reps: safelyParseInt(e['reps']) ?? 10,
                   durationSeconds: safelyParseInt(e['durationSeconds']),
-                  restBetweenSeconds:
-                      safelyParseInt(e['restBetweenSeconds']) ?? 30,
+                  restBetweenSeconds: safelyParseInt(e['restBetweenSeconds']) ?? 30,
                   targetArea: e['targetArea'] ?? 'Core',
                 ),
               );
@@ -289,13 +280,9 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
       }
 
       final workout = Workout(
-        id:
-            workoutData['id'] ??
-            DateTime.now().millisecondsSinceEpoch.toString(),
+        id: workoutData['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
         title: workoutData['title'] ?? 'Custom Workout',
-        description:
-            workoutData['description'] ??
-            'A personalized workout created just for you.',
+        description: workoutData['description'] ?? 'A personalized workout created just for you.',
         imageUrl: 'assets/images/placeholder_workout.jpg',
         category: WorkoutCategory.values.firstWhere(
           (c) => c.name == workoutData['category'],
@@ -306,16 +293,12 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
           orElse: () => WorkoutDifficulty.beginner,
         ),
         durationMinutes: safelyParseInt(workoutData['durationMinutes']) ?? 30,
-        estimatedCaloriesBurn:
-            safelyParseInt(workoutData['estimatedCaloriesBurn']) ?? 150,
+        estimatedCaloriesBurn: safelyParseInt(workoutData['estimatedCaloriesBurn']) ?? 150,
         isAiGenerated: true,
         createdAt: DateTime.now(), // Safest approach
         createdBy: 'ai',
         exercises: exercises,
-        equipment:
-            workoutData['equipment'] != null
-                ? List<String>.from(workoutData['equipment'])
-                : [],
+        equipment: workoutData['equipment'] != null ? List<String>.from(workoutData['equipment']) : [],
         tags: ['ai-generated'],
       );
 
@@ -324,7 +307,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with back button
+            // Header with action buttons
             Row(
               children: [
                 Expanded(
@@ -338,25 +321,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Check if we're in scheduling mode
-                      final router = ModalRoute.of(context);
-                      if (router?.settings.arguments == true) {
-                        // Return the workout to the calling screen
-                        Navigator.of(context).pop(workout);
-                      } else {
-                        // Otherwise start the workout as usual
-                        ref
-                            .read(workoutExecutionProvider.notifier)
-                            .startWorkout(workout);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder:
-                                (context) => const WorkoutExecutionScreen(),
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: () => _startWorkout(workout),
                     child: const Text('Use Workout'),
                   ),
                 ),
@@ -402,7 +367,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
                         ),
                         _buildWorkoutStat(
                           Icons.fitness_center,
-                          workout.difficulty.name,
+                          workout.difficulty.name.capitalize(),
                         ),
                       ],
                     ),
@@ -419,17 +384,15 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
                       const SizedBox(height: 4),
                       Wrap(
                         spacing: 8,
-                        children:
-                            workout.equipment.map((item) {
-                              return Chip(
-                                label: Text(item),
-                                backgroundColor: AppColors.popTurquoise
-                                    .withOpacity(0.1),
-                                labelStyle: TextStyle(
-                                  color: AppColors.popTurquoise,
-                                ),
-                              );
-                            }).toList(),
+                        children: workout.equipment.map((item) {
+                          return Chip(
+                            label: Text(item),
+                            backgroundColor: AppColors.popTurquoise.withOpacity(0.1),
+                            labelStyle: TextStyle(
+                              color: AppColors.popTurquoise,
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ],
                   ],
@@ -569,66 +532,6 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      ref.read(workoutRecommendationProvider.notifier).reset();
-                    },
-                    child: const Text('Start Over'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Return the workout to the calling screen if in scheduling mode
-                      final router = ModalRoute.of(context);
-                      if (router?.settings.arguments is bool &&
-                          router?.settings.arguments == true) {
-                        Navigator.of(context).pop(workout);
-                      } else {
-                        // Otherwise start the workout as usual
-                        ref
-                            .read(workoutExecutionProvider.notifier)
-                            .startWorkout(workout);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder:
-                                (context) => const WorkoutExecutionScreen(),
-                          ),
-                        );
-                      }
-                    },
-                    child: const Text('Use Workout'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () {
-                // Here we would add code to save to custom workouts
-                // This requires additional implementation of the custom workout repository
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Workout saved to My Workouts'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              icon: const Icon(Icons.save),
-              label: const Text('Save to My Workouts'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.popTurquoise,
-                minimumSize: const Size(double.infinity, 0),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
           ],
         ),
       );
@@ -685,7 +588,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
     );
   }
 
-  // Add this method to submit feedback
+  // Improved feedback submission method
   void _submitWorkoutFeedback(String feedbackType) {
     // Get the workout ID
     final workoutData = ref.read(workoutRecommendationProvider).workoutData;
@@ -693,18 +596,20 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
 
     final workoutId = workoutData['id'];
 
-    // Analytics event
-    ref
-        .read(analyticsProvider!)
-        .logEvent(
-          name: 'ai_workout_feedback',
-          parameters: {'workout_id': workoutId, 'feedback_type': feedbackType},
-        );
+    // Analytics event - fixed by using the correct provider
+    try {
+      ref.read(analyticsServiceProvider).logEvent(
+        name: 'ai_workout_feedback',
+        parameters: {'workout_id': workoutId, 'feedback_type': feedbackType},
+      );
+    } catch (e) {
+      print('Error logging feedback: $e');
+    }
 
     // Show confirmation
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Thanks for your feedback!'),
+        content: const Text('Thanks for your feedback!'),
         backgroundColor: AppColors.success,
       ),
     );
@@ -739,6 +644,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
     );
   }
 
+  // Improved save workout method
   void _saveWorkout(Workout workout) async {
     try {
       // Get the user ID
@@ -755,15 +661,14 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
       // Create a more descriptive title that's unique
       final now = DateTime.now();
       final date = '${now.day}/${now.month}/${now.year}';
-      final time = '${now.hour}:${now.minute}';
+      final time = '${now.hour}:${now.minute.toString().padLeft(2, '0')}';
 
       // Generate a more descriptive title if needed
       final finalWorkout = workout.copyWith(
         // Only generate a more descriptive title if it's generic
-        title:
-            workout.title == 'Custom Workout'
-                ? 'AI ${workout.difficulty.name.toString().capitalize()} ${workout.category.name.toString().capitalize()} (${date})'
-                : workout.title,
+        title: workout.title == 'Custom Workout'
+            ? 'AI ${workout.difficulty.name.capitalize()} ${workout.category.name.capitalize()} (${date} ${time})'
+            : workout.title,
       );
 
       // Save to repository
@@ -778,6 +683,17 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
           ),
         );
       }
+      
+      // Log to analytics
+      try {
+        ref.read(analyticsServiceProvider).logEvent(
+          name: 'ai_workout_saved',
+          parameters: {'workout_id': finalWorkout.id, 'workout_category': finalWorkout.category.name},
+        );
+      } catch (e) {
+        print('Error logging workout save event: $e');
+      }
+      
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -789,10 +705,28 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> {
       }
     }
   }
+  
+  // Method to handle starting a workout
+  void _startWorkout(Workout workout) {
+    // Check if we're in selection mode from the route arguments
+    final router = ModalRoute.of(context);
+    if (router?.settings.arguments is bool && router?.settings.arguments == true) {
+      // Return the workout to the calling screen
+      Navigator.of(context).pop(workout);
+    } else {
+      // Navigate to pre-workout setup
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PreWorkoutSetupScreen(workout: workout),
+        ),
+      );
+    }
+  }
 }
 
 extension StringExtension on String {
   String capitalize() {
-    return "${this[0].toUpperCase()}${this.substring(1)}";
+    if (isEmpty) return this;
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }

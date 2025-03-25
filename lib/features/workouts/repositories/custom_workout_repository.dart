@@ -25,7 +25,10 @@ class CustomWorkoutRepository {
       // Log the save event
       _analytics.logEvent(
         name: 'custom_workout_saved',
-        parameters: {'workout_id': workout.id, 'is_template': workout.isTemplate},
+        parameters: {
+          'workout_id': workout.id,
+          'is_template': workout.isTemplate ? '1' : '0',
+        },
       );
 
       print('Custom workout saved successfully');
@@ -41,7 +44,7 @@ class CustomWorkoutRepository {
     try {
       // Ensure the template flag is set
       final workoutTemplate = template.copyWith(isTemplate: true);
-      
+
       // Save to user_workout_templates/{userId}/templates/{templateId}
       await _firestore
           .collection('user_workout_templates')
@@ -49,13 +52,13 @@ class CustomWorkoutRepository {
           .collection('templates')
           .doc(workoutTemplate.id)
           .set(workoutTemplate.toMap());
-      
+
       // Log the template save event
       _analytics.logEvent(
         name: 'workout_template_saved',
         parameters: {'template_id': workoutTemplate.id},
       );
-      
+
       return true;
     } catch (e) {
       print('Error saving workout template: $e');
@@ -64,12 +67,16 @@ class CustomWorkoutRepository {
   }
 
   // Save a new version of a workout
-  Future<bool> saveWorkoutVersion(String userId, Workout workout, String versionNotes) async {
+  Future<bool> saveWorkoutVersion(
+    String userId,
+    Workout workout,
+    String versionNotes,
+  ) async {
     try {
       // Create a timestamp for the version
       final now = DateTime.now();
       final versionId = '${workout.id}-v${now.millisecondsSinceEpoch}';
-      
+
       // Create the new version with reference to previous version
       final newVersion = workout.copyWith(
         id: versionId,
@@ -77,7 +84,7 @@ class CustomWorkoutRepository {
         versionNotes: versionNotes,
         createdAt: now,
       );
-      
+
       // Save to user_workout_versions/{userId}/workouts/{workoutId}/versions/{versionId}
       await _firestore
           .collection('user_workout_versions')
@@ -87,13 +94,13 @@ class CustomWorkoutRepository {
           .collection('versions')
           .doc(versionId)
           .set(newVersion.toMap());
-      
+
       // Log the version save event
       _analytics.logEvent(
         name: 'workout_version_saved',
         parameters: {'workout_id': workout.id, 'version_id': versionId},
       );
-      
+
       return true;
     } catch (e) {
       print('Error saving workout version: $e');
@@ -148,13 +155,13 @@ class CustomWorkoutRepository {
           .collection('templates')
           .doc(templateId)
           .delete();
-      
+
       // Log the template delete event
       _analytics.logEvent(
         name: 'workout_template_deleted',
         parameters: {'template_id': templateId},
       );
-      
+
       return true;
     } catch (e) {
       print('Error deleting workout template: $e');
@@ -189,7 +196,7 @@ class CustomWorkoutRepository {
               .doc(userId)
               .collection('templates')
               .get();
-      
+
       return snapshot.docs.map((doc) => Workout.fromMap(doc.data())).toList();
     } catch (e) {
       print('Error getting user workout templates: $e');
@@ -198,7 +205,10 @@ class CustomWorkoutRepository {
   }
 
   // Get versions of a specific workout
-  Future<List<Workout>> getWorkoutVersions(String userId, String workoutId) async {
+  Future<List<Workout>> getWorkoutVersions(
+    String userId,
+    String workoutId,
+  ) async {
     try {
       final snapshot =
           await _firestore
@@ -209,7 +219,7 @@ class CustomWorkoutRepository {
               .collection('versions')
               .orderBy('createdAt', descending: true)
               .get();
-      
+
       return snapshot.docs.map((doc) => Workout.fromMap(doc.data())).toList();
     } catch (e) {
       print('Error getting workout versions: $e');
@@ -229,7 +239,7 @@ class CustomWorkoutRepository {
             'timesUsed': FieldValue.increment(1),
             'lastUsed': FieldValue.serverTimestamp(),
           });
-      
+
       return true;
     } catch (e) {
       print('Error incrementing template usage: $e');
@@ -242,16 +252,16 @@ class CustomWorkoutRepository {
     try {
       // Create template version of the workout
       final template = workout.asTemplate();
-      
+
       // Save as template
       final success = await saveWorkoutTemplate(userId, template);
-      
+
       // Log the conversion
       _analytics.logEvent(
         name: 'workout_converted_to_template',
         parameters: {'workout_id': workout.id, 'template_id': template.id},
       );
-      
+
       return success;
     } catch (e) {
       print('Error converting workout to template: $e');
@@ -260,11 +270,14 @@ class CustomWorkoutRepository {
   }
 
   // Create a workout from a template
-  Future<Workout?> createWorkoutFromTemplate(String userId, Workout template) async {
+  Future<Workout?> createWorkoutFromTemplate(
+    String userId,
+    Workout template,
+  ) async {
     try {
       // Generate a new ID for the workout
       final newId = 'workout-${DateTime.now().millisecondsSinceEpoch}';
-      
+
       // Create a new workout from the template
       final newWorkout = template.copyWith(
         id: newId,
@@ -272,23 +285,23 @@ class CustomWorkoutRepository {
         parentTemplateId: template.id,
         createdAt: DateTime.now(),
       );
-      
+
       // Save the new workout
       final success = await saveCustomWorkout(userId, newWorkout);
-      
+
       // Increment template usage count
       if (success) {
         await incrementTemplateUsage(userId, template.id);
-        
+
         // Log the creation
         _analytics.logEvent(
           name: 'workout_created_from_template',
           parameters: {'template_id': template.id, 'workout_id': newId},
         );
-        
+
         return newWorkout;
       }
-      
+
       return null;
     } catch (e) {
       print('Error creating workout from template: $e');
@@ -331,23 +344,20 @@ final workoutTemplatesStreamProvider =
     });
 
 // Provider for workout versions
-final workoutVersionsStreamProvider =
-    StreamProvider.family<List<Workout>, ({String userId, String workoutId})>((
-      ref,
-      params,
-    ) {
-      return FirebaseFirestore.instance
-          .collection('user_workout_versions')
-          .doc(params.userId)
-          .collection('workouts')
-          .doc(params.workoutId)
-          .collection('versions')
-          .orderBy('createdAt', descending: true)
-          .snapshots()
-          .map(
-            (snapshot) =>
-                snapshot.docs
-                    .map((doc) => Workout.fromMap(doc.data()))
-                    .toList(),
-          );
-    });
+final workoutVersionsStreamProvider = StreamProvider.family<
+  List<Workout>,
+  ({String userId, String workoutId})
+>((ref, params) {
+  return FirebaseFirestore.instance
+      .collection('user_workout_versions')
+      .doc(params.userId)
+      .collection('workouts')
+      .doc(params.workoutId)
+      .collection('versions')
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map(
+        (snapshot) =>
+            snapshot.docs.map((doc) => Workout.fromMap(doc.data())).toList(),
+      );
+});
