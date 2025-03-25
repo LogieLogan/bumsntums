@@ -43,8 +43,7 @@ class WorkoutCard extends StatelessWidget {
             children: [
               // Workout image using our enhanced service
               ExerciseMediaService.workoutImage(
-                imageUrl: workout.imageUrl,
-                category: workout.category,
+                difficulty: workout.difficulty,
                 height: isCompact ? 120 : 200,
                 width: double.infinity,
                 fit: BoxFit.cover,

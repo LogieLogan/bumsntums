@@ -11,8 +11,9 @@ class Exercise extends Equatable {
   final int reps; // If time-based, this could be 0
   final int? durationSeconds; // For timed exercises
   final int restBetweenSeconds;
-  final String targetArea; // bums, tums, etc.
-  
+  final String targetArea;
+  final String? videoPath;
+
   // Enhanced personalization fields
   final double? weight; // Weight used for the exercise (kg/lbs)
   final int? resistanceLevel; // For resistance bands (1-5)
@@ -23,10 +24,10 @@ class Exercise extends Equatable {
   final List<String> commonMistakes; // Common mistakes to avoid
   final List<String> progressionExercises; // Harder variations
   final List<String> regressionExercises; // Easier variations
-  
+
   // Accessibility features
   final List<ExerciseModification> modifications;
-  
+
   // Equipment options
   final List<String> equipmentOptions; // Alternative equipment that can be used
 
@@ -44,7 +45,7 @@ class Exercise extends Equatable {
     this.weight,
     this.resistanceLevel,
     this.tempo,
-    this.difficultyLevel = 3, // Default to middle difficulty
+    this.difficultyLevel = 3,
     this.targetMuscles = const [],
     this.formTips = const [],
     this.commonMistakes = const [],
@@ -52,6 +53,7 @@ class Exercise extends Equatable {
     this.regressionExercises = const [],
     this.modifications = const [],
     this.equipmentOptions = const [],
+    this.videoPath,
   });
 
   @override
@@ -77,6 +79,7 @@ class Exercise extends Equatable {
     regressionExercises,
     modifications,
     equipmentOptions,
+    videoPath,
   ];
 
   Exercise copyWith({
@@ -101,6 +104,7 @@ class Exercise extends Equatable {
     List<String>? regressionExercises,
     List<ExerciseModification>? modifications,
     List<String>? equipmentOptions,
+    String? videoPath,
   }) {
     return Exercise(
       id: id ?? this.id,
@@ -124,6 +128,7 @@ class Exercise extends Equatable {
       regressionExercises: regressionExercises ?? this.regressionExercises,
       modifications: modifications ?? this.modifications,
       equipmentOptions: equipmentOptions ?? this.equipmentOptions,
+      videoPath: videoPath ?? this.videoPath,
     );
   }
 
@@ -150,6 +155,7 @@ class Exercise extends Equatable {
       'regressionExercises': regressionExercises,
       'modifications': modifications.map((m) => m.toMap()).toList(),
       'equipmentOptions': equipmentOptions,
+      'videoPath': videoPath,
     };
   }
 
@@ -167,30 +173,40 @@ class Exercise extends Equatable {
       targetArea: map['targetArea'] ?? '',
       weight: map['weight']?.toDouble(),
       resistanceLevel: map['resistanceLevel']?.toInt(),
-      tempo: map['tempo'] != null ? Map<String, dynamic>.from(map['tempo']) : null,
+      tempo:
+          map['tempo'] != null ? Map<String, dynamic>.from(map['tempo']) : null,
       difficultyLevel: map['difficultyLevel']?.toInt() ?? 3,
-      targetMuscles: map['targetMuscles'] != null 
-          ? List<String>.from(map['targetMuscles']) 
-          : [],
-      formTips: map['formTips'] != null 
-          ? List<String>.from(map['formTips']) 
-          : [],
-      commonMistakes: map['commonMistakes'] != null 
-          ? List<String>.from(map['commonMistakes']) 
-          : [],
-      progressionExercises: map['progressionExercises'] != null 
-          ? List<String>.from(map['progressionExercises']) 
-          : [],
-      regressionExercises: map['regressionExercises'] != null 
-          ? List<String>.from(map['regressionExercises']) 
-          : [],
-      modifications: map['modifications'] != null
-          ? List<ExerciseModification>.from(
-              map['modifications']?.map((x) => ExerciseModification.fromMap(x)))
-          : [],
-      equipmentOptions: map['equipmentOptions'] != null 
-          ? List<String>.from(map['equipmentOptions']) 
-          : [],
+      targetMuscles:
+          map['targetMuscles'] != null
+              ? List<String>.from(map['targetMuscles'])
+              : [],
+      formTips:
+          map['formTips'] != null ? List<String>.from(map['formTips']) : [],
+      commonMistakes:
+          map['commonMistakes'] != null
+              ? List<String>.from(map['commonMistakes'])
+              : [],
+      progressionExercises:
+          map['progressionExercises'] != null
+              ? List<String>.from(map['progressionExercises'])
+              : [],
+      regressionExercises:
+          map['regressionExercises'] != null
+              ? List<String>.from(map['regressionExercises'])
+              : [],
+      modifications:
+          map['modifications'] != null
+              ? List<ExerciseModification>.from(
+                map['modifications']?.map(
+                  (x) => ExerciseModification.fromMap(x),
+                ),
+              )
+              : [],
+      equipmentOptions:
+          map['equipmentOptions'] != null
+              ? List<String>.from(map['equipmentOptions'])
+              : [],
+      videoPath: map['videoPath'],
     );
   }
 }
@@ -202,7 +218,7 @@ class ExerciseModification extends Equatable {
   final String? imageUrl;
   final String? videoUrl;
   final List<String> forAccessibilityNeeds;
-  
+
   const ExerciseModification({
     required this.id,
     required this.title,
@@ -211,7 +227,7 @@ class ExerciseModification extends Equatable {
     this.videoUrl,
     this.forAccessibilityNeeds = const [],
   });
-  
+
   @override
   List<Object?> get props => [
     id,
@@ -221,7 +237,7 @@ class ExerciseModification extends Equatable {
     videoUrl,
     forAccessibilityNeeds,
   ];
-  
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -232,7 +248,7 @@ class ExerciseModification extends Equatable {
       'forAccessibilityNeeds': forAccessibilityNeeds,
     };
   }
-  
+
   factory ExerciseModification.fromMap(Map<String, dynamic> map) {
     return ExerciseModification(
       id: map['id'] ?? '',
@@ -240,7 +256,9 @@ class ExerciseModification extends Equatable {
       description: map['description'] ?? '',
       imageUrl: map['imageUrl'],
       videoUrl: map['videoUrl'],
-      forAccessibilityNeeds: List<String>.from(map['forAccessibilityNeeds'] ?? []),
+      forAccessibilityNeeds: List<String>.from(
+        map['forAccessibilityNeeds'] ?? [],
+      ),
     );
   }
 }

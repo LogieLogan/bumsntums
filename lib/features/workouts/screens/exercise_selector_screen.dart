@@ -1,4 +1,5 @@
 // lib/features/workouts/screens/exercise_selector_screen.dart
+import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:bums_n_tums/features/workouts/screens/exercise_editor_screen.dart';
 import 'package:bums_n_tums/shared/services/exercise_media_service.dart';
 import 'package:flutter/material.dart';
@@ -365,10 +366,17 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
-                child: ExerciseMediaService.getExerciseIcon(
-                  targetArea: exercise.targetArea,
-                  size: 32,
-                  color: _getTargetAreaColor(exercise.targetArea),
+                child: ExerciseMediaService.workoutImage(
+                  difficulty:
+                      exercise.difficultyLevel <= 2
+                          ? WorkoutDifficulty.beginner
+                          : (exercise.difficultyLevel <= 4
+                              ? WorkoutDifficulty.intermediate
+                              : WorkoutDifficulty.advanced),
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.contain,
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
@@ -466,7 +474,6 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    
                     // Exercise image
                     Center(
                       child:

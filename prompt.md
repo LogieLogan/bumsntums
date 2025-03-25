@@ -2,8 +2,7 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 
 Area of focus:
 phase 2 of implemntation plan - phase 2 of workouts
-extend exercise db service and media
-explore svg and demo media options
+expand exercise library with demo gif in assets/videos/exercises
 
 project structure: 
 
@@ -182,8 +181,7 @@ project structure:
 │   │   ├── app_config.dart
 │   │   └── router.dart
 │   ├── constants
-│   │   ├── app_constants.dart
-│   │   └── svg_icons.dart
+│   │   └── app_constants.dart
 │   ├── models
 │   │   ├── app_user.dart
 │   │   └── legal_document.dart
@@ -207,6 +205,7 @@ project structure:
 │   │   ├── consent_management_service.dart
 │   │   ├── data_retention_service.dart
 │   │   ├── environment_service.dart
+│   │   ├── exercise_icon_mapper.dart
 │   │   ├── exercise_media_service.dart
 │   │   ├── fallback_image_provider.dart
 │   │   ├── feedback_service.dart
@@ -214,8 +213,7 @@ project structure:
 │   │   ├── gdpr_service.dart
 │   │   ├── legal_document_service.dart
 │   │   ├── resource_loader_service.dart
-│   │   ├── shake_detector_service.dart
-│   │   └── svg_asset_service.dart
+│   │   └── shake_detector_service.dart
 │   └── theme
 │       ├── app_theme.dart
 │       ├── color_palette.dart

@@ -1,6 +1,6 @@
 // lib/features/workouts/widgets/exercise_demo_widget.dart
+import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../models/exercise.dart';
 import '../../../shared/services/exercise_media_service.dart';
 import '../../../shared/theme/color_palette.dart';
@@ -10,7 +10,7 @@ class ExerciseDemoWidget extends StatelessWidget {
   final double height;
   final double width;
   final bool showControls;
-  
+
   const ExerciseDemoWidget({
     super.key,
     required this.exercise,
@@ -18,19 +18,21 @@ class ExerciseDemoWidget extends StatelessWidget {
     this.width = double.infinity,
     this.showControls = true,
   });
-  
+
   @override
   Widget build(BuildContext context) {
-    // Get the best demo image URL for this exercise (preferring animated GIFs)
-    final String demoUrl = ExerciseMediaService.getBestExerciseMedia(
-      exercise.imageUrl,
-      type: MediaType.demo,
-    );
-    
+    // Map exercise difficulty level to WorkoutDifficulty enum
+    final WorkoutDifficulty difficulty =
+        exercise.difficultyLevel <= 2
+            ? WorkoutDifficulty.beginner
+            : (exercise.difficultyLevel <= 4
+                ? WorkoutDifficulty.intermediate
+                : WorkoutDifficulty.advanced);
+
     // Check if we have a YouTube video ID for this exercise
-    final bool hasVideo = exercise.youtubeVideoId != null && 
-                         exercise.youtubeVideoId!.isNotEmpty;
-    
+    final bool hasVideo =
+        exercise.youtubeVideoId != null && exercise.youtubeVideoId!.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -41,49 +43,22 @@ class ExerciseDemoWidget extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.paleGrey,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AppColors.paleGrey,
-              width: 1,
-            ),
+            border: Border.all(color: AppColors.paleGrey, width: 1),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Demo image (animated GIF if available)
-                CachedNetworkImage(
-                  imageUrl: demoUrl,
+                // Exercise image based on difficulty level
+                ExerciseMediaService.workoutImage(
+                  difficulty: difficulty,
+                  height: height,
+                  width: width,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.salmon,
-                    ),
-                  ),
-                  errorWidget: (context, url, error) {
-                    // Fallback to static image if GIF fails
-                    return CachedNetworkImage(
-                      imageUrl: ExerciseMediaService.getBestExerciseMedia(
-                        exercise.imageUrl,
-                        type: MediaType.photo,
-                      ),
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.salmon,
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => const Center(
-                        child: Icon(
-                          Icons.fitness_center,
-                          size: 48,
-                          color: AppColors.salmon,
-                        ),
-                      ),
-                    );
-                  },
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                
+
                 // Video play button overlay (if YouTube video available)
                 if (hasVideo && showControls)
                   Positioned.fill(
@@ -111,7 +86,7 @@ class ExerciseDemoWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
+
                 // Exercise name overlay
                 Positioned(
                   bottom: 0,
@@ -144,7 +119,7 @@ class ExerciseDemoWidget extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // Controls row (if showing controls)
         if (showControls) ...[
           const SizedBox(height: 8),
@@ -161,18 +136,15 @@ class ExerciseDemoWidget extends StatelessWidget {
                     foregroundColor: Colors.white,
                   ),
                 ),
-                
-              if (hasVideo)
-                const SizedBox(width: 8),
-                
+
+              if (hasVideo) const SizedBox(width: 8),
+
               // Instructions button
               TextButton.icon(
                 onPressed: () => _showInstructionsDialog(context),
                 icon: const Icon(Icons.info_outline),
                 label: const Text('View Instructions'),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.salmon,
-                ),
+                style: TextButton.styleFrom(foregroundColor: AppColors.salmon),
               ),
             ],
           ),
@@ -180,102 +152,104 @@ class ExerciseDemoWidget extends StatelessWidget {
       ],
     );
   }
-  
+
   // Show YouTube video in dialog
   void _showVideoDialog(BuildContext context) {
     // Note: In a real implementation, you would integrate YouTube player
     // For this implementation, we'll just show a placeholder
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: const Text(
-                'YouTube player would be integrated here',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: const Text(
+                    'YouTube player would be integrated here',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
   }
-  
+
   // Show exercise instructions dialog
   void _showInstructionsDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                exercise.name,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Instructions:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(exercise.description),
-              const SizedBox(height: 12),
-              if (exercise.formTips.isNotEmpty) ...[
-                const Text(
-                  'Form Tips:',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    exercise.name,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                ...exercise.formTips.map((tip) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.check, size: 16, color: AppColors.popGreen),
-                      const SizedBox(width: 4),
-                      Expanded(child: Text(tip)),
-                    ],
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Instructions:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                )),
-              ],
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
+                  const SizedBox(height: 4),
+                  Text(exercise.description),
+                  const SizedBox(height: 12),
+                  if (exercise.formTips.isNotEmpty) ...[
+                    const Text(
+                      'Form Tips:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    ...exercise.formTips.map(
+                      (tip) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.check,
+                              size: 16,
+                              color: AppColors.popGreen,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(child: Text(tip)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Close'),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 }

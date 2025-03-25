@@ -3,6 +3,7 @@ import 'package:bums_n_tums/features/workouts/repositories/custom_workout_reposi
 import 'package:bums_n_tums/features/workouts/screens/pre_workout_setup_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_editor_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_templates_screen.dart';
+import 'package:bums_n_tums/shared/services/exercise_media_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workout.dart';
@@ -379,21 +380,9 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
       pinned: true,
       automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
-        background: Image.asset(
-          workout.imageUrl,
+        background: ExerciseMediaService.workoutImage(
+          difficulty: workout.difficulty,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: AppColors.salmon.withOpacity(0.3),
-              child: const Center(
-                child: Icon(
-                  Icons.fitness_center,
-                  color: AppColors.salmon,
-                  size: 64,
-                ),
-              ),
-            );
-          },
         ),
         title: Text(
           workout.title,

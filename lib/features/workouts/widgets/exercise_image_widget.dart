@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/services/exercise_media_service.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../models/exercise.dart';
+import '../models/workout.dart';
 
 class ExerciseImageWidget extends StatelessWidget {
   final Exercise exercise;
@@ -10,8 +11,8 @@ class ExerciseImageWidget extends StatelessWidget {
   final double? width;
   final BoxFit fit;
   final BorderRadius? borderRadius;
-  final MediaType preferredMediaType;
   final bool showName;
+  final WorkoutDifficulty difficulty;
   
   const ExerciseImageWidget({
     super.key,
@@ -20,7 +21,7 @@ class ExerciseImageWidget extends StatelessWidget {
     this.width,
     this.fit = BoxFit.cover,
     this.borderRadius,
-    this.preferredMediaType = MediaType.photo,
+    this.difficulty = WorkoutDifficulty.beginner,
     this.showName = false,
   });
   
@@ -28,9 +29,8 @@ class ExerciseImageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        ExerciseMediaService.exerciseImage(
-          imageUrl: exercise.imageUrl,
-          preferredMediaType: preferredMediaType,
+        ExerciseMediaService.workoutImage(
+          difficulty: difficulty,
           height: height,
           width: width,
           fit: fit,
