@@ -226,8 +226,8 @@ assets/
 
 | Screen/Component | Integration Needs | Priority |
 |------------------|-------------------|---------|
-| Workout Execution Screen | Exercise demo with form tips | High |
-| Exercise List Item | Consistent exercise thumbnails | High |
+| Workout Execution Screen | Exercise demo with form tips (can we a diagram or two instead of moving, could be combined with youtube embeddings) | High |
+| Exercise List Item | Consistent exercise thumbnails (can be simple icons) | High |
 | Workout Browse Screen | Category/workout preview images | Medium |
 | Exercise Detail Screen | Multiple angles of exercises | Medium |
 | Workout Editor | Exercise selection thumbnails | Medium |
