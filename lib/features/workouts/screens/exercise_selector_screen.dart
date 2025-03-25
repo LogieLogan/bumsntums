@@ -1,5 +1,6 @@
 // lib/features/workouts/screens/exercise_selector_screen.dart
 import 'package:bums_n_tums/features/workouts/screens/exercise_editor_screen.dart';
+import 'package:bums_n_tums/shared/services/exercise_media_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/exercise.dart';
@@ -356,22 +357,21 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
           child: SizedBox(
             width: 60,
             height: 60,
-            child:
-                exercise.imageUrl.startsWith('http')
-                    ? Image.network(
-                      exercise.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder:
-                          (context, e, s) =>
-                              const Icon(Icons.fitness_center, size: 40),
-                    )
-                    : Image.asset(
-                      exercise.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder:
-                          (context, e, s) =>
-                              const Icon(Icons.fitness_center, size: 40),
-                    ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: _getTargetAreaColor(
+                  exercise.targetArea,
+                ).withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: ExerciseMediaService.getExerciseIcon(
+                  targetArea: exercise.targetArea,
+                  size: 32,
+                  color: _getTargetAreaColor(exercise.targetArea),
+                ),
+              ),
+            ),
           ),
         ),
         title: Text(exercise.name),
@@ -466,6 +466,7 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    
                     // Exercise image
                     Center(
                       child:
@@ -744,5 +745,26 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
         Navigator.pop(context, newExercise);
       }
     });
+  }
+
+  Color _getTargetAreaColor(String targetArea) {
+    switch (targetArea.toLowerCase()) {
+      case 'bums':
+        return AppColors.popCoral;
+      case 'tums':
+        return AppColors.popTurquoise;
+      case 'arms':
+        return AppColors.popBlue;
+      case 'legs':
+        return AppColors.popYellow;
+      case 'back':
+        return AppColors.popGreen;
+      case 'chest':
+        return AppColors.salmon;
+      case 'fullbody':
+        return AppColors.pink;
+      default:
+        return AppColors.salmon;
+    }
   }
 }

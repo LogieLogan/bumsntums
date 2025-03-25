@@ -18,7 +18,7 @@ class FallbackImageProvider {
   // Free workout category images
   static const Map<String, String> workoutCategoryImageMap = {
     'bums': 'https://images.unsplash.com/photo-1517344884509-a0c97ec11bcc?w=600&auto=format&fit=crop',
-    'tums': 'https://images.unsplash.com/photo-1544033527-b5f37676b89f?w=600&auto=format&fit=crop',
+    'tums': 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=600&auto=format&fit=crop,',
     'fullBody': 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=600&auto=format&fit=crop',
     'cardio': 'https://images.unsplash.com/photo-1538805060514-97d9cc17730c?w=600&auto=format&fit=crop',
     'quickWorkout': 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=600&auto=format&fit=crop',

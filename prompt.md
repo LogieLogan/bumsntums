@@ -3,8 +3,7 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 Area of focus:
 phase 2 of implemntation plan - phase 2 of workouts
 extend exercise db service and media
-add media to execution screen to demo workouts
-
+explore svg and demo media options
 
 project structure: 
 

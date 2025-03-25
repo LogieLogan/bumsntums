@@ -17,7 +17,6 @@ This specification outlines the implementation of an enhanced media system for t
 | Component | Status | Next Steps |
 |-----------|--------|------------|
 | Exercise Media Service | Implemented | Expand media mappings |
-| SVG Icons System | Implemented | Create full icon set |
 | Exercise Image Widget | Implemented | Integrate across screens |
 | Exercise Demo Widget | Implemented | Create GIF library |
 | Asset Organization | Pending | Create directory structure |
@@ -28,21 +27,6 @@ This specification outlines the implementation of an enhanced media system for t
 | Social Sharing Assets | Not Started | Create shareable templates |
 | Wearable Integration | Not Started | Design small-screen assets |
 
-## image generation ideas
-SVG Animations:
-
-Use the existing SVG system to create simple stick figure animations
-Each exercise could have 4-6 SVG frames showing key positions
-These can be programmatically animated with Flutter
-SVGs are small in file size and scale perfectly across devices
-
-Procedural Animations:
-
-Create a simple 3D avatar model in code
-Programmatically animate the model through exercise positions
-This would allow for viewing from multiple angles
-The file size would be minimal as we'd only store movement data
-
 ## 2. Architecture
 
 ### 2.1 Content Architecture
@@ -50,7 +34,6 @@ The file size would be minimal as we'd only store movement data
 The Exercise Media System will follow a tiered approach:
 
 1. **Core Tier (Bundled with App)**
-   - SVG icons for all exercises (~150-200KB total)
    - Core exercise WebP demonstrations (30-40 most common exercises)
    - Category and target area illustrations
 
@@ -114,17 +97,12 @@ The Exercise Media System will follow a tiered approach:
    - Rationale: Resolution independent, tiny file size, themeable
    - Trade-offs: Requires additional SVG rendering support
 
-3. **WebP Format for Photos**
-   - Decision: Use WebP for static images instead of PNG/JPEG
-   - Rationale: 30-50% smaller file size with equivalent quality
-   - Trade-offs: Slightly more complex asset preparation
-
-4. **GIF/Short Video for Demonstrations**
+3. **GIF/Short Video for Demonstrations**
    - Decision: Use optimized GIFs for exercise demonstrations
    - Rationale: Widely supported, shows movement clearly
    - Trade-offs: Larger file size than static images
 
-5. **Tiered Caching Strategy**
+4. **Tiered Caching Strategy**
    - Decision: Implement multi-level caching (memory, disk, Firebase)
    - Rationale: Optimizes performance while managing storage use
    - Trade-offs: More complex implementation but better UX
