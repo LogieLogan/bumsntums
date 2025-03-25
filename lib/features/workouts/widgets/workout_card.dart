@@ -1,8 +1,8 @@
 // lib/features/workouts/widgets/workout_card.dart
-import 'package:bums_n_tums/shared/services/fallback_image_provider.dart';
 import 'package:flutter/material.dart';
 import '../models/workout.dart';
 import '../../../shared/theme/color_palette.dart';
+import '../../../shared/services/exercise_media_service.dart';
 
 class WorkoutCard extends StatelessWidget {
   final Workout workout;
@@ -41,19 +41,14 @@ class WorkoutCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: Stack(
             children: [
-              // Workout image or placeholder
-              Container(
+              // Workout image using our enhanced service
+              ExerciseMediaService.workoutImage(
+                imageUrl: workout.imageUrl,
+                category: workout.category,
                 height: isCompact ? 120 : 200,
                 width: double.infinity,
-                color: AppColors.paleGrey,
-                child: FallbackImageProvider.workoutImage(
-                  imageUrl: workout.imageUrl,
-                  category: workout.category,
-                  height: isCompact ? 120 : 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(20),
-                ),
+                fit: BoxFit.cover,
+                borderRadius: BorderRadius.circular(20),
               ),
 
               // Gradient overlay for text readability

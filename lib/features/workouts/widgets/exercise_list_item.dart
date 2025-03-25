@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../models/exercise.dart';
 import '../../../shared/theme/color_palette.dart';
+import 'exercise_image_widget.dart';
 
 class ExerciseListItem extends StatelessWidget {
   final Exercise exercise;
@@ -46,25 +47,15 @@ class ExerciseListItem extends StatelessWidget {
             
             const SizedBox(width: 16),
             
-            // Exercise image
+            // Exercise image using our new widget
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                exercise.imageUrl,
+              child: ExerciseImageWidget(
+                exercise: exercise,
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 60,
-                    height: 60,
-                    color: AppColors.paleGrey,
-                    child: const Icon(
-                      Icons.fitness_center,
-                      color: AppColors.salmon,
-                    ),
-                  );
-                },
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
             

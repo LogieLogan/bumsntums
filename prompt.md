@@ -154,6 +154,8 @@ project structure:
 │           │   ├── rest_timer.dart
 │           │   ├── set_rest_timer.dart
 │           │   └── workout_progress_indicator.dart
+│           ├── exercise_demo_widget.dart
+│           ├── exercise_image_widget.dart
 │           ├── exercise_list_item.dart
 │           ├── workout_card.dart
 │           └── workout_progress_chart.dart
@@ -181,7 +183,8 @@ project structure:
 │   │   ├── app_config.dart
 │   │   └── router.dart
 │   ├── constants
-│   │   └── app_constants.dart
+│   │   ├── app_constants.dart
+│   │   └── svg_icons.dart
 │   ├── models
 │   │   ├── app_user.dart
 │   │   └── legal_document.dart
@@ -205,12 +208,15 @@ project structure:
 │   │   ├── consent_management_service.dart
 │   │   ├── data_retention_service.dart
 │   │   ├── environment_service.dart
+│   │   ├── exercise_media_service.dart
 │   │   ├── fallback_image_provider.dart
 │   │   ├── feedback_service.dart
 │   │   ├── firebase_service.dart
 │   │   ├── gdpr_service.dart
 │   │   ├── legal_document_service.dart
-│   │   └── shake_detector_service.dart
+│   │   ├── resource_loader_service.dart
+│   │   ├── shake_detector_service.dart
+│   │   └── svg_asset_service.dart
 │   └── theme
 │       ├── app_theme.dart
 │       ├── color_palette.dart
@@ -238,7 +244,8 @@ project structure:
     ├── 12_accessibility.md
     ├── 13_ux_ui_spec.md
     ├── 14a_workouts.md
-    └── 14b_workout_tracking_analytics.md
+    ├── 14b_workout_tracking_analytics.md
+    └── 15_media_system.md
 
 Which of these files do you want to review? 
 
