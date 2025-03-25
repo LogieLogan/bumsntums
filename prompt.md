@@ -2,9 +2,9 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 
 Area of focus:
 phase 2 of implemntation plan - phase 2 of workouts
-images, exercise icons and media.
-free and easy to implement way to get consistent images that represent the workout/exercise
-free and easy way to get exercise digrams demonstrating exercises and to implement them into the exercises
+extend exercise db service and media
+add media to execution screen to demo workouts
+
 
 project structure: 
 

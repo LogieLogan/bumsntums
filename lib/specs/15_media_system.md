@@ -28,6 +28,21 @@ This specification outlines the implementation of an enhanced media system for t
 | Social Sharing Assets | Not Started | Create shareable templates |
 | Wearable Integration | Not Started | Design small-screen assets |
 
+## image generation ideas
+SVG Animations:
+
+Use the existing SVG system to create simple stick figure animations
+Each exercise could have 4-6 SVG frames showing key positions
+These can be programmatically animated with Flutter
+SVGs are small in file size and scale perfectly across devices
+
+Procedural Animations:
+
+Create a simple 3D avatar model in code
+Programmatically animate the model through exercise positions
+This would allow for viewing from multiple angles
+The file size would be minimal as we'd only store movement data
+
 ## 2. Architecture
 
 ### 2.1 Content Architecture
