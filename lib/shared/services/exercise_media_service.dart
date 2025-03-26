@@ -126,21 +126,25 @@ class ExerciseMediaService {
     );
   }
 
-  static String? getVideoPathForExercise(String exerciseName) {
-    // Convert the exercise name to match the filename pattern
-    final formattedName =
-        exerciseName
-            .trim()
-            .replaceAll(RegExp(r'\s+'), '_')
-            .replaceAll(RegExp(r'[^\w]'), '') // Remove non-alphanumeric chars
-            .toLowerCase();
-
-    return 'assets/videos/exercises/$formattedName.mp4';
+  static String getVideoPathForExercise(String exerciseName) {
+    // Force lowercase for consistency
+    return 'assets/videos/exercises/${exerciseName.toLowerCase()}.mp4';
   }
 
-  // Check if a video exists for an exercise
+  // Check if a video exists for an exercise by name
+  static bool exerciseHasVideo(String exerciseName) {
+    return getVideoPathForExercise(exerciseName) != null;
+  }
+
+  // Update the existing hasVideo method to be more robust
   static bool hasVideo(Exercise exercise) {
-    return exercise.videoPath != null && exercise.videoPath!.isNotEmpty;
+    // Check if the exercise has a direct video path
+    if (exercise.videoPath != null && exercise.videoPath!.isNotEmpty) {
+      return true;
+    }
+
+    // Try to derive a video path from the exercise name
+    return exerciseHasVideo(exercise.name);
   }
 
   // Get the appropriate media for an exercise (video or image)

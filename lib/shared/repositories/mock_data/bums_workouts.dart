@@ -28,6 +28,7 @@ import '../../../features/workouts/models/exercise.dart';
             description:
                 'Lie on your back with your knees bent and feet flat on the floor. Lift your hips toward the ceiling, squeezing your glutes at the top, then lower back down.',
             imageUrl: 'assets/images/exercises/glute_bridge.jpg',
+            videoPath: 'assets/videos/exercises/glute_bridge.mp4',
             sets: 3,
             reps: 12,
             restBetweenSeconds: 30,

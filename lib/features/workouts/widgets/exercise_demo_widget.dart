@@ -1,15 +1,17 @@
 // lib/features/workouts/widgets/exercise_demo_widget.dart
-import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 import '../models/exercise.dart';
+import '../models/workout.dart';
 import '../../../shared/services/exercise_media_service.dart';
 import '../../../shared/theme/color_palette.dart';
 
-class ExerciseDemoWidget extends StatelessWidget {
+class ExerciseDemoWidget extends StatefulWidget {
   final Exercise exercise;
   final double height;
   final double width;
   final bool showControls;
+  final bool autoPlay;
 
   const ExerciseDemoWidget({
     super.key,
@@ -17,29 +19,148 @@ class ExerciseDemoWidget extends StatelessWidget {
     this.height = 200,
     this.width = double.infinity,
     this.showControls = true,
+    this.autoPlay = false,
   });
+
+  @override
+  State<ExerciseDemoWidget> createState() => _ExerciseDemoWidgetState();
+}
+
+class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
+  VideoPlayerController? _videoController;
+  bool _isVideoInitialized = false;
+  bool _isPlaying = false;
+  bool _hasVideoError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    print(
+      'Initializing ExerciseDemoWidget for exercise: ${widget.exercise.name}',
+    );
+    _initializeVideo();
+  }
+
+  @override
+  void didUpdateWidget(ExerciseDemoWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.exercise.id != widget.exercise.id) {
+      _disposeVideo();
+      _initializeVideo();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposeVideo();
+    super.dispose();
+  }
+
+  void _disposeVideo() {
+    _videoController?.removeListener(_videoListener);
+    _videoController?.dispose();
+    _videoController = null;
+    _isVideoInitialized = false;
+    _isPlaying = false;
+  }
+
+  Future<void> _initializeVideo() async {
+    try {
+      // Convert exercise name to lowercase filename format
+      final String exerciseName = widget.exercise.name
+          .trim()
+          .toLowerCase()
+          .replaceAll(' ', '_');
+      final String videoPath = 'assets/videos/exercises/$exerciseName.mp4';
+
+      print(
+        'Attempting to load video for ${widget.exercise.name} from: $videoPath',
+      );
+
+      _videoController = VideoPlayerController.asset(videoPath);
+      await _videoController!.initialize();
+
+      _videoController!.addListener(_videoListener);
+
+      if (mounted) {
+        setState(() {
+          _isVideoInitialized = true;
+          _hasVideoError = false;
+        });
+
+        // Auto-play if enabled
+        if (widget.autoPlay) {
+          _videoController!.play();
+          _isPlaying = true;
+        }
+      }
+    } catch (e) {
+      print('Video initialization error: $e');
+      if (mounted) {
+        setState(() {
+          _hasVideoError = true;
+        });
+      }
+    }
+  }
+
+  void _videoListener() {
+    // Update playing state
+    if (mounted && _videoController != null) {
+      final isPlaying = _videoController!.value.isPlaying;
+      if (_isPlaying != isPlaying) {
+        setState(() {
+          _isPlaying = isPlaying;
+        });
+      }
+
+      // Loop the video when it completes
+      if (_videoController!.value.position >=
+          _videoController!.value.duration) {
+        _videoController!.seekTo(Duration.zero);
+        _videoController!.play();
+      }
+    }
+  }
+
+  void _togglePlay() {
+    if (_videoController == null || !_isVideoInitialized) return;
+
+    setState(() {
+      if (_isPlaying) {
+        _videoController!.pause();
+      } else {
+        _videoController!.play();
+      }
+      _isPlaying = !_isPlaying;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     // Map exercise difficulty level to WorkoutDifficulty enum
     final WorkoutDifficulty difficulty =
-        exercise.difficultyLevel <= 2
+        widget.exercise.difficultyLevel <= 2
             ? WorkoutDifficulty.beginner
-            : (exercise.difficultyLevel <= 4
+            : (widget.exercise.difficultyLevel <= 4
                 ? WorkoutDifficulty.intermediate
                 : WorkoutDifficulty.advanced);
 
-    // Check if we have a YouTube video ID for this exercise
-    final bool hasVideo =
-        exercise.youtubeVideoId != null && exercise.youtubeVideoId!.isNotEmpty;
+    // Display states
+    final bool hasVideo = _isVideoInitialized && _videoController != null;
+    final bool hasYoutubeVideo =
+        widget.exercise.youtubeVideoId != null &&
+        widget.exercise.youtubeVideoId!.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize:
+          MainAxisSize.min, // Make the column take minimum space needed
       children: [
         // Main demo container
         Container(
-          height: height,
-          width: width,
+          height: widget.height,
+          width: widget.width,
           decoration: BoxDecoration(
             color: AppColors.paleGrey,
             borderRadius: BorderRadius.circular(16),
@@ -50,17 +171,51 @@ class ExerciseDemoWidget extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Exercise image based on difficulty level
-                ExerciseMediaService.workoutImage(
-                  difficulty: difficulty,
-                  height: height,
-                  width: width,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(16),
-                ),
+                // Local video player (highest priority)
+                if (hasVideo)
+                  AspectRatio(
+                    aspectRatio: _videoController!.value.aspectRatio,
+                    child: VideoPlayer(_videoController!),
+                  )
+                // Fallback: Exercise image based on difficulty level
+                else
+                  ExerciseMediaService.workoutImage(
+                    difficulty: difficulty,
+                    height: widget.height,
+                    width: widget.width,
+                    fit: BoxFit.cover,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
 
-                // Video play button overlay (if YouTube video available)
-                if (hasVideo && showControls)
+                // Video controls overlay
+                if (hasVideo && widget.showControls)
+                  GestureDetector(
+                    onTap: _togglePlay,
+                    child: Container(
+                      color: Colors.transparent,
+                      child: Center(
+                        child: AnimatedOpacity(
+                          opacity: _isPlaying ? 0.0 : 0.7,
+                          duration: const Duration(milliseconds: 300),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              _isPlaying ? Icons.pause : Icons.play_arrow,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // YouTube video play button overlay (fallback)
+                if (!hasVideo && hasYoutubeVideo && widget.showControls)
                   Positioned.fill(
                     child: Material(
                       color: Colors.transparent,
@@ -87,6 +242,35 @@ class ExerciseDemoWidget extends StatelessWidget {
                     ),
                   ),
 
+                // Video error overlay
+                if (_hasVideoError)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Video unavailable',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
                 // Exercise name overlay
                 Positioned(
                   bottom: 0,
@@ -105,7 +289,7 @@ class ExerciseDemoWidget extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      exercise.name,
+                      widget.exercise.name,
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -120,13 +304,14 @@ class ExerciseDemoWidget extends StatelessWidget {
           ),
         ),
 
-        // Controls row (if showing controls)
-        if (showControls) ...[
+        // Controls row (if showing controls and enough space)
+        if (widget.showControls) ...[
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (hasVideo)
+              // Only show YouTube button if no local video
+              if (!hasVideo && hasYoutubeVideo)
                 ElevatedButton.icon(
                   onPressed: () => _showVideoDialog(context),
                   icon: const Icon(Icons.play_arrow),
@@ -137,7 +322,7 @@ class ExerciseDemoWidget extends StatelessWidget {
                   ),
                 ),
 
-              if (hasVideo) const SizedBox(width: 8),
+              if (!hasVideo && hasYoutubeVideo) const SizedBox(width: 8),
 
               // Instructions button
               TextButton.icon(
@@ -200,7 +385,7 @@ class ExerciseDemoWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    exercise.name,
+                    widget.exercise.name,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -212,15 +397,15 @@ class ExerciseDemoWidget extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text(exercise.description),
+                  Text(widget.exercise.description),
                   const SizedBox(height: 12),
-                  if (exercise.formTips.isNotEmpty) ...[
+                  if (widget.exercise.formTips.isNotEmpty) ...[
                     const Text(
                       'Form Tips:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
-                    ...exercise.formTips.map(
+                    ...widget.exercise.formTips.map(
                       (tip) => Padding(
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Row(

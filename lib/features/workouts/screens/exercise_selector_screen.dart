@@ -1,6 +1,7 @@
 // lib/features/workouts/screens/exercise_selector_screen.dart
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:bums_n_tums/features/workouts/screens/exercise_editor_screen.dart';
+import 'package:bums_n_tums/features/workouts/widgets/exercise_demo_widget.dart';
 import 'package:bums_n_tums/shared/services/exercise_media_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -474,30 +475,15 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Exercise image
+                    // Exercise video/image using our demo widget
                     Center(
-                      child:
-                          exercise.imageUrl.startsWith('http')
-                              ? Image.network(
-                                exercise.imageUrl,
-                                height: 200,
-                                fit: BoxFit.contain,
-                                errorBuilder:
-                                    (context, e, s) => const Icon(
-                                      Icons.fitness_center,
-                                      size: 100,
-                                    ),
-                              )
-                              : Image.asset(
-                                exercise.imageUrl,
-                                height: 200,
-                                fit: BoxFit.contain,
-                                errorBuilder:
-                                    (context, e, s) => const Icon(
-                                      Icons.fitness_center,
-                                      size: 100,
-                                    ),
-                              ),
+                      child: ExerciseDemoWidget(
+                        exercise: exercise,
+                        height: 200,
+                        width: double.infinity,
+                        showControls: true,
+                        autoPlay: true,
+                      ),
                     ),
                     const SizedBox(height: 16),
 

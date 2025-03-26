@@ -1,24 +1,24 @@
 // lib/features/workouts/screens/workout_execution_screen.dart
-import 'package:bums_n_tums/features/workouts/models/workout_section.dart';
-import 'package:bums_n_tums/features/workouts/providers/workout_calendar_provider.dart';
-import 'package:bums_n_tums/features/workouts/widgets/execution/exercise_settings_modal.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../models/workout_log.dart';
+import '../models/workout_section.dart';
 import '../providers/workout_execution_provider.dart';
-import '../widgets/execution/exercise_timer.dart';
-import '../widgets/execution/workout_progress_indicator.dart';
+import '../providers/workout_calendar_provider.dart';
 import '../widgets/execution/exercise_completion_animation.dart';
+import '../widgets/execution/exercise_timer.dart';
 import '../widgets/execution/rest_timer.dart';
 import '../widgets/execution/set_rest_timer.dart';
+import '../widgets/exercise_demo_widget.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../../shared/theme/color_palette.dart';
 import 'workout_completion_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class WorkoutExecutionScreen extends ConsumerStatefulWidget {
   const WorkoutExecutionScreen({super.key});
@@ -52,7 +52,7 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
       screenClass: 'WorkoutExecutionScreen',
     );
 
-    // Optional: Prevent screen from sleeping during workout
+    // Prevent screen from sleeping during workout
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: [SystemUiOverlay.bottom],
@@ -73,42 +73,8 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     super.dispose();
   }
 
-  void _startRepCountdownIfNeeded() {
-    final state = ref.read(workoutExecutionProvider);
-    if (state == null) return;
-
-    // Only start countdown for rep-based exercises (not timed)
-    if (state.currentExercise.durationSeconds == null &&
-        !state.isInRestPeriod &&
-        !state.isInSetRestPeriod) {
-      // Cancel existing timer if any
-      _repCountdownTimer?.cancel();
-
-      // Reset countdown
-      setState(() {
-        _repCountdownSeconds = _defaultRepCountdown;
-      });
-
-      // Start countdown
-      _repCountdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (!state.isPaused && _repCountdownSeconds > 0) {
-          setState(() {
-            _repCountdownSeconds--;
-          });
-        }
-
-        // Auto-complete when countdown reaches 0
-        if (_repCountdownSeconds <= 0) {
-          _completeSet();
-          timer.cancel();
-        }
-      });
-    }
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Auto-pause workout when app goes to background
     if (state == AppLifecycleState.paused) {
       _pauseWorkout();
     }
@@ -129,12 +95,40 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     });
   }
 
+  void _startRepCountdownIfNeeded() {
+    final state = ref.read(workoutExecutionProvider);
+    if (state == null) return;
+
+    // Only start countdown for rep-based exercises (not timed)
+    if (state.currentExercise.durationSeconds == null &&
+        !state.isInRestPeriod &&
+        !state.isInSetRestPeriod) {
+      _repCountdownTimer?.cancel();
+
+      setState(() {
+        _repCountdownSeconds = _defaultRepCountdown;
+      });
+
+      _repCountdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!state.isPaused && _repCountdownSeconds > 0) {
+          setState(() {
+            _repCountdownSeconds--;
+          });
+        }
+
+        // Auto-complete when countdown reaches 0
+        if (_repCountdownSeconds <= 0) {
+          _completeSet();
+          timer.cancel();
+        }
+      });
+    }
+  }
+
   void _toggleBackgroundMusic() {
     setState(() {
       _isMusicPlaying = !_isMusicPlaying;
     });
-    // In a real implementation, you would play/pause the music here
-    // This is just a UI placeholder for now
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -153,8 +147,6 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     final executionState = ref.watch(workoutExecutionProvider);
 
     if (executionState == null) {
-      // Workout was cancelled or completed
-      // Navigate back immediately
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pop();
       });
@@ -173,24 +165,21 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
             body: SafeArea(
               child: Column(
                 children: [
-                  // Top bar with progress and controls
-                  _buildTopBar(workout, executionState),
+                  // Minimalist header with progress indicator
+                  _buildHeader(workout, executionState),
 
-                  // Exercise content or rest timer
+                  // Main content area (expands to fill available space)
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child:
-                          executionState.isInRestPeriod
-                              ? _buildRestTimer(executionState)
-                              : executionState.isInSetRestPeriod
-                              ? _buildSetRestTimer(executionState)
-                              : _buildExerciseContent(
-                                executionState,
-                                currentExercise,
-                                isPaused,
-                              ),
-                    ),
+                    child:
+                        executionState.isInRestPeriod
+                            ? _buildRestPeriod(executionState)
+                            : executionState.isInSetRestPeriod
+                            ? _buildSetRestPeriod(executionState)
+                            : _buildWorkoutContent(
+                              executionState,
+                              currentExercise,
+                              isPaused,
+                            ),
                   ),
 
                   // Bottom control bar
@@ -199,7 +188,8 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
               ),
             ),
           ),
-          // The completion animation overlay - sits on top of everything when active
+
+          // Completion animation overlay
           if (_showCompletionAnimation)
             ExerciseCompletionAnimation(
               onAnimationComplete: () {
@@ -213,36 +203,250 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     );
   }
 
-  Widget _buildSetRestTimer(WorkoutExecutionState state) {
-    final currentExercise = state.currentExercise;
-
-    return SingleChildScrollView(
+  // Streamlined header with minimal information
+  Widget _buildHeader(Workout workout, WorkoutExecutionState state) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
         children: [
-          SetRestTimer(
-            durationSeconds: state.setRestTimeRemaining,
-            isPaused: state.isPaused,
-            currentSet: state.currentSet,
-            totalSets: currentExercise.sets,
-            onComplete: () {
-              ref.read(workoutExecutionProvider.notifier).endSetRestPeriod();
-              _startRepCountdownIfNeeded();
-            },
-            onAddTime: () {
-              // Add 15 seconds to rest time
-              ref.read(workoutExecutionProvider.notifier).adjustSetRestTime(15);
-            },
-            onReduceTime: () {
-              // Reduce rest time by 15 seconds, but don't go below 5
-              ref
-                  .read(workoutExecutionProvider.notifier)
-                  .adjustSetRestTime(-15, minimum: 5);
-            },
+          // Title row with controls
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: _confirmExit,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+
+              Text(
+                workout.title,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Elapsed time
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.paleGrey,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _formatTime(_secondsElapsed),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: AppColors.salmon,
+                      ),
+                    ),
+                  ),
+
+                  // Voice guidance toggle
+                  IconButton(
+                    icon: Icon(
+                      state.voiceGuidanceEnabled
+                          ? Icons.volume_up
+                          : Icons.volume_off,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      ref
+                          .read(workoutExecutionProvider.notifier)
+                          .toggleVoiceGuidance(!state.voiceGuidanceEnabled);
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
 
-          // Exercise reminder
+          // Progress indicator
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Exercise count
+              Text(
+                'Exercise ${state.currentExerciseIndex + 1} of ${workout.exercises.length}',
+                style: TextStyle(fontSize: 12, color: AppColors.mediumGrey),
+              ),
+
+              const SizedBox(height: 4),
+
+              // Progress bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: LinearProgressIndicator(
+                  value: state.progressPercentage,
+                  backgroundColor: AppColors.paleGrey,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.salmon),
+                  minHeight: 4,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Rest period between exercises
+  Widget _buildRestPeriod(WorkoutExecutionState state) {
+    final nextExercise = state.nextExercise;
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Rest timer
+          Expanded(
+            flex: 1,
+            child: RestTimer(
+              durationSeconds: state.restTimeRemaining,
+              isPaused: state.isPaused,
+              nextExerciseName: nextExercise?.name ?? 'Done',
+              onComplete: () {
+                ref.read(workoutExecutionProvider.notifier).endRestPeriod();
+                _startRepCountdownIfNeeded();
+              },
+              onAddTime:
+                  () => ref
+                      .read(workoutExecutionProvider.notifier)
+                      .adjustRestTime(15),
+              onReduceTime:
+                  () => ref
+                      .read(workoutExecutionProvider.notifier)
+                      .adjustRestTime(-15, minimum: 5),
+            ),
+          ),
+
+          if (nextExercise != null) ...[
+            // Next exercise preview
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Coming Up Next',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.salmon,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Next exercise demo
+                  Expanded(
+                    child: ExerciseDemoWidget(
+                      exercise: nextExercise,
+                      showControls: true,
+                      autoPlay: true,
+                    ),
+                  ),
+
+                  // Exercise details
+                  const SizedBox(height: 8),
+                  Text(
+                    nextExercise.durationSeconds != null
+                        ? '${nextExercise.sets} sets × ${nextExercise.durationSeconds} seconds'
+                        : '${nextExercise.sets} sets × ${nextExercise.reps} reps',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+
+                  if (nextExercise.formTips.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.popTurquoise.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: AppColors.popTurquoise,
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.lightbulb_outline,
+                                size: 14,
+                                color: AppColors.popTurquoise,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Form Tip',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.popTurquoise,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            nextExercise.formTips.first,
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // Rest period between sets
+  Widget _buildSetRestPeriod(WorkoutExecutionState state) {
+    final currentExercise = state.currentExercise;
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Rest timer
+          Expanded(
+            child: SetRestTimer(
+              durationSeconds: state.setRestTimeRemaining,
+              isPaused: state.isPaused,
+              currentSet: state.currentSet,
+              totalSets: currentExercise.sets,
+              onComplete: () {
+                ref.read(workoutExecutionProvider.notifier).endSetRestPeriod();
+                _startRepCountdownIfNeeded();
+              },
+              onAddTime:
+                  () => ref
+                      .read(workoutExecutionProvider.notifier)
+                      .adjustSetRestTime(15),
+              onReduceTime:
+                  () => ref
+                      .read(workoutExecutionProvider.notifier)
+                      .adjustSetRestTime(-15, minimum: 5),
+            ),
+          ),
+
+          // Progress indicators
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -259,69 +463,49 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Current Exercise',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: AppColors.salmon,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      currentExercise.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+
+                    // Set indicator
+                    Text(
+                      state.currentSet < currentExercise.sets
+                          ? 'Next: Set ${state.currentSet + 1}/${currentExercise.sets}'
+                          : 'Final Set!',
+                      style: TextStyle(
+                        color: AppColors.salmon,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
-                // Form tips reminder
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.popTurquoise.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.popTurquoise, width: 1),
+                // Form tip
+                if (currentExercise.formTips.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.popTurquoise.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.popTurquoise,
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      currentExercise.formTips.first,
+                      style: TextStyle(fontSize: 14),
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.lightbulb_outline,
-                            color: AppColors.popTurquoise,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Remember',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.popTurquoise,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        currentExercise.formTips.isNotEmpty
-                            ? currentExercise.formTips.first
-                            : _extractFormTips(currentExercise.description),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Next set motivation
-                      Text(
-                        state.currentSet < currentExercise.sets
-                            ? 'Next up: Set ${state.currentSet + 1} of ${currentExercise.sets}'
-                            : 'This is your last set - give it your all!',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.salmon,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
@@ -330,544 +514,40 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     );
   }
 
-  Widget _buildRestTimer(WorkoutExecutionState state) {
-    final nextExercise = state.nextExercise;
-    final nextExerciseName = nextExercise?.name ?? 'Done';
-
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          RestTimer(
-            durationSeconds: state.restTimeRemaining,
-            isPaused: state.isPaused,
-            nextExerciseName: nextExerciseName,
-            onComplete: () {
-              ref.read(workoutExecutionProvider.notifier).endRestPeriod();
-              _startRepCountdownIfNeeded();
-            },
-            onAddTime: () {
-              // Add 15 seconds to rest time
-              print("Adding 15 seconds to rest time"); // Debug print
-              ref.read(workoutExecutionProvider.notifier).adjustRestTime(15);
-            },
-            onReduceTime: () {
-              // Reduce rest time by 15 seconds, but don't go below 5
-              print("Reducing rest time by 15 seconds"); // Debug print
-              ref
-                  .read(workoutExecutionProvider.notifier)
-                  .adjustRestTime(-15, minimum: 5);
-            },
-          ),
-
-          if (nextExercise != null) ...[
-            const SizedBox(height: 24),
-
-            // Next exercise preview
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Coming Up Next',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.salmon,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Exercise image and info
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Exercise image
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.asset(
-                          nextExercise.imageUrl,
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 100,
-                              height: 100,
-                              color: AppColors.paleGrey,
-                              child: const Icon(Icons.fitness_center),
-                            );
-                          },
-                        ),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      // Exercise info
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              nextExercise.name,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-
-                            const SizedBox(height: 8),
-
-                            // Exercise stats
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.fitness_center,
-                                  size: 16,
-                                  color: AppColors.mediumGrey,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  nextExercise.durationSeconds != null
-                                      ? '${nextExercise.durationSeconds} seconds'
-                                      : '${nextExercise.sets} sets × ${nextExercise.reps} reps',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 4),
-
-                            // Target area
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.track_changes,
-                                  size: 16,
-                                  color: AppColors.mediumGrey,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Targets: ${nextExercise.targetArea}',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Full instructions
-                  Text(
-                    'Instructions:',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Show full description, not truncated
-                  Text(
-                    nextExercise.description,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-
-                  // Show all form tips, not just the first one
-                  if (nextExercise.formTips.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      'Form Tips:',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.popTurquoise,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ...nextExercise.formTips
-                        .map(
-                          (tip) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(
-                                  Icons.check_circle_outline,
-                                  size: 16,
-                                  color: AppColors.popTurquoise,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    tip,
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: AppColors.darkGrey),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ] else ...[
-                    // If no specific form tips, show extracted tips
-                    const SizedBox(height: 16),
-                    Text(
-                      'Form Tips:',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.popTurquoise,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _extractFormTips(nextExercise.description),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.darkGrey,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExerciseContent(
+  // Main workout content (exercise execution)
+  Widget _buildWorkoutContent(
     WorkoutExecutionState state,
-    Exercise currentExercise,
+    Exercise exercise,
     bool isPaused,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Exercise name and header info
-        Text(
-          currentExercise.name,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-
-        // Set indicator
-        Text(
-          'Set ${state.currentSet} of ${currentExercise.sets}',
-          style: TextStyle(
-            color: AppColors.salmon,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // Exercise countdown timer / settings row
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Time remaining
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.paleGrey,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.timer, color: AppColors.popBlue, size: 20),
-                  const SizedBox(width: 4),
-                  Text(
-                    currentExercise.durationSeconds != null
-                        ? 'Timed'
-                        : _formatTime(_repCountdownSeconds),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.popBlue,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(width: 8),
-
-            // Settings button (cog)
-            IconButton(
-              icon: Icon(Icons.settings, color: AppColors.darkGrey),
-              onPressed: isPaused ? () => _showExerciseSettings() : null,
-              tooltip: 'Exercise Settings',
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 16),
-
-        // Exercise image
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.asset(
-              currentExercise.imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: AppColors.paleGrey,
-                  child: Center(
-                    child: Icon(
-                      Icons.fitness_center,
-                      size: 64,
-                      color: AppColors.salmon,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Set progress indicator
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(currentExercise.sets, (index) {
-            final isCompleted =
-                index <
-                (state
-                        .completedExercises[state.currentExerciseIndex]
-                        ?.setsCompleted ??
-                    0);
-            final isCurrent = index == state.currentSet - 1;
-
-            return Container(
-              width: 40,
-              height: 40,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color:
-                    isCompleted
-                        ? AppColors.popGreen
-                        : isCurrent
-                        ? AppColors.salmon
-                        : AppColors.paleGrey,
-                border:
-                    isCurrent
-                        ? Border.all(color: AppColors.salmon, width: 3)
-                        : null,
-              ),
-              child: Center(
-                child: Text(
-                  '${index + 1}',
-                  style: TextStyle(
-                    color:
-                        isCompleted || isCurrent
-                            ? Colors.white
-                            : AppColors.darkGrey,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-            );
-          }),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Rep counter or timer based on exercise type
-        if (currentExercise.durationSeconds != null)
-          ExerciseTimer(
-            durationSeconds: currentExercise.durationSeconds!,
-            isPaused: isPaused,
-            onComplete: _onExerciseComplete,
-          )
-        else
-          Center(
-            child: Text(
-              '${currentExercise.reps} reps',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-          ),
-
-        const SizedBox(height: 24),
-
-        // Complete set button
-        SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: _completeSet,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.salmon,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-            child: Text(
-              'COMPLETE SET',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-
-        // Instructions button - simple and won't cause layout issues
-        const SizedBox(height: 8),
-        TextButton.icon(
-          icon: Icon(Icons.info_outline, size: 18),
-          label: Text('View Instructions & Tips'),
-          onPressed: () => _showInstructionsDialog(currentExercise),
-          style: TextButton.styleFrom(foregroundColor: AppColors.popBlue),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTopBar(Workout workout, WorkoutExecutionState state) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
+          // Exercise name and set indicator
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Back button
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: _confirmExit,
-              ),
-
-              // Workout title
-              Text(
-                workout.title,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-
-              // Voice guidance toggle
-              IconButton(
-                icon: Icon(
-                  state.voiceGuidanceEnabled
-                      ? Icons.volume_up
-                      : Icons.volume_off,
-                  color:
-                      state.voiceGuidanceEnabled
-                          ? AppColors.popBlue
-                          : AppColors.mediumGrey,
+              Expanded(
+                child: Text(
+                  exercise.name,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                onPressed: () {
-                  ref
-                      .read(workoutExecutionProvider.notifier)
-                      .toggleVoiceGuidance(!state.voiceGuidanceEnabled);
-                },
-                tooltip:
-                    state.voiceGuidanceEnabled
-                        ? 'Disable voice guidance'
-                        : 'Enable voice guidance',
               ),
-            ],
-          ),
 
-          // Music and elapsed time row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Elapsed time
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.paleGrey,
-                  borderRadius: BorderRadius.circular(16),
+                  color: AppColors.salmon,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
-                  children: [
-                    Icon(Icons.timer, size: 16, color: AppColors.salmon),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatTime(_secondsElapsed),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.salmon,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Music toggle - FIXED VERSION
-              GestureDetector(
-                onTap: _toggleBackgroundMusic,
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color:
-                        _isMusicPlaying
-                            ? AppColors.popYellow.withOpacity(0.2)
-                            : AppColors.paleGrey,
-                    borderRadius: BorderRadius.circular(16),
-                    border:
-                        _isMusicPlaying
-                            ? Border.all(color: AppColors.popYellow)
-                            : null,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        _isMusicPlaying ? Icons.music_note : Icons.music_off,
-                        size: 16,
-                        color:
-                            _isMusicPlaying
-                                ? AppColors.popYellow
-                                : AppColors.mediumGrey,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _isMusicPlaying ? 'Music On' : 'Music Off',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          color:
-                              _isMusicPlaying
-                                  ? AppColors.popYellow
-                                  : AppColors.mediumGrey,
-                        ),
-                      ),
-                    ],
+                child: Text(
+                  'Set ${state.currentSet}/${exercise.sets}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
               ),
@@ -876,32 +556,118 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
 
           const SizedBox(height: 8),
 
-          // Progress indicator
-          WorkoutProgressIndicator(
-            currentExerciseIndex: state.currentExerciseIndex,
-            totalExercises: workout.exercises.length,
-            progressPercentage: state.progressPercentage,
-          ),
-
-          // Exercise progress text
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              'Exercise ${state.currentExerciseIndex + 1} of ${workout.exercises.length}',
-              style: TextStyle(color: AppColors.mediumGrey, fontSize: 12),
+          // Exercise video demonstration (takes most of the space)
+          Expanded(
+            flex: 3,
+            child: ExerciseDemoWidget(
+              exercise: exercise,
+              showControls: exercise.durationSeconds == null,
+              autoPlay: exercise.durationSeconds != null && !isPaused,
             ),
           ),
 
-          // Section indicator
-          if (workout.sections.isNotEmpty) _buildSectionIndicator(state),
+          const SizedBox(height: 16),
+
+          // Timer or rep display
+          Expanded(
+            flex: 1,
+            child:
+                exercise.durationSeconds != null
+                    ? ExerciseTimer(
+                      durationSeconds: exercise.durationSeconds!,
+                      isPaused: isPaused,
+                      onComplete: _onExerciseComplete,
+                    )
+                    : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Rep count
+                        Text(
+                          '${exercise.reps} reps',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        // Time left counter for rep-based exercises
+                        Text(
+                          'Time remaining: ${_formatTime(_repCountdownSeconds)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.mediumGrey,
+                          ),
+                        ),
+                      ],
+                    ),
+          ),
+
+          // Set progress dots - more compact
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(exercise.sets, (index) {
+              final isCompleted =
+                  index <
+                  (state
+                          .completedExercises[state.currentExerciseIndex]
+                          ?.setsCompleted ??
+                      0);
+              final isCurrent = index == state.currentSet - 1;
+
+              return Container(
+                width: 12,
+                height: 12,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color:
+                      isCompleted
+                          ? AppColors.popGreen
+                          : isCurrent
+                          ? AppColors.salmon
+                          : AppColors.paleGrey,
+                  border:
+                      isCurrent
+                          ? Border.all(color: AppColors.salmon, width: 2)
+                          : null,
+                ),
+              );
+            }),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Complete Set button
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _completeSet,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.salmon,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              child: Text(
+                'COMPLETE SET',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+
+          // Small space at bottom
+          const SizedBox(height: 8),
         ],
       ),
     );
   }
 
+  // Bottom control bar
   Widget _buildBottomControls(WorkoutExecutionState state) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -915,16 +681,10 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Previous exercise button
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios),
-            onPressed: state.isFirstExercise ? null : _previousExercise,
-            color: state.isFirstExercise ? Colors.grey : AppColors.popBlue,
-          ),
-
-          // Pause/play button
+          // Play/Pause button (centered)
           FloatingActionButton(
             heroTag: 'pausePlay',
+            mini: false,
             backgroundColor:
                 state.isPaused ? AppColors.popGreen : AppColors.salmon,
             onPressed: state.isPaused ? _resumeWorkout : _pauseWorkout,
@@ -934,173 +694,39 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
             ),
           ),
 
-          // Next exercise button
-          IconButton(
-            icon: const Icon(Icons.arrow_forward_ios),
-            onPressed: state.isLastExercise ? null : _nextExercise,
-            color: state.isLastExercise ? Colors.grey : AppColors.popBlue,
-          ),
+          // Next button (only show if not the last exercise)
+          if (!state.isLastExercise)
+            ElevatedButton.icon(
+              onPressed: _nextExercise,
+              icon: const Icon(Icons.skip_next),
+              label: const Text('Next'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.popBlue,
+                foregroundColor: Colors.white,
+              ),
+            ),
         ],
       ),
     );
   }
 
-  void _showExerciseSettings() {
-    final state = ref.read(workoutExecutionProvider);
-    if (state == null) return;
-
-    final currentExerciseIndex = state.currentExerciseIndex;
-    final currentExercise = state.currentExercise;
-
-    print("Opening exercise settings modal for: ${currentExercise.name}");
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true, // Allows for a larger modal
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return FractionallySizedBox(
-          heightFactor: 0.9, // Takes up 90% of the screen
-          child: ExerciseSettingsModal(
-            exercise: currentExercise,
-            onSave: (updatedExercise) {
-              print("Saving updated exercise: ${updatedExercise.name}");
-              print(
-                "New settings - sets: ${updatedExercise.sets}, reps: ${updatedExercise.reps}, duration: ${updatedExercise.durationSeconds}",
-              );
-
-              ref
-                  .read(workoutExecutionProvider.notifier)
-                  .updateExercise(currentExerciseIndex, updatedExercise);
-
-              // Restart the rep countdown if applicable
-              if (updatedExercise.durationSeconds == null) {
-                setState(() {
-                  _repCountdownSeconds = _defaultRepCountdown;
-                });
-              }
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  void _showInstructionsDialog(Exercise exercise) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.7,
-                maxWidth: MediaQuery.of(context).size.width * 0.9,
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Dialog title and close button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            exercise.name,
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                      ],
-                    ),
-                    const Divider(),
-
-                    // Instructions
-                    Text(
-                      'Instructions',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      exercise.description,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Form tips
-                    Text(
-                      'Form Tips',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.popTurquoise,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      exercise.formTips.isNotEmpty
-                          ? exercise.formTips.join('\n\n')
-                          : _extractFormTips(exercise.description),
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Close button at bottom
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.salmon,
-                        ),
-                        child: const Text('Close'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-    );
-  }
-
+  // Helper methods
   void _pauseWorkout() {
     HapticFeedback.mediumImpact();
     ref.read(workoutExecutionProvider.notifier).pauseWorkout();
-
-    // Stop the timer
     _timer?.cancel();
 
-    // If voice guidance is enabled, announce the pause
     final state = ref.read(workoutExecutionProvider);
     if (state != null && state.voiceGuidanceEnabled) {
       ref.read(voiceGuidanceProvider).speak('Workout paused');
     }
   }
 
-  // resumeWorkout - This is already implemented, but let's enhance it
   void _resumeWorkout() {
     HapticFeedback.mediumImpact();
     ref.read(workoutExecutionProvider.notifier).resumeWorkout();
-
-    // Resume the timer
     _startTimer();
 
-    // If voice guidance is enabled, announce the resume
     final state = ref.read(workoutExecutionProvider);
     if (state != null && state.voiceGuidanceEnabled) {
       ref.read(voiceGuidanceProvider).speak('Workout resumed');
@@ -1109,35 +735,29 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
 
   void _nextExercise() {
     HapticFeedback.mediumImpact();
-
-    // Add current exercise to completed with default log
     _logCurrentExercise();
-
     ref.read(workoutExecutionProvider.notifier).nextExercise();
   }
 
-  void _previousExercise() {
-    HapticFeedback.mediumImpact();
-    ref.read(workoutExecutionProvider.notifier).resumeWorkout();
-  }
+  // void _previousExercise() {
+  //   HapticFeedback.mediumImpact();
+  //   ref.read(workoutExecutionProvider.notifier).previousExercise();
+  // }
 
   void _completeSet() {
     HapticFeedback.mediumImpact();
     ref.read(workoutExecutionProvider.notifier).completeSet();
 
-    // Show completion animation if appropriate
     final state = ref.read(workoutExecutionProvider);
     if (state != null) {
       final currentExercise = state.currentExercise;
       final currentSet = state.currentSet;
 
-      // If this was the last set, show the completion animation
       if (currentSet >= currentExercise.sets) {
         setState(() {
           _showCompletionAnimation = true;
         });
 
-        // Hide the animation after a delay
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
             setState(() {
@@ -1149,55 +769,23 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     }
   }
 
-  void _logExerciseCompletion(int exerciseIndex, int difficultyRating) {
-    final state = ref.read(workoutExecutionProvider);
-    if (state == null) return;
-
-    final exercise = state.workout.exercises[exerciseIndex];
-
-    ref
-        .read(workoutExecutionProvider.notifier)
-        .logExerciseCompletion(
-          exerciseIndex,
-          ExerciseLog(
-            exerciseName: exercise.name,
-            setsCompleted: exercise.sets,
-            repsCompleted: exercise.reps,
-            difficultyRating: difficultyRating,
-            notes: '', // Optional note field
-          ),
-        );
-
-    // Update analytics if available
-    _analytics.logEvent(
-      name: 'exercise_completed',
-      parameters: {
-        'exercise_name': exercise.name,
-        'difficulty_rating': difficultyRating,
-      },
-    );
-  }
-
   void _onExerciseComplete() {
     HapticFeedback.mediumImpact();
 
     final state = ref.read(workoutExecutionProvider);
     if (state == null) return;
 
-    // Mark the current timed exercise as completed
     _logCurrentExercise();
 
-    // If this is the last exercise, complete the workout
     if (state.isLastExercise) {
       _completeWorkout();
     } else {
-      // Otherwise start rest period before next exercise
       ref
           .read(workoutExecutionProvider.notifier)
           .startRestPeriod(
             state.currentExercise.restBetweenSeconds > 0
                 ? state.currentExercise.restBetweenSeconds
-                : 30, // Default rest period if not specified
+                : 30,
           );
     }
   }
@@ -1209,7 +797,6 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     final currentExercise = state.currentExercise;
     final currentExerciseIndex = state.currentExerciseIndex;
 
-    // Create a log for the current exercise if it doesn't exist
     if (!state.completedExercises.containsKey(currentExerciseIndex)) {
       ref
           .read(workoutExecutionProvider.notifier)
@@ -1219,17 +806,15 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
               exerciseName: currentExercise.name,
               setsCompleted: currentExercise.sets,
               repsCompleted: currentExercise.reps,
-              difficultyRating: 3, // Default middle difficulty
+              difficultyRating: 3,
             ),
           );
     }
   }
 
   Future<void> _completeWorkout() async {
-    // Get the current user ID
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
-      // Handle the case where user is not authenticated
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('You must be logged in to save workout progress'),
@@ -1238,17 +823,10 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
       return;
     }
 
-    // Complete the workout in the provider
     await ref
         .read(workoutExecutionProvider.notifier)
-        .completeWorkout(
-          userId: userId,
-          feedback: UserFeedback(
-            rating: 4, // Will be updated on the completion screen
-          ),
-        );
+        .completeWorkout(userId: userId, feedback: UserFeedback(rating: 4));
 
-    // Navigate to the completion screen
     if (mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -1256,13 +834,11 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
               (context) => WorkoutCompletionScreen(
                 workout: ref.read(workoutExecutionProvider)!.workout,
                 elapsedTimeSeconds: _secondsElapsed,
-                // Remove the workoutLog parameter
               ),
         ),
       );
     }
 
-    // Log an analytics event
     _analytics.logWorkoutCompleted(
       workoutId: ref.read(workoutExecutionProvider)!.workout.id,
       workoutName: ref.read(workoutExecutionProvider)!.workout.title,
@@ -1280,7 +856,7 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
 
   Future<bool> _onWillPop() async {
     _confirmExit();
-    return false; // Prevent automatic pop
+    return false;
   }
 
   void _confirmExit() {
@@ -1294,156 +870,20 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(), // Close dialog
+                onPressed: () => Navigator.of(context).pop(),
                 child: const Text('No, Continue'),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Close dialog
+                  Navigator.of(context).pop();
                   ref.read(workoutExecutionProvider.notifier).cancelWorkout();
-                  Navigator.of(context).pop(); // Return to previous screen
+                  Navigator.of(context).pop();
                 },
                 child: const Text('Yes, Cancel'),
               ),
             ],
           ),
     );
-  }
-
-  String _extractFormTips(String description) {
-    final sentences = description.split('. ');
-    final tips =
-        sentences
-            .where(
-              (sentence) =>
-                  sentence.toLowerCase().contains('keep') ||
-                  sentence.toLowerCase().contains('maintain') ||
-                  sentence.toLowerCase().contains('ensure') ||
-                  sentence.toLowerCase().contains('focus on'),
-            )
-            .toList();
-
-    return tips.isNotEmpty
-        ? tips.join('. ') + '.'
-        : "Focus on proper form and controlled movements.";
-  }
-
-  ({int sectionIndex, int localExerciseIndex})? _getSectionIndices(
-    int globalIndex,
-  ) {
-    final state = ref.read(workoutExecutionProvider);
-    if (state == null || state.workout.sections.isEmpty) return null;
-
-    int exerciseCount = 0;
-    for (int i = 0; i < state.workout.sections.length; i++) {
-      final section = state.workout.sections[i];
-      if (globalIndex < exerciseCount + section.exercises.length) {
-        return (
-          sectionIndex: i,
-          localExerciseIndex: globalIndex - exerciseCount,
-        );
-      }
-      exerciseCount += section.exercises.length;
-    }
-
-    return null;
-  }
-
-  Widget _buildSectionIndicator(WorkoutExecutionState state) {
-    // Get current section if using sections
-    if (state.workout.sections.isEmpty) return const SizedBox.shrink();
-
-    // Find current section
-    final indices = _getSectionIndices(state.currentExerciseIndex);
-    if (indices == null) return const SizedBox.shrink();
-
-    final section = state.workout.sections[indices.sectionIndex];
-    final sectionType = section.type;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: _getSectionColor(sectionType).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _getSectionColor(sectionType), width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _getSectionTypeIcon(sectionType),
-            color: _getSectionColor(sectionType),
-            size: 16,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            section.name,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: _getSectionColor(sectionType),
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: _getSectionColor(sectionType),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              _getSectionTypeName(sectionType),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Helper methods for section styling
-  Color _getSectionColor(SectionType type) {
-    switch (type) {
-      case SectionType.normal:
-        return AppColors.popBlue;
-      case SectionType.circuit:
-        return AppColors.popGreen;
-      case SectionType.superset:
-        return AppColors.popCoral;
-      default:
-        return AppColors.popBlue;
-    }
-  }
-
-  String _getSectionTypeName(SectionType type) {
-    switch (type) {
-      case SectionType.normal:
-        return 'Standard';
-      case SectionType.circuit:
-        return 'Circuit';
-      case SectionType.superset:
-        return 'Superset';
-      default:
-        return 'Standard';
-    }
-  }
-
-  IconData _getSectionTypeIcon(SectionType type) {
-    switch (type) {
-      case SectionType.normal:
-        return Icons.list;
-      case SectionType.circuit:
-        return Icons.loop;
-      case SectionType.superset:
-        return Icons.swap_horiz;
-      default:
-        return Icons.list;
-    }
   }
 
   String _formatTime(int seconds) {
