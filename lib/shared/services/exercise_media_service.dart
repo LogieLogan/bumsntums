@@ -12,11 +12,12 @@ class ExerciseMediaService {
   static const String _exerciseVideosPath = 'assets/videos/exercises';
   static const String _exerciseIconsPath = 'assets/icons/exercises';
   static const String _workoutImagesPath = 'assets/images/workouts';
-  
+
   // Level-based workout images
   static const Map<WorkoutDifficulty, String> levelImageMap = {
     WorkoutDifficulty.beginner: '$_workoutImagesPath/beginner_workout.jpg',
-    WorkoutDifficulty.intermediate: '$_workoutImagesPath/intermediate_workout.jpg',
+    WorkoutDifficulty.intermediate:
+        '$_workoutImagesPath/intermediate_workout.jpg',
     WorkoutDifficulty.advanced: '$_workoutImagesPath/advanced_workout.jpg',
   };
 
@@ -24,7 +25,9 @@ class ExerciseMediaService {
   static String _normalizeExerciseName(String name) {
     // Convert to lowercase, replace spaces with underscores, remove any special characters,
     // ensure singular form (this assumes your files are all in singular form now)
-    return name.trim().toLowerCase()
+    return name
+        .trim()
+        .toLowerCase()
         .replaceAll(' ', '_')
         .replaceAll(RegExp(r'[^\w\s]+'), '');
   }
@@ -49,19 +52,21 @@ class ExerciseMediaService {
       return '$_exerciseIconsPath/squat.svg';
     } else if (normalizedName.contains('lunge')) {
       return '$_exerciseIconsPath/lunge.svg';
-    } else if (normalizedName.contains('bridge') || normalizedName.contains('glute')) {
+    } else if (normalizedName.contains('bridge') ||
+        normalizedName.contains('glute')) {
       return '$_exerciseIconsPath/glute_bridge.svg';
     } else if (normalizedName.contains('plank')) {
       return '$_exerciseIconsPath/plank.svg';
     }
-    
+
     // Default icon
     return '$_exerciseIconsPath/default_exercise.svg';
   }
 
   // Get image path for workout based on difficulty level
   static String getWorkoutLevelImage(WorkoutDifficulty difficulty) {
-    return levelImageMap[difficulty] ?? levelImageMap[WorkoutDifficulty.beginner]!;
+    return levelImageMap[difficulty] ??
+        levelImageMap[WorkoutDifficulty.beginner]!;
   }
 
   // Widget to display a workout image based on difficulty level with proper error handling
@@ -204,5 +209,51 @@ class ExerciseMediaService {
 
     // Generate a video path from the exercise name
     return getExerciseVideoPath(exercise.name);
+  }
+
+  static Future<String?> findVideoForExercise(String exerciseName) async {
+    final normalizedName = _normalizeExerciseName(exerciseName);
+    final videoPath = '$_exerciseVideosPath/$normalizedName.mp4';
+
+    developer.log('Looking for video: $videoPath for exercise: $exerciseName');
+
+    // Create a list of alternative names to try if the primary name doesn't work
+    final alternativeNames = <String>[];
+
+    // Try common variations
+    if (normalizedName.endsWith('s')) {
+      // Try singular form
+      alternativeNames.add(
+        '$_exerciseVideosPath/${normalizedName.substring(0, normalizedName.length - 1)}.mp4',
+      );
+    } else {
+      // Try plural form
+      alternativeNames.add('$_exerciseVideosPath/${normalizedName}s.mp4');
+    }
+
+    // Try common alternative spellings
+    final alternativeMappings = {
+      'squat': ['squats', 'body_weight_squat'],
+      'lunge': ['lunges', 'forward_lunge'],
+      'glute_bridge': ['bridge', 'hip_bridge'],
+      'push_up': ['pushup', 'push_ups'],
+      'crunch': ['crunches', 'abdominal_crunch'],
+      'plank': ['forearm_plank', 'elbow_plank'],
+      'mountain_climber': ['mountain_climbers'],
+      'burpee': ['burpees'],
+    };
+
+    // Add alternatives based on the mappings
+    for (final entry in alternativeMappings.entries) {
+      if (normalizedName.contains(entry.key)) {
+        for (final altName in entry.value) {
+          alternativeNames.add('$_exerciseVideosPath/$altName.mp4');
+        }
+      }
+    }
+
+    // Return the main path - actual asset checking will happen when the video is loaded
+    // The calling code should handle the case where the video doesn't exist
+    return videoPath;
   }
 }

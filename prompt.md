@@ -2,15 +2,9 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 
 Area of focus:
 phase 2 of implemntation plan - phase 2 of workouts
+review specs and current state 
+update specs / create new ones 
 
-I am halfway through a updating the way stock workouts and exercises are made in the app. Before we were making stock workouts and specifying exercises within them but instad it would be good to have stock exercises adn then build workouts by referencing them instead.
-
-End goal:
-I am just thinking about scalability of making stock workouts into the future. If we are able to simply reference stock exercises with varying metrics (time, intensity, reps, sets) to make different workouts we should be able to scale the amount of stock workouts pretty fast by just changing up the exercises, the order, the metrics and the amount of exercises. 
-
-please get up to speed with the code and current state 
-then complete any parts that are missing in the goal to be able to make an extensive exercise database and subsequuent workouts
-explain how these are stored and managed (architecture)
 
 project structure: 
 
@@ -104,7 +98,6 @@ project structure:
 │       ├── models
 │       │   ├── exercise.dart
 │       │   ├── workout.dart
-│       │   ├── workout_exercise.dart
 │       │   ├── workout_log.dart
 │       │   ├── workout_plan.dart
 │       │   ├── workout_section.dart
@@ -117,11 +110,9 @@ project structure:
 │       │   ├── workout_execution_provider.dart
 │       │   ├── workout_planning_provider.dart
 │       │   ├── workout_provider.dart
-│       │   ├── workout_repository_provider.dart
 │       │   └── workout_stats_provider.dart
 │       ├── repositories
-│       │   ├── custom_workout_repository.dart
-│       │   └── workout_repository.dart
+│       │   └── custom_workout_repository.dart
 │       ├── screens
 │       │   ├── all_featured_workouts_screen.dart
 │       │   ├── beginner_workouts_screen.dart

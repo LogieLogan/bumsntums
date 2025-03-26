@@ -1,30 +1,112 @@
 // lib/features/workouts/services/exercise_db_service.dart
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 import '../models/exercise.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../shared/services/exercise_media_service.dart';
 
 class ExerciseDBService {
   final http.Client _client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   List<Exercise> _localExercises = [];
+  Map<String, List<Exercise>> _exercisesByCategory = {};
+  Map<String, List<Exercise>> _exercisesByEquipment = {};
+  Map<int, List<Exercise>> _exercisesByDifficulty = {};
+
   bool _isInitialized = false;
 
-  // Simplified constructor without API key dependency
+  // Constructor
   ExerciseDBService({http.Client? client}) : _client = client ?? http.Client();
 
   // Initialize the local exercise database
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    await _loadMockExercises();
+    await _loadExercises();
+    _categorizeExercises();
     _isInitialized = true;
   }
 
-  // Load mock exercises from the database
-  Future<void> _loadMockExercises() async {
+  // Load all exercises from various sources
+  Future<void> _loadExercises() async {
+    // Start with mock exercises in development mode
     _localExercises = _getMockExercises();
+
+    // Add additional exercises
+    _localExercises.addAll(_getAdditionalExercises());
+
+    // In production, also try to fetch from Firestore
+    if (!kDebugMode) {
+      try {
+        final snapshot = await _firestore.collection('exercises').get();
+        final firestoreExercises =
+            snapshot.docs
+                .map((doc) => Exercise.fromMap({...doc.data(), 'id': doc.id}))
+                .toList();
+
+        // Add unique exercises that aren't already in the local list
+        for (final exercise in firestoreExercises) {
+          if (!_localExercises.any((e) => e.id == exercise.id)) {
+            _localExercises.add(exercise);
+          }
+        }
+      } catch (e) {
+        debugPrint('Error fetching exercises from Firestore: $e');
+        // Continue with local exercises
+      }
+    }
+
+    // Check for video paths for each exercise
+    for (int i = 0; i < _localExercises.length; i++) {
+      final exercise = _localExercises[i];
+      if (exercise.videoPath == null) {
+        final videoPath = await ExerciseMediaService.findVideoForExercise(
+          exercise.name,
+        );
+        if (videoPath != null) {
+          _localExercises[i] = exercise.copyWith(videoPath: videoPath);
+        }
+      }
+    }
   }
 
-  // Get all local exercises
+  // Organize exercises into various categorized maps for quick access
+  void _categorizeExercises() {
+    // Clear existing maps
+    _exercisesByCategory = {};
+    _exercisesByEquipment = {};
+    _exercisesByDifficulty = {};
+
+    // Categorize each exercise
+    for (final exercise in _localExercises) {
+      // By target area
+      final category = exercise.targetArea.toLowerCase();
+      if (!_exercisesByCategory.containsKey(category)) {
+        _exercisesByCategory[category] = [];
+      }
+      _exercisesByCategory[category]!.add(exercise);
+
+      // By equipment
+      for (final equipment in exercise.equipmentOptions) {
+        final equipmentKey = equipment.toLowerCase();
+        if (!_exercisesByEquipment.containsKey(equipmentKey)) {
+          _exercisesByEquipment[equipmentKey] = [];
+        }
+        _exercisesByEquipment[equipmentKey]!.add(exercise);
+      }
+
+      // By difficulty level
+      final difficultyKey = exercise.difficultyLevel;
+      if (!_exercisesByDifficulty.containsKey(difficultyKey)) {
+        _exercisesByDifficulty[difficultyKey] = [];
+      }
+      _exercisesByDifficulty[difficultyKey]!.add(exercise);
+    }
+  }
+
+  // Get all available exercises
   Future<List<Exercise>> getAllExercises() async {
     if (!_isInitialized) {
       await initialize();
@@ -38,19 +120,84 @@ class ExerciseDBService {
       await initialize();
     }
 
-    if (targetArea.isEmpty) {
-      return _localExercises;
-    }
-
-    return _localExercises
-        .where(
-          (exercise) =>
-              exercise.targetArea.toLowerCase() == targetArea.toLowerCase(),
-        )
-        .toList();
+    final key = targetArea.toLowerCase();
+    return _exercisesByCategory[key] ?? [];
   }
 
-  // Search exercises by name or description
+  // Get exercises by difficulty level
+  Future<List<Exercise>> getExercisesByDifficulty(int difficultyLevel) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    return _exercisesByDifficulty[difficultyLevel] ?? [];
+  }
+
+  // Get exercises by equipment
+  Future<List<Exercise>> getExercisesByEquipment(String equipment) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    final key = equipment.toLowerCase();
+    return _exercisesByEquipment[key] ?? [];
+  }
+
+  // Advanced filtering method
+  Future<List<Exercise>> filterExercises({
+    String? targetArea,
+    int? difficultyLevel,
+    String? equipment,
+    List<String>? targetMuscles,
+    bool? hasVideo,
+  }) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    return _localExercises.where((exercise) {
+      // Filter by target area if specified
+      if (targetArea != null &&
+          exercise.targetArea.toLowerCase() != targetArea.toLowerCase()) {
+        return false;
+      }
+
+      // Filter by difficulty level if specified
+      if (difficultyLevel != null &&
+          exercise.difficultyLevel != difficultyLevel) {
+        return false;
+      }
+
+      // Filter by equipment if specified
+      if (equipment != null &&
+          !exercise.equipmentOptions.any(
+            (e) => e.toLowerCase() == equipment.toLowerCase(),
+          )) {
+        return false;
+      }
+
+      // Filter by target muscles if specified
+      if (targetMuscles != null && targetMuscles.isNotEmpty) {
+        final hasTargetMuscle = exercise.targetMuscles.any(
+          (muscle) => targetMuscles.any(
+            (filter) => muscle.toLowerCase().contains(filter.toLowerCase()),
+          ),
+        );
+        if (!hasTargetMuscle) {
+          return false;
+        }
+      }
+
+      // Filter by video availability if specified
+      if (hasVideo == true && exercise.videoPath == null) {
+        return false;
+      }
+
+      return true;
+    }).toList();
+  }
+
+  // Search exercises by name, description, or target muscles
   Future<List<Exercise>> searchExercises(String query) async {
     if (!_isInitialized) {
       await initialize();
@@ -60,20 +207,18 @@ class ExerciseDBService {
       return _localExercises;
     }
 
-    return _localExercises
-        .where(
-          (exercise) =>
-              exercise.name.toLowerCase().contains(query.toLowerCase()) ||
-              exercise.description.toLowerCase().contains(
-                query.toLowerCase(),
-              ) ||
-              exercise.targetMuscles.any(
-                (muscle) => muscle.toLowerCase().contains(query.toLowerCase()),
-              ),
-        )
-        .toList();
+    final lowerQuery = query.toLowerCase();
+    return _localExercises.where((exercise) {
+      return exercise.name.toLowerCase().contains(lowerQuery) ||
+          exercise.description.toLowerCase().contains(lowerQuery) ||
+          exercise.targetMuscles.any(
+            (muscle) => muscle.toLowerCase().contains(lowerQuery),
+          ) ||
+          exercise.targetArea.toLowerCase().contains(lowerQuery);
+    }).toList();
   }
 
+  // Get exercise by ID
   Future<Exercise> getExerciseById(String id) async {
     if (!_isInitialized) {
       await initialize();
@@ -87,36 +232,64 @@ class ExerciseDBService {
     return exercise;
   }
 
-  // Get exercises by difficulty level
-  Future<List<Exercise>> getExercisesByDifficulty(int difficultyLevel) async {
+  // Get similar exercises to a given exercise
+  Future<List<Exercise>> getSimilarExercises(Exercise exercise) async {
     if (!_isInitialized) {
       await initialize();
     }
 
-    return _localExercises
-        .where((exercise) => exercise.difficultyLevel == difficultyLevel)
-        .toList();
+    // Find exercises that target the same area and muscles
+    return _localExercises.where((e) {
+      // Skip the original exercise
+      if (e.id == exercise.id) return false;
+
+      // Check for same target area
+      if (e.targetArea != exercise.targetArea) return false;
+
+      // Check for at least one common target muscle
+      final hasCommonMuscle = e.targetMuscles.any(
+        (muscle) => exercise.targetMuscles.contains(muscle),
+      );
+
+      return hasCommonMuscle;
+    }).toList();
   }
 
-  // Get exercises that can be performed with specific equipment
-  Future<List<Exercise>> getExercisesByEquipment(String equipment) async {
+  // Get next progression exercises for a given exercise
+  Future<List<Exercise>> getProgressionExercises(Exercise exercise) async {
     if (!_isInitialized) {
       await initialize();
     }
 
-    return _localExercises
-        .where(
-          (exercise) => exercise.equipmentOptions.any(
-            (option) => option.toLowerCase() == equipment.toLowerCase(),
-          ),
-        )
-        .toList();
+    // Look for exercises by name in the progression list
+    final List<Exercise> progressions = [];
+
+    for (final progressionName in exercise.progressionExercises) {
+      final matchingExercises =
+          _localExercises
+              .where(
+                (e) =>
+                    e.name.toLowerCase() == progressionName.toLowerCase() ||
+                    e.name.toLowerCase().contains(
+                      progressionName.toLowerCase(),
+                    ),
+              )
+              .toList();
+
+      progressions.addAll(matchingExercises);
+    }
+
+    return progressions;
   }
 
   // Save a custom exercise
   Future<Exercise> saveCustomExercise(Exercise exercise) async {
-    // In a real app, this would save to a database
-    // For now, we'll just add it to our in-memory list
+    // Ensure initialization
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    // Generate an ID if needed
     final newExercise = exercise.copyWith(
       id: exercise.id.isNotEmpty ? exercise.id : 'custom-${const Uuid().v4()}',
     );
@@ -130,10 +303,70 @@ class ExerciseDBService {
       _localExercises[index] = newExercise;
     }
 
+    // Recategorize exercises
+    _categorizeExercises();
+
+    // For production, also save to Firestore
+    if (!kDebugMode) {
+      try {
+        await _firestore
+            .collection('custom_exercises')
+            .doc(newExercise.id)
+            .set(newExercise.toMap());
+      } catch (e) {
+        debugPrint('Error saving custom exercise to Firestore: $e');
+        // Continue with local storage
+      }
+    }
+
     return newExercise;
   }
 
+  // Get available target areas
+  Future<List<String>> getAvailableTargetAreas() async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    final Set<String> areas = {};
+    for (final exercise in _localExercises) {
+      areas.add(exercise.targetArea);
+    }
+
+    return areas.toList()..sort();
+  }
+
+  // Get available equipment types
+  Future<List<String>> getAvailableEquipment() async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    final Set<String> equipment = {};
+    for (final exercise in _localExercises) {
+      equipment.addAll(exercise.equipmentOptions);
+    }
+
+    return equipment.toList()..sort();
+  }
+
+  // Get available target muscles
+  Future<List<String>> getAvailableTargetMuscles() async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    final Set<String> muscles = {};
+    for (final exercise in _localExercises) {
+      muscles.addAll(exercise.targetMuscles);
+    }
+
+    return muscles.toList()..sort();
+  }
+
+  // Mock exercises
   List<Exercise> _getMockExercises() {
+    // Reuse your existing exercises
     return [
       // Bums exercises
       Exercise(
@@ -421,9 +654,70 @@ class ExerciseDBService {
     ];
   }
 
-  // Add more exercises to expand the database
+  // Additional exercises to expand the database
   List<Exercise> _getAdditionalExercises() {
-    // This method can be used to add more exercises in batches
-    return [];
+    return [
+      // Add new exercises here to expand the library
+      Exercise(
+        id: 'bums-5',
+        name: 'Hip Thrust',
+        description:
+            'Sit with your upper back against a bench, feet on the floor. Place a weight across your hips, then drive through your heels to lift your hips up, forming a straight line from shoulders to knees.',
+        imageUrl: 'assets/images/exercises/hip_thrust.jpg',
+        videoPath: 'assets/videos/exercises/hip_thrust.mp4',
+        sets: 3,
+        reps: 12,
+        restBetweenSeconds: 60,
+        targetArea: 'bums',
+        difficultyLevel: 3,
+        targetMuscles: ['gluteus maximus', 'hamstrings'],
+        formTips: [
+          'Keep your chin tucked to maintain a neutral spine',
+          'Drive through your heels throughout the movement',
+          'Squeeze your glutes hard at the top of the movement',
+        ],
+        commonMistakes: [
+          'Hyperextending the lower back',
+          'Not coming up high enough',
+          'Using momentum instead of glute strength',
+        ],
+        progressionExercises: ['single-leg hip thrust', 'banded hip thrust'],
+        regressionExercises: ['bodyweight hip thrust', 'glute bridge'],
+        equipmentOptions: ['bench', 'barbell', 'dumbbell', 'resistance band'],
+      ),
+
+      Exercise(
+        id: 'bums-6',
+        name: 'Clamshells',
+        description:
+            'Lie on your side with knees bent at 45 degrees. Keep feet together and raise the top knee while keeping feet in contact, then lower back down.',
+        imageUrl: 'assets/images/exercises/clamshell.jpg',
+        videoPath: 'assets/videos/exercises/clamshell.mp4',
+        sets: 3,
+        reps: 15,
+        restBetweenSeconds: 30,
+        targetArea: 'bums',
+        difficultyLevel: 1,
+        targetMuscles: ['gluteus medius', 'gluteus minimus', 'hip abductors'],
+        formTips: [
+          'Keep your hips stacked throughout the movement',
+          'Don\'t rotate your pelvis as you lift your knee',
+          'Focus on using your glute muscle to lift, not your hip flexors',
+        ],
+        commonMistakes: [
+          'Rolling the pelvis back as the knee lifts',
+          'Using momentum instead of control',
+          'Not opening the knee far enough',
+        ],
+        progressionExercises: [
+          'banded clamshells',
+          'clamshells with straight leg raises',
+        ],
+        regressionExercises: ['partial range clamshells'],
+        equipmentOptions: ['none', 'resistance band'],
+      ),
+
+      // Add more exercises as needed
+    ];
   }
 }
