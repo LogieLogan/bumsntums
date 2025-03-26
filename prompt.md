@@ -2,15 +2,15 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 
 Area of focus:
 phase 2 of implemntation plan - phase 2 of workouts
-I would actually like to look at the relationship between exercises and workouts. 
 
-currently there seems to be a workouts repo and a exercise repo. The workouts repo has workouts and specifys the exercises inside. The exercises can be used to make workouts. 
+I am halfway through a updating the way stock workouts and exercises are made in the app. Before we were making stock workouts and specifying exercises within them but instad it would be good to have stock exercises adn then build workouts by referencing them instead.
 
-is there any particular reason why we are not using the exercise database inside the workouts repos ? 
-
+End goal:
 I am just thinking about scalability of making stock workouts into the future. If we are able to simply reference stock exercises with varying metrics (time, intensity, reps, sets) to make different workouts we should be able to scale the amount of stock workouts pretty fast by just changing up the exercises, the order, the metrics and the amount of exercises. 
 
-what are your thoughts on this? how could we architecht this ? dont provide any code at this stage
+please get up to speed with the code and current state 
+then complete any parts that are missing in the goal to be able to make an extensive exercise database and subsequuent workouts
+explain how these are stored and managed (architecture)
 
 project structure: 
 
@@ -104,6 +104,7 @@ project structure:
 │       ├── models
 │       │   ├── exercise.dart
 │       │   ├── workout.dart
+│       │   ├── workout_exercise.dart
 │       │   ├── workout_log.dart
 │       │   ├── workout_plan.dart
 │       │   ├── workout_section.dart
@@ -116,9 +117,11 @@ project structure:
 │       │   ├── workout_execution_provider.dart
 │       │   ├── workout_planning_provider.dart
 │       │   ├── workout_provider.dart
+│       │   ├── workout_repository_provider.dart
 │       │   └── workout_stats_provider.dart
 │       ├── repositories
-│       │   └── custom_workout_repository.dart
+│       │   ├── custom_workout_repository.dart
+│       │   └── workout_repository.dart
 │       ├── screens
 │       │   ├── all_featured_workouts_screen.dart
 │       │   ├── beginner_workouts_screen.dart
@@ -227,6 +230,31 @@ project structure:
 │       ├── app_theme.dart
 │       ├── color_palette.dart
 │       └── text_styles.dart
+└── specs
+    ├── 00_project_overview.md
+    ├── 01_user_journeys.md
+    ├── 02_design_system.md
+    ├── 03_technical_architecture.md
+    ├── 04_firebase_architecture.md
+    ├── 05a_ai_integration.md
+    ├── 06a_auth_system.md
+    ├── 06b_food_scanning.md
+    ├── 06d_social_features.md
+    ├── 06e_challenges.md
+    ├── 06f_in_app_purchases.md
+    ├── 07_analytics_and_monitoring.md
+    ├── 08a_security_and_compliance.md
+    ├── 08b_gdpr_dpia.md
+    ├── 08c_gdpr_testing_plan.md
+    ├── 09_implementation_plan.md
+    ├── 10a_early_feedback.md
+    ├── 10b_advanced_feedback.md
+    ├── 11_gamification.md
+    ├── 12_accessibility.md
+    ├── 13_ux_ui_spec.md
+    ├── 14a_workouts.md
+    ├── 14b_workout_tracking_analytics.md
+    └── 15_media_system.md
 
 Which of these files do you want to review? 
 

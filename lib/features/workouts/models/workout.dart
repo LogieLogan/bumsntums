@@ -1,10 +1,8 @@
-// lib/features/workouts/models/workout.dart
+// lib/features/workouts/models/workout.dart (updated)
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import '../services/exercise_db_service.dart';
 import 'exercise.dart';
 import 'workout_section.dart';
-import 'workout_exercise.dart';
 
 enum WorkoutDifficulty { beginner, intermediate, advanced }
 
@@ -24,7 +22,7 @@ class Workout extends Equatable {
   final bool isAiGenerated;
   final DateTime createdAt;
   final String createdBy;
-  final List<WorkoutExercise> workoutExercises;
+  final List<Exercise> exercises;
   final List<String> equipment;
   final List<String> tags;
   final bool downloadsAvailable;
@@ -54,7 +52,7 @@ class Workout extends Equatable {
     this.isAiGenerated = false,
     required this.createdAt,
     required this.createdBy,
-    required this.workoutExercises,
+    required this.exercises,
     required this.equipment,
     required this.tags,
     this.downloadsAvailable = false,
@@ -84,7 +82,7 @@ class Workout extends Equatable {
     isAiGenerated,
     createdAt,
     createdBy,
-    workoutExercises,
+    exercises,
     equipment,
     tags,
     downloadsAvailable,
@@ -99,16 +97,12 @@ class Workout extends Equatable {
     lastUsed,
   ];
 
-  // Method to resolve all workout exercises to full exercise objects
-  Future<List<Exercise>> resolveExercises(
-    ExerciseDBService exerciseService,
-  ) async {
-    final resolvedExercises = <Exercise>[];
-    for (final workoutExercise in workoutExercises) {
-      final exercise = await workoutExercise.resolveExercise(exerciseService);
-      resolvedExercises.add(exercise);
+  // Method to get all exercises, either from sections or the exercises list
+  List<Exercise> getAllExercises() {
+    if (sections.isNotEmpty) {
+      return sections.expand((section) => section.exercises).toList();
     }
-    return resolvedExercises;
+    return exercises;
   }
 
   Workout copyWith({
@@ -125,7 +119,7 @@ class Workout extends Equatable {
     bool? isAiGenerated,
     DateTime? createdAt,
     String? createdBy,
-    List<WorkoutExercise>? workoutExercises,
+    List<Exercise>? exercises,
     List<String>? equipment,
     List<String>? tags,
     bool? downloadsAvailable,
@@ -154,7 +148,7 @@ class Workout extends Equatable {
       isAiGenerated: isAiGenerated ?? this.isAiGenerated,
       createdAt: createdAt ?? this.createdAt,
       createdBy: createdBy ?? this.createdBy,
-      workoutExercises: workoutExercises ?? this.workoutExercises,
+      exercises: exercises ?? this.exercises,
       equipment: equipment ?? this.equipment,
       tags: tags ?? this.tags,
       downloadsAvailable: downloadsAvailable ?? this.downloadsAvailable,
@@ -187,7 +181,7 @@ class Workout extends Equatable {
       'isAiGenerated': isAiGenerated,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'createdBy': createdBy,
-      'workoutExercises': workoutExercises.map((e) => e.toMap()).toList(),
+      'exercises': exercises.map((e) => e.toMap()).toList(),
       'equipment': equipment,
       'tags': tags,
       'downloadsAvailable': downloadsAvailable,
@@ -229,10 +223,10 @@ class Workout extends Equatable {
                   ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'])
                   : DateTime.now()),
       createdBy: map['createdBy'] ?? '',
-      workoutExercises:
-          map['workoutExercises'] != null
-              ? List<WorkoutExercise>.from(
-                map['workoutExercises']?.map((x) => WorkoutExercise.fromMap(x)),
+      exercises:
+          map['exercises'] != null
+              ? List<Exercise>.from(
+                map['exercises']?.map((x) => Exercise.fromMap(x)),
               )
               : [],
       equipment: List<String>.from(map['equipment'] ?? []),
@@ -285,5 +279,30 @@ class Workout extends Equatable {
       versionNotes: versionNotes ?? 'Updated version',
       createdAt: DateTime.now(),
     );
+  }
+
+  // Convert sections to exercises for backward compatibility
+  List<Exercise> getSectionsAsExercises() {
+    if (sections.isEmpty) {
+      return exercises;
+    }
+    return sections.expand((section) => section.exercises).toList();
+  }
+
+  // Create sections from exercises (for upgrading old workouts)
+  static List<WorkoutSection> createSectionsFromExercises(
+    List<Exercise> exercises,
+  ) {
+    if (exercises.isEmpty) {
+      return [];
+    }
+
+    return [
+      WorkoutSection(
+        id: 'section-${DateTime.now().millisecondsSinceEpoch}',
+        name: 'Main Workout',
+        exercises: exercises,
+      ),
+    ];
   }
 }
