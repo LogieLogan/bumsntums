@@ -165,7 +165,7 @@ Exercise _getExerciseAtIndex(int index) {
 
   void startWorkout(
     Workout workout, {
-    bool voiceGuidanceEnabled = true,
+    bool voiceGuidanceEnabled = false,
     bool showRestTimers = true,
     bool showCountdowns = true,
   }) {

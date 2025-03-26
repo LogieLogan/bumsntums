@@ -13,7 +13,7 @@ class ExerciseImageWidget extends StatelessWidget {
   final BorderRadius? borderRadius;
   final bool showName;
   final WorkoutDifficulty difficulty;
-  
+
   const ExerciseImageWidget({
     super.key,
     required this.exercise,
@@ -24,19 +24,20 @@ class ExerciseImageWidget extends StatelessWidget {
     this.difficulty = WorkoutDifficulty.beginner,
     this.showName = false,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        ExerciseMediaService.workoutImage(
-          difficulty: difficulty,
+        ExerciseMediaService.exerciseImage(
+          exerciseName: exercise.name,
           height: height,
           width: width,
           fit: fit,
           borderRadius: borderRadius,
+          difficulty: difficulty,
         ),
-        
+
         // Optional exercise name overlay
         if (showName)
           Positioned(
@@ -44,18 +45,12 @@ class ExerciseImageWidget extends StatelessWidget {
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                vertical: 4,
-                horizontal: 8,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.7),
-                    Colors.transparent,
-                  ],
+                  colors: [Colors.black.withOpacity(0.7), Colors.transparent],
                 ),
               ),
               child: Text(
@@ -71,16 +66,13 @@ class ExerciseImageWidget extends StatelessWidget {
               ),
             ),
           ),
-          
+
         // Target area badge
         Positioned(
           top: 4,
           right: 4,
           child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 6,
-              vertical: 2,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
               color: _getTargetAreaColor(exercise.targetArea).withOpacity(0.8),
               borderRadius: BorderRadius.circular(8),
@@ -98,7 +90,7 @@ class ExerciseImageWidget extends StatelessWidget {
       ],
     );
   }
-  
+
   Color _getTargetAreaColor(String targetArea) {
     switch (targetArea.toLowerCase()) {
       case 'bums':

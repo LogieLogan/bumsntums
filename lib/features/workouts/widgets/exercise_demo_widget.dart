@@ -66,16 +66,19 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
 
   Future<void> _initializeVideo() async {
     try {
-      // Convert exercise name to lowercase filename format
-      final String exerciseName = widget.exercise.name
-          .trim()
-          .toLowerCase()
-          .replaceAll(' ', '_');
-      final String videoPath = 'assets/videos/exercises/$exerciseName.mp4';
-
-      print(
-        'Attempting to load video for ${widget.exercise.name} from: $videoPath',
-      );
+      // First check if the exercise has a direct video path specified
+      String videoPath;
+      if (widget.exercise.videoPath != null &&
+          widget.exercise.videoPath!.isNotEmpty) {
+        videoPath = widget.exercise.videoPath!;
+      } else {
+        // Fallback to derived path only if no explicit path is provided
+        final String exerciseName = widget.exercise.name
+            .trim()
+            .toLowerCase()
+            .replaceAll(' ', '_');
+        videoPath = 'assets/videos/exercises/$exerciseName.mp4';
+      }
 
       _videoController = VideoPlayerController.asset(videoPath);
       await _videoController!.initialize();

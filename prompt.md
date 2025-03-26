@@ -2,7 +2,15 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 
 Area of focus:
 phase 2 of implemntation plan - phase 2 of workouts
-expand exercise library with demo gif in assets/videos/exercises
+I would actually like to look at the relationship between exercises and workouts. 
+
+currently there seems to be a workouts repo and a exercise repo. The workouts repo has workouts and specifys the exercises inside. The exercises can be used to make workouts. 
+
+is there any particular reason why we are not using the exercise database inside the workouts repos ? 
+
+I am just thinking about scalability of making stock workouts into the future. If we are able to simply reference stock exercises with varying metrics (time, intensity, reps, sets) to make different workouts we should be able to scale the amount of stock workouts pretty fast by just changing up the exercises, the order, the metrics and the amount of exercises. 
+
+what are your thoughts on this? how could we architecht this ? dont provide any code at this stage
 
 project structure: 
 
@@ -213,36 +221,12 @@ project structure:
 │   │   ├── gdpr_service.dart
 │   │   ├── legal_document_service.dart
 │   │   ├── resource_loader_service.dart
-│   │   └── shake_detector_service.dart
+│   │   ├── shake_detector_service.dart
+│   │   └── video_compression_service.dart
 │   └── theme
 │       ├── app_theme.dart
 │       ├── color_palette.dart
 │       └── text_styles.dart
-└── specs
-    ├── 00_project_overview.md
-    ├── 01_user_journeys.md
-    ├── 02_design_system.md
-    ├── 03_technical_architecture.md
-    ├── 04_firebase_architecture.md
-    ├── 05a_ai_integration.md
-    ├── 06a_auth_system.md
-    ├── 06b_food_scanning.md
-    ├── 06d_social_features.md
-    ├── 06e_challenges.md
-    ├── 06f_in_app_purchases.md
-    ├── 07_analytics_and_monitoring.md
-    ├── 08a_security_and_compliance.md
-    ├── 08b_gdpr_dpia.md
-    ├── 08c_gdpr_testing_plan.md
-    ├── 09_implementation_plan.md
-    ├── 10a_early_feedback.md
-    ├── 10b_advanced_feedback.md
-    ├── 11_gamification.md
-    ├── 12_accessibility.md
-    ├── 13_ux_ui_spec.md
-    ├── 14a_workouts.md
-    ├── 14b_workout_tracking_analytics.md
-    └── 15_media_system.md
 
 Which of these files do you want to review? 
 

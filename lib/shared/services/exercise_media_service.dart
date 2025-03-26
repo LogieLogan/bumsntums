@@ -1,26 +1,70 @@
 // lib/shared/services/exercise_media_service.dart
 import 'package:bums_n_tums/features/workouts/models/exercise.dart';
+import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../features/workouts/models/workout.dart';
+import 'dart:developer' as developer;
 import '../theme/color_palette.dart';
 
 class ExerciseMediaService {
-  // Level-based workout images - these will be loaded from assets
+  // Asset paths structure
+  static const String _exerciseImagesPath = 'assets/images/exercises';
+  static const String _exerciseVideosPath = 'assets/videos/exercises';
+  static const String _exerciseIconsPath = 'assets/icons/exercises';
+  static const String _workoutImagesPath = 'assets/images/workouts';
+  
+  // Level-based workout images
   static const Map<WorkoutDifficulty, String> levelImageMap = {
-    WorkoutDifficulty.beginner: 'assets/images/workouts/beginner_workout.jpg',
-    WorkoutDifficulty.intermediate:
-        'assets/images/workouts/intermediate_workout.jpg',
-    WorkoutDifficulty.advanced: 'assets/images/workouts/advanced_workout.jpg',
+    WorkoutDifficulty.beginner: '$_workoutImagesPath/beginner_workout.jpg',
+    WorkoutDifficulty.intermediate: '$_workoutImagesPath/intermediate_workout.jpg',
+    WorkoutDifficulty.advanced: '$_workoutImagesPath/advanced_workout.jpg',
   };
+
+  // Normalize exercise name for file paths
+  static String _normalizeExerciseName(String name) {
+    // Convert to lowercase, replace spaces with underscores, remove any special characters,
+    // ensure singular form (this assumes your files are all in singular form now)
+    return name.trim().toLowerCase()
+        .replaceAll(' ', '_')
+        .replaceAll(RegExp(r'[^\w\s]+'), '');
+  }
+
+  // Get image path for an exercise
+  static String getExerciseImagePath(String exerciseName) {
+    final normalizedName = _normalizeExerciseName(exerciseName);
+    return '$_exerciseImagesPath/$normalizedName.jpg';
+  }
+
+  // Get video path for an exercise
+  static String getExerciseVideoPath(String exerciseName) {
+    final normalizedName = _normalizeExerciseName(exerciseName);
+    return '$_exerciseVideosPath/$normalizedName.mp4';
+  }
+
+  // Get icon path for an exercise
+  static String getExerciseIconPath(String exerciseName) {
+    final normalizedName = _normalizeExerciseName(exerciseName);
+    // Check for common exercise patterns for proper icon mapping
+    if (normalizedName.contains('squat')) {
+      return '$_exerciseIconsPath/squat.svg';
+    } else if (normalizedName.contains('lunge')) {
+      return '$_exerciseIconsPath/lunge.svg';
+    } else if (normalizedName.contains('bridge') || normalizedName.contains('glute')) {
+      return '$_exerciseIconsPath/glute_bridge.svg';
+    } else if (normalizedName.contains('plank')) {
+      return '$_exerciseIconsPath/plank.svg';
+    }
+    
+    // Default icon
+    return '$_exerciseIconsPath/default_exercise.svg';
+  }
 
   // Get image path for workout based on difficulty level
   static String getWorkoutLevelImage(WorkoutDifficulty difficulty) {
-    return levelImageMap[difficulty] ??
-        levelImageMap[WorkoutDifficulty.beginner]!;
+    return levelImageMap[difficulty] ?? levelImageMap[WorkoutDifficulty.beginner]!;
   }
 
-  // Widget to display a workout image based on difficulty level
+  // Widget to display a workout image based on difficulty level with proper error handling
   static Widget workoutImage({
     required WorkoutDifficulty difficulty,
     double? height,
@@ -29,44 +73,19 @@ class ExerciseMediaService {
     BorderRadius? borderRadius,
   }) {
     final imagePath = getWorkoutLevelImage(difficulty);
+    developer.log('Loading workout image: $imagePath');
 
-    // For asset images
-    if (imagePath.startsWith('assets/')) {
-      return ClipRRect(
-        borderRadius: borderRadius ?? BorderRadius.circular(16),
-        child: Image.asset(
-          imagePath,
-          height: height,
-          width: width,
-          fit: fit,
-          errorBuilder:
-              (context, error, stackTrace) => _buildFallbackWidget(
-                difficulty,
-                height: height,
-                width: width,
-              ),
-        ),
-      );
-    }
-
-    // For network images (if any in the future)
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.circular(16),
-      child: CachedNetworkImage(
-        imageUrl: imagePath,
+      child: Image.asset(
+        imagePath,
         height: height,
         width: width,
         fit: fit,
-        placeholder:
-            (context, url) => Container(
-              color: AppColors.paleGrey,
-              child: Center(
-                child: CircularProgressIndicator(color: AppColors.salmon),
-              ),
-            ),
-        errorWidget:
-            (context, url, error) =>
-                _buildFallbackWidget(difficulty, height: height, width: width),
+        errorBuilder: (context, error, stackTrace) {
+          developer.log('Error loading workout image: $imagePath, $error');
+          return _buildFallbackWidget(difficulty, height: height, width: width);
+        },
       ),
     );
   }
@@ -104,10 +123,8 @@ class ExerciseMediaService {
       color: bgColor,
       child: Center(
         child: SingleChildScrollView(
-          // Add SingleChildScrollView to handle overflow
           child: Column(
-            mainAxisSize:
-                MainAxisSize.min, // Make sure column takes minimum space
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.fitness_center, color: AppColors.darkGrey, size: 48),
               const SizedBox(height: 8),
@@ -117,7 +134,7 @@ class ExerciseMediaService {
                   color: AppColors.darkGrey,
                   fontWeight: FontWeight.bold,
                 ),
-                textAlign: TextAlign.center, // Center text to avoid overflow
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -126,48 +143,66 @@ class ExerciseMediaService {
     );
   }
 
-  static String getVideoPathForExercise(String exerciseName) {
-    // Force lowercase for consistency
-    return 'assets/videos/exercises/${exerciseName.toLowerCase()}.mp4';
+  // Display an exercise image with proper fallback
+  static Widget exerciseImage({
+    required String exerciseName,
+    double? height,
+    double? width,
+    BoxFit fit = BoxFit.cover,
+    BorderRadius? borderRadius,
+    WorkoutDifficulty difficulty = WorkoutDifficulty.beginner,
+  }) {
+    final String imagePath = getExerciseImagePath(exerciseName);
+    developer.log('Loading exercise image: $imagePath for $exerciseName');
+
+    return ClipRRect(
+      borderRadius: borderRadius ?? BorderRadius.circular(16),
+      child: Image.asset(
+        imagePath,
+        height: height,
+        width: width,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) {
+          developer.log('Error loading exercise image: $imagePath, $error');
+          // Fall back to difficulty-based workout image
+          return workoutImage(
+            difficulty: difficulty,
+            height: height,
+            width: width,
+            fit: fit,
+            borderRadius: borderRadius,
+          );
+        },
+      ),
+    );
   }
 
-  // Check if a video exists for an exercise by name
+  // Check if a video exists for an exercise by name - signature unchanged for compatibility
   static bool exerciseHasVideo(String exerciseName) {
-    return getVideoPathForExercise(exerciseName) != null;
+    // We can't check if the asset exists at runtime without trying to load it
+    // So this is a best guess based on the path
+    return true; // Assume video exists, error handling will catch if it doesn't
   }
 
-  // Update the existing hasVideo method to be more robust
+  // Method to check if an exercise has a video - signature unchanged for compatibility
   static bool hasVideo(Exercise exercise) {
     // Check if the exercise has a direct video path
     if (exercise.videoPath != null && exercise.videoPath!.isNotEmpty) {
       return true;
     }
 
-    // Try to derive a video path from the exercise name
-    return exerciseHasVideo(exercise.name);
+    // Assume based on exercise name
+    return true; // Let error handling deal with missing videos at load time
   }
 
-  // Get the appropriate media for an exercise (video or image)
+  // Get the appropriate media path for an exercise - signature unchanged for compatibility
   static String getExerciseMediaPath(Exercise exercise) {
     // First check if the exercise has a direct video path
     if (exercise.videoPath != null && exercise.videoPath!.isNotEmpty) {
       return exercise.videoPath!;
     }
 
-    // Try to derive a video path from the exercise name
-    final derivedVideoPath = getVideoPathForExercise(exercise.name);
-    if (derivedVideoPath != null) {
-      return derivedVideoPath;
-    }
-
-    // Fall back to difficulty-based image
-    final difficulty =
-        exercise.difficultyLevel <= 2
-            ? WorkoutDifficulty.beginner
-            : (exercise.difficultyLevel <= 4
-                ? WorkoutDifficulty.intermediate
-                : WorkoutDifficulty.advanced);
-
-    return getWorkoutLevelImage(difficulty);
+    // Generate a video path from the exercise name
+    return getExerciseVideoPath(exercise.name);
   }
 }

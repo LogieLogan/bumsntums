@@ -230,13 +230,13 @@ class ExerciseModification extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    title,
-    description,
-    imageUrl,
-    videoUrl,
-    forAccessibilityNeeds,
-  ];
+        id,
+        title,
+        description,
+        imageUrl,
+        videoUrl,
+        forAccessibilityNeeds,
+      ];
 
   Map<String, dynamic> toMap() {
     return {
