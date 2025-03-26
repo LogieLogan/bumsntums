@@ -74,6 +74,19 @@ class ExerciseDBService {
         .toList();
   }
 
+  Future<Exercise> getExerciseById(String id) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    final exercise = _localExercises.firstWhere(
+      (exercise) => exercise.id == id,
+      orElse: () => throw Exception('Exercise not found: $id'),
+    );
+
+    return exercise;
+  }
+
   // Get exercises by difficulty level
   Future<List<Exercise>> getExercisesByDifficulty(int difficultyLevel) async {
     if (!_isInitialized) {
@@ -267,8 +280,7 @@ class ExerciseDBService {
         description:
             'Get into a push-up position, but with weight on your forearms. Keep your body in a straight line from head to heels, engaging your core. Hold this position.',
         imageUrl: 'assets/images/exercises/plank.jpg',
-        videoPath:
-            'assets/videos/exercises/plank_leg_up.mp4',
+        videoPath: 'assets/videos/exercises/plank_leg_up.mp4',
         sets: 3,
         durationSeconds: 30,
         restBetweenSeconds: 60,
