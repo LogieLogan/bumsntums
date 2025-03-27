@@ -1,0 +1,1401 @@
+[
+  {
+    "id": "tums-1",
+    "name": "Abdominal Crunch",
+    "description": "Lie on your back with knees bent and feet on the floor. Place hands across chest or behind ears. Contract your abs to lift your shoulders off the floor, then lower with control.",
+    "imageUrl": "assets/images/exercises/abdominal_crunch.jpg",
+    "videoPath": "assets/videos/exercises/abdominal_crunch.mp4",
+    "sets": 3,
+    "reps": 15,
+    "restBetweenSeconds": 30,
+    "targetArea": "tums",
+    "difficultyLevel": 1,
+    "targetMuscles": ["rectus abdominis", "obliques"],
+    "formTips": [
+      "Focus on using your abdominals to lift your upper body",
+      "Keep movement slow and controlled",
+      "Maintain space between chin and chest",
+      "Keep lower back pressed into the floor"
+    ],
+    "commonMistakes": [
+      "Pulling on the neck",
+      "Using momentum instead of abdominal control",
+      "Lifting too high off the ground",
+      "Holding breath during exertion"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["weighted crunch", "stability ball crunch"],
+    "regressionExercises": ["modified crunch with bent knees"],
+    "benefits": [
+      "Strengthens the rectus abdominis (six-pack muscles)",
+      "Improves core stability and posture",
+      "Helps develop muscular endurance in the abdominal region",
+      "Can alleviate certain types of lower back pain"
+    ],
+    "contraindications": [
+      "Recent abdominal surgery",
+      "Pregnancy (especially second and third trimesters)",
+      "Hiatal hernia",
+      "Neck pain or injury"
+    ],
+    "breathingPattern": "Exhale as you curl up, inhale as you lower back down",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Bend your knees with feet flat on the floor",
+      "Place your hands across your chest or lightly behind your ears",
+      "Ensure your lower back is in contact with the floor"
+    ],
+    "exerciseType": ["isolation", "strength", "endurance"]
+  },
+  {
+    "id": "tums-2",
+    "name": "Bicycle Crunch",
+    "description": "Lie on your back with hands behind head and knees lifted. Bring opposite elbow to knee while extending the other leg straight, then switch sides in a pedaling motion.",
+    "imageUrl": "assets/images/exercises/bicycle_crunch.jpg",
+    "videoPath": "assets/videos/exercises/bicycle_crunch.mp4",
+    "sets": 3,
+    "reps": 20,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["rectus abdominis", "obliques", "hip flexors"],
+    "formTips": [
+      "Keep lower back pressed into the floor",
+      "Touch elbow to knee by rotating your torso",
+      "Control the movement - quality over speed",
+      "Extend the opposite leg fully but hover it above the ground"
+    ],
+    "commonMistakes": [
+      "Rushing through repetitions",
+      "Pulling on the neck",
+      "Lifting shoulders instead of rotating torso",
+      "Allowing lower back to arch off the floor"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["stability ball bicycle crunch", "elevated bicycle crunch"],
+    "regressionExercises": ["seated bicycle crunch", "slow-motion bicycle crunch"],
+    "benefits": [
+      "Engages both the rectus abdominis and obliques simultaneously",
+      "Improves core rotation and stability",
+      "Enhances coordination between upper and lower body",
+      "Greater activation of abs compared to traditional crunches"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Neck pain or cervical issues",
+      "Hip flexor strain",
+      "Pregnancy"
+    ],
+    "breathingPattern": "Exhale as you bring elbow to knee, inhale as you extend, maintain rhythm with movement",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Lift your knees to a 90-degree angle (tabletop position)",
+      "Place your hands lightly behind your head with elbows wide",
+      "Slightly lift your head and shoulders off the mat"
+    ],
+    "exerciseType": ["rotation", "compound", "endurance"]
+  },
+  {
+    "id": "tums-3",
+    "name": "Straight Arm Plank",
+    "description": "Hold a push-up position with your weight on your hands and toes. Keep your body in a straight line from head to heels.",
+    "imageUrl": "assets/images/exercises/plank.jpg",
+    "videoPath": "assets/videos/exercises/straight_arm_plank.mp4",
+    "sets": 3,
+    "durationSeconds": 30,
+    "reps": 0,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["rectus abdominis", "transverse abdominis", "obliques", "shoulders", "lower back"],
+    "formTips": [
+      "Keep your hips in line with shoulders and ankles",
+      "Engage your core by pulling your navel to your spine",
+      "Look slightly ahead to maintain neutral neck position",
+      "Push the ground away with your hands to engage shoulders"
+    ],
+    "commonMistakes": [
+      "Dropping or raising hips",
+      "Holding breath",
+      "Shoulders hunched around ears",
+      "Sagging in the middle or piking hips"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["plank with leg lift", "plank with shoulder tap"],
+    "regressionExercises": ["knee plank", "incline plank on bench or wall"],
+    "benefits": [
+      "Strengthens core without spinal flexion",
+      "Improves posture and spinal alignment",
+      "Engages multiple muscle groups simultaneously",
+      "Develops isometric strength and endurance",
+      "Helps reduce lower back pain"
+    ],
+    "contraindications": [
+      "Shoulder injury or impingement",
+      "Wrist pain or carpal tunnel",
+      "Severe hypertension",
+      "Late-stage pregnancy"
+    ],
+    "breathingPattern": "Maintain normal, steady breathing throughout hold - avoid shallow breathing",
+    "preparationSteps": [
+      "Start in a push-up position with hands directly under shoulders",
+      "Extend legs straight behind you, resting on balls of feet",
+      "Set your feet hip-width apart for stability",
+      "Engage core and glutes before beginning the hold"
+    ],
+    "exerciseType": ["isometric", "stability", "endurance"]
+  },
+  {
+    "id": "tums-4",
+    "name": "Russian Twist",
+    "description": "Sit on the floor with knees bent and feet slightly lifted. Lean back at a 45-degree angle, then rotate your torso from side to side while keeping your core engaged.",
+    "imageUrl": "assets/images/exercises/russian_twist.jpg",
+    "videoPath": "assets/videos/exercises/russian_twist.mp4",
+    "sets": 3,
+    "reps": 20,
+    "restBetweenSeconds": 30,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["obliques", "rectus abdominis", "hip flexors", "lower back"],
+    "formTips": [
+      "Keep your back straight throughout the movement",
+      "Rotate from your core, not just your arms",
+      "Touch the ground beside your hip on each side if possible",
+      "Keep feet elevated for increased difficulty"
+    ],
+    "commonMistakes": [
+      "Rounding the back",
+      "Moving arms without rotating the torso",
+      "Using momentum instead of controlled movement",
+      "Not twisting far enough to engage obliques properly"
+    ],
+    "equipmentOptions": ["none", "medicine ball", "dumbbell", "weight plate"],
+    "progressionExercises": ["weighted russian twist", "elevated feet russian twist", "v-sit russian twist"],
+    "regressionExercises": ["feet-on-floor russian twist", "bent-knee russian twist"],
+    "benefits": [
+      "Strengthens the obliques and rotational core muscles",
+      "Improves torso mobility and rotational power",
+      "Enhances coordination and balance",
+      "Helps define the waistline"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Recent abdominal surgery",
+      "Pregnancy",
+      "Herniated discs"
+    ],
+    "breathingPattern": "Exhale as you rotate to each side, inhale as you return to center",
+    "preparationSteps": [
+      "Sit on a mat with knees bent",
+      "Lean back slightly while maintaining a straight back",
+      "Lift feet a few inches off the ground",
+      "Extend arms forward with hands together or holding a weight"
+    ],
+    "exerciseType": ["rotation", "endurance", "stability"]
+  },
+  {
+    "id": "tums-5",
+    "name": "Reverse Crunch",
+    "description": "Lie on your back with knees bent at 90 degrees. Using your lower abs, lift your hips off the floor by bringing your knees toward your chest, then lower with control.",
+    "imageUrl": "assets/images/exercises/reverse_crunch.jpg",
+    "videoPath": "assets/videos/exercises/reverse_crunch.mp4",
+    "sets": 3,
+    "reps": 15,
+    "restBetweenSeconds": 30,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["lower rectus abdominis", "hip flexors", "obliques"],
+    "formTips": [
+      "Focus on using lower abs to initiate the movement",
+      "Keep the movement controlled and avoid using momentum",
+      "Press lower back into the floor throughout the exercise",
+      "Keep upper body relaxed with shoulders down"
+    ],
+    "commonMistakes": [
+      "Using momentum or swinging legs",
+      "Lifting hips too high causing back strain",
+      "Moving too quickly through the motion",
+      "Not fully engaging lower abs"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["hanging knee raise", "weighted reverse crunch"],
+    "regressionExercises": ["partial reverse crunch", "flat knee raise"],
+    "benefits": [
+      "Targets the lower portion of the abdominals",
+      "Strengthens hip flexors while engaging core",
+      "Helps improve lower abdominal definition",
+      "Low impact on the spine compared to traditional crunches"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Hiatal hernia",
+      "Pregnancy",
+      "Recent abdominal surgery"
+    ],
+    "breathingPattern": "Exhale as you lift hips/knees toward chest, inhale as you lower",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Bend knees to 90 degrees with feet in the air",
+      "Place arms at sides with palms down for stability",
+      "Engage core by drawing navel toward spine"
+    ],
+    "exerciseType": ["isolation", "strength", "endurance"]
+  },
+  {
+    "id": "tums-6",
+    "name": "Leg Drop",
+    "description": "Lie on your back with legs extended straight up. Keeping one leg up, slowly lower the other leg toward the floor without touching, then switch legs in a controlled motion.",
+    "imageUrl": "assets/images/exercises/leg_drop.jpg",
+    "videoPath": "assets/videos/exercises/leg_drop.mp4",
+    "sets": 3,
+    "reps": 16,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["lower rectus abdominis", "hip flexors", "transverse abdominis"],
+    "formTips": [
+      "Keep lower back pressed firmly into the floor throughout",
+      "Lower the leg only as far as you can maintain back contact with floor",
+      "Keep both legs straight but not locked",
+      "Focus on controlled movement rather than speed"
+    ],
+    "commonMistakes": [
+      "Allowing the lower back to arch off the floor",
+      "Dropping the leg too low too quickly",
+      "Not maintaining core engagement throughout",
+      "Holding breath during the exercise"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["double leg drop", "weighted leg drop"],
+    "regressionExercises": ["bent knee leg drop", "smaller range of motion"],
+    "benefits": [
+      "Strengthens deep core stabilizers and lower abdominals",
+      "Improves core control and stability",
+      "Enhances hip flexor strength and control",
+      "Teaches proper core bracing techniques"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Weak core muscles",
+      "Pregnancy",
+      "Recent abdominal surgery"
+    ],
+    "breathingPattern": "Exhale as you lower the leg, inhale as you bring it back up",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Extend both legs straight up toward ceiling",
+      "Place hands under your lower back for support (optional)",
+      "Engage your core by drawing navel toward spine"
+    ],
+    "exerciseType": ["isolation", "stability", "strength"]
+  },
+  {
+    "id": "tums-7",
+    "name": "Leg In and Out",
+    "description": "Sit with knees bent and feet slightly off the floor. Lean back slightly to balance, then alternate between extending legs out straight and pulling them back in toward your chest.",
+    "imageUrl": "assets/images/exercises/leg_in_and_out.jpg",
+    "videoPath": "assets/videos/exercises/leg_in_and_out.mp4",
+    "sets": 3,
+    "reps": 15,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["rectus abdominis", "hip flexors", "obliques", "transverse abdominis"],
+    "formTips": [
+      "Maintain a slight backward lean throughout the exercise",
+      "Keep your back straight, not rounded",
+      "Engage your core throughout the entire movement",
+      "Keep movements controlled and deliberate"
+    ],
+    "commonMistakes": [
+      "Rounding the back excessively",
+      "Letting legs touch the floor during extension",
+      "Using momentum instead of core strength",
+      "Leaning too far back, straining the back"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["v-sit leg in and out", "weighted leg in and out"],
+    "regressionExercises": ["alternating single leg in and out", "smaller range of motion"],
+    "benefits": [
+      "Builds core strength and endurance",
+      "Improves coordination between upper and lower body",
+      "Engages multiple core muscles simultaneously",
+      "Helps develop balance and stability"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Hip flexor strain",
+      "Poor core strength",
+      "Pregnancy"
+    ],
+    "breathingPattern": "Exhale as you extend legs out, inhale as you bring them back in",
+    "preparationSteps": [
+      "Sit on a mat with knees bent and feet on the floor",
+      "Place hands on the floor slightly behind your hips for support",
+      "Lift feet a few inches off the ground",
+      "Engage your core and find your balance point"
+    ],
+    "exerciseType": ["compound", "endurance", "stability"]
+  },
+  {
+    "id": "tums-8",
+    "name": "Side Crunch",
+    "description": "Lie on your back with knees bent and dropped to one side. Place hands behind head and crunch up toward the same side, focusing on oblique engagement. Repeat on both sides.",
+    "imageUrl": "assets/images/exercises/side_crunch.jpg",
+    "videoPath": "assets/videos/exercises/side_crunch.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 30,
+    "targetArea": "tums",
+    "difficultyLevel": 1,
+    "targetMuscles": ["obliques", "rectus abdominis", "transverse abdominis"],
+    "formTips": [
+      "Keep movement slow and controlled",
+      "Focus on lifting with the side of your abdomen",
+      "Maintain space between chin and chest",
+      "Keep shoulders relaxed, not hunched"
+    ],
+    "commonMistakes": [
+      "Pulling on the neck",
+      "Using momentum instead of oblique strength",
+      "Lifting too high and straining neck",
+      "Not keeping legs stabilized to one side"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["weighted side crunch", "cable side crunch"],
+    "regressionExercises": ["gentle side bend", "partial side crunch"],
+    "benefits": [
+      "Targets the oblique muscles for waist definition",
+      "Improves rotational core strength",
+      "Helps create a more balanced core development",
+      "Enhances functional movement patterns"
+    ],
+    "contraindications": [
+      "Neck injury or pain",
+      "Severe lower back pain",
+      "Recent abdominal surgery",
+      "Pregnancy"
+    ],
+    "breathingPattern": "Exhale as you lift and rotate, inhale as you lower back down",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Bend knees and let them fall to one side",
+      "Place hands lightly behind or beside your head",
+      "Ensure your lower back is comfortable in this rotated position"
+    ],
+    "exerciseType": ["isolation", "strength", "rotation"]
+  },
+  {
+    "id": "tums-9",
+    "name": "Sit Up",
+    "description": "Lie on your back with knees bent and feet flat on the floor. With hands across chest or by ears, use your core to lift your entire upper body off the floor to a seated position, then lower back down.",
+    "imageUrl": "assets/images/exercises/sit_up.jpg",
+    "videoPath": "assets/videos/exercises/sit_up.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["rectus abdominis", "hip flexors", "obliques", "lower back"],
+    "formTips": [
+      "Keep movement controlled in both directions",
+      "Use your core strength, not momentum",
+      "Maintain a neutral neck position",
+      "Exhale as you rise, inhale as you lower"
+    ],
+    "commonMistakes": [
+      "Pulling on the neck",
+      "Using momentum to swing up",
+      "Lifting feet off the ground",
+      "Rushing through repetitions"
+    ],
+    "equipmentOptions": ["none", "exercise mat", "incline bench"],
+    "progressionExercises": ["weighted sit up", "decline sit up"],
+    "regressionExercises": ["partial sit up", "assisted sit up with anchor"],
+    "benefits": [
+      "Strengthens entire abdominal region",
+      "Engages hip flexors and lower back",
+      "Builds functional core strength",
+      "Greater range of motion than crunches"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Neck problems",
+      "Hiatal hernia",
+      "Pregnancy"
+    ],
+    "breathingPattern": "Exhale as you sit up, inhale as you lower back down",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Bend knees with feet flat on the floor, hip-width apart",
+      "Cross arms over chest or place hands beside ears",
+      "Anchor feet if needed (under a sturdy object or with a partner)"
+    ],
+    "exerciseType": ["compound", "strength", "endurance"]
+  },
+  {
+    "id": "tums-10",
+    "name": "V-Up",
+    "description": "Lie on your back with arms extended overhead and legs straight. Simultaneously lift your arms and legs to create a V-shape with your body, then lower back to starting position.",
+    "imageUrl": "assets/images/exercises/v_up.jpg",
+    "videoPath": "assets/videos/exercises/v-_up.mp4",
+    "sets": 3,
+    "reps": 10,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 4,
+    "targetMuscles": ["rectus abdominis", "hip flexors", "obliques", "lower back"],
+    "formTips": [
+      "Keep movements controlled and deliberate",
+      "Try to touch hands to feet at the top of the movement",
+      "Keep legs straight but not locked",
+      "Focus on using your core to initiate the lift"
+    ],
+    "commonMistakes": [
+      "Using momentum to swing up",
+      "Bending knees excessively",
+      "Allowing lower back to arch off the floor",
+      "Not reaching full extension at the bottom"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["weighted v-up", "medicine ball v-up"],
+    "regressionExercises": ["bent knee v-up", "alternating v-up"],
+    "benefits": [
+      "Intensely engages the entire core musculature",
+      "Builds strength in hip flexors and lower abs",
+      "Improves coordination between upper and lower body",
+      "Develops balance and stability"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Weak core muscles",
+      "Hip flexor strain",
+      "Pregnancy"
+    ],
+    "breathingPattern": "Exhale as you lift to the V position, inhale as you lower back down",
+    "preparationSteps": [
+      "Lie flat on your back on a mat",
+      "Extend legs straight out",
+      "Extend arms overhead in line with your body",
+      "Engage your core by drawing navel toward spine"
+    ],
+    "exerciseType": ["compound", "strength", "power"]
+  },
+  {
+    "id": "tums-11",
+    "name": "V Crunch",
+    "description": "Lie on your back with legs extended and arms along sides. Simultaneously lift your upper body and legs, extending arms parallel to legs to form a V shape, then lower back down.",
+    "imageUrl": "assets/images/exercises/v_crunch.jpg",
+    "videoPath": "assets/videos/exercises/v_crunch.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["rectus abdominis", "hip flexors", "obliques"],
+    "formTips": [
+      "Keep your back straight as you lift, not rounded",
+      "Reach arms alongside legs, not overhead",
+      "Lift shoulders and legs simultaneously",
+      "Focus on slow, controlled movements"
+    ],
+    "commonMistakes": [
+      "Using momentum instead of core strength",
+      "Allowing legs to bend too much",
+      "Straining neck by jutting chin forward",
+      "Not engaging abdominals throughout the movement"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["weighted v crunch", "stability ball v crunch"],
+    "regressionExercises": ["bent knee v crunch", "partial v crunch"],
+    "benefits": [
+      "Strengthens the entire core in a balanced way",
+      "Develops coordination between upper and lower body",
+      "Challenges balance and stability",
+      "Improves posture by strengthening core stabilizers"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Neck problems",
+      "Recent abdominal surgery",
+      "Pregnancy"
+    ],
+    "breathingPattern": "Exhale as you lift into the V position, inhale as you lower back down",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Extend legs straight out",
+      "Place arms alongside your body, palms down",
+      "Engage your core muscles before beginning"
+    ],
+    "exerciseType": ["compound", "strength", "endurance"]
+  },
+  {
+    "id": "tums-12",
+    "name": "Plank with Leg Lift",
+    "description": "Start in a plank position with weight on forearms. While maintaining a stable torso, lift one leg straight up a few inches, hold briefly, then lower and repeat with the other leg.",
+    "imageUrl": "assets/images/exercises/plank.jpg",
+    "videoPath": "assets/videos/exercises/plank_leg_up.mp4",
+    "sets": 3,
+    "reps": 10,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["rectus abdominis", "transverse abdominis", "hip flexors", "glutes", "lower back"],
+    "formTips": [
+      "Keep hips level and square to the ground as you lift leg",
+      "Maintain a strong core and neutral spine throughout",
+      "Lift leg only as high as you can while maintaining form",
+      "Focus on stability rather than leg height"
+    ],
+    "commonMistakes": [
+      "Allowing hips to rotate as the leg lifts",
+      "Sagging in the middle or piking hips",
+      "Holding breath during the exercise",
+      "Letting the head drop or neck collapse"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["straight arm plank with leg lift", "plank with leg and arm lift (opposite sides)"],
+    "regressionExercises": ["knee plank with leg extension", "static plank hold"],
+    "benefits": [
+      "Challenges core stability in multiple planes",
+      "Strengthens hip muscles while engaging core",
+      "Improves balance and coordination",
+      "Enhances overall core strength and endurance"
+    ],
+    "contraindications": [
+      "Shoulder injury or impingement",
+      "Wrist pain or carpal tunnel",
+      "Lower back pain",
+      "Hip flexor strain"
+    ],
+    "breathingPattern": "Maintain steady breathing throughout, exhale as you lift the leg",
+    "preparationSteps": [
+      "Start in a forearm plank position with elbows under shoulders",
+      "Set feet hip-width apart",
+      "Engage core and squeeze glutes",
+      "Ensure body forms a straight line from head to heels"
+    ],
+    "exerciseType": ["isometric", "stability", "endurance"]
+  },
+  {
+    "id": "tums-13",
+    "name": "Dead Bug",
+    "description": "Lie on your back with arms extended toward ceiling and legs in tabletop position. Simultaneously lower opposite arm and leg toward the floor while maintaining lower back contact with the mat, then return to start position.",
+    "imageUrl": "assets/images/exercises/dead_bug.jpg",
+    "videoPath": "assets/videos/exercises/dead_bug.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["transverse abdominis", "rectus abdominis", "obliques", "lower back"],
+    "formTips": [
+      "Press lower back firmly into the floor throughout",
+      "Extend limbs fully without touching the floor",
+      "Move slowly and with control",
+      "Keep shoulders down away from ears"
+    ],
+    "commonMistakes": [
+      "Allowing lower back to arch off floor",
+      "Moving too quickly, losing core engagement",
+      "Not fully extending limbs",
+      "Holding breath"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["weighted dead bug", "stability ball dead bug"],
+    "regressionExercises": ["bent arm/leg dead bug", "single limb dead bug"],
+    "benefits": [
+      "Strengthens deep core muscles while maintaining spine stability",
+      "Improves coordination between upper and lower body",
+      "Enhances core control and stability",
+      "Safe for many with lower back issues when done correctly"
+    ],
+    "contraindications": [
+      "Severe lower back pain",
+      "Recent abdominal surgery",
+      "Shoulder issues that prevent overhead arm position",
+      "Advanced pregnancy"
+    ],
+    "breathingPattern": "Inhale as you extend limbs, exhale as you return to starting position",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Bring knees up to tabletop position (90-degree angle)",
+      "Extend arms toward ceiling",
+      "Press lower back into floor by engaging core"
+    ],
+    "exerciseType": ["stability", "coordination", "endurance"]
+  },
+  {
+    "id": "tums-14",
+    "name": "Diagonal Plank",
+    "description": "From a standard plank position, rotate your body to one side, extending the top arm toward the ceiling in a side plank variation, then return to center and repeat on the other side.",
+    "imageUrl": "assets/images/exercises/plank.jpg",
+    "videoPath": "assets/videos/exercises/diagonal_plank.mp4",
+    "sets": 3,
+    "reps": 10,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["obliques", "transverse abdominis", "shoulders", "glutes", "hip stabilizers"],
+    "formTips": [
+      "Stack shoulders, hips, and feet when rotated to side",
+      "Keep body in straight line throughout entire movement",
+      "Rotate from core rather than just arms",
+      "Maintain stable shoulder position"
+    ],
+    "commonMistakes": [
+      "Dropping hips during rotation",
+      "Moving too quickly with poor control",
+      "Allowing feet to separate during rotation",
+      "Collapsing through shoulder"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["diagonal plank with leg lift", "weighted diagonal plank"],
+    "regressionExercises": ["knee plank diagonal rotation", "static side plank holds"],
+    "benefits": [
+      "Challenges core stability in multiple planes",
+      "Strengthens obliques and rotational core muscles",
+      "Improves shoulder stability and strength",
+      "Enhances body control and coordination"
+    ],
+    "contraindications": [
+      "Shoulder injury or impingement",
+      "Wrist pain or injury",
+      "Recent abdominal surgery",
+      "Lower back issues"
+    ],
+    "breathingPattern": "Inhale during center plank, exhale during rotation to side",
+    "preparationSteps": [
+      "Start in forearm plank position with elbows under shoulders",
+      "Set feet hip-width apart",
+      "Engage core and glutes",
+      "Ensure body forms straight line from head to heels"
+    ],
+    "exerciseType": ["rotation", "stability", "strength"]
+  },
+  {
+    "id": "tums-15",
+    "name": "Prone Flutter Kick",
+    "description": "Lie face down with legs extended, arms overhead or by sides. Lift chest and legs slightly off floor, then alternate small kicks with legs while maintaining the lifted position.",
+    "imageUrl": "assets/images/exercises/prone_flutter.jpg",
+    "videoPath": "assets/videos/exercises/prone_flutter_kick.mp4",
+    "sets": 3,
+    "durationSeconds": 30,
+    "reps": 0,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["erector spinae", "gluteus maximus", "hamstrings", "core"],
+    "formTips": [
+      "Keep neck in neutral position (look down at mat)",
+      "Lift chest and legs only as high as comfortable",
+      "Maintain small, controlled kicks",
+      "Keep legs relatively straight but not locked"
+    ],
+    "commonMistakes": [
+      "Lifting head too high causing neck strain",
+      "Kicks too large or uncontrolled",
+      "Excessive arching of lower back",
+      "Holding breath during exercise"
+    ],
+    "equipmentOptions": ["none", "exercise mat"],
+    "progressionExercises": ["prone flutter with arm movement", "weighted ankle prone flutter"],
+    "regressionExercises": ["alternating single leg lifts", "shortened duration"],
+    "benefits": [
+      "Strengthens posterior chain (back, glutes, hamstrings)",
+      "Improves core stability and endurance",
+      "Develops lower back strength",
+      "Counteracts effects of prolonged sitting"
+    ],
+    "contraindications": [
+      "Acute lower back pain or injury",
+      "Neck problems",
+      "Pregnancy",
+      "Recent back surgery"
+    ],
+    "breathingPattern": "Maintain regular breathing throughout; avoid holding breath",
+    "preparationSteps": [
+      "Lie face down on a mat",
+      "Extend legs straight behind you",
+      "Place forehead on mat or slightly lifted",
+      "Position arms overhead, alongside body, or under forehead"
+    ],
+    "exerciseType": ["endurance", "stability", "extension"]
+  },
+  {
+    "id": "tums-16",
+    "name": "Fitball Crunch",
+    "description": "Sit on a stability ball and walk feet forward until ball is supporting middle/lower back. Place hands behind head and perform a crunch, lifting shoulders off the ball.",
+    "imageUrl": "assets/images/exercises/fitball_crunch.jpg",
+    "videoPath": "assets/videos/exercises/fitball_crunch.mp4",
+    "sets": 3,
+    "reps": 15,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["rectus abdominis", "obliques", "hip flexors"],
+    "formTips": [
+      "Position ball under mid-back (not lower back or neck)",
+      "Keep feet flat on floor, hip-width apart",
+      "Maintain neutral neck position (small gap between chin and chest)",
+      "Focus on curling ribcage toward pelvis"
+    ],
+    "commonMistakes": [
+      "Pulling on neck with hands",
+      "Positioning ball incorrectly (too high or low)",
+      "Using momentum instead of abdominal control",
+      "Lifting too high causing lower back strain"
+    ],
+    "equipmentOptions": ["stability ball"],
+    "progressionExercises": ["weighted fitball crunch", "fitball crunch with rotation", "decline fitball crunch"],
+    "regressionExercises": ["partial range fitball crunch", "standard floor crunch"],
+    "benefits": [
+      "Increases range of motion compared to floor crunches",
+      "Engages more stabilizing muscles due to unstable surface",
+      "Provides natural back extension at bottom of movement",
+      "Reduces pressure on spine compared to floor crunches"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Neck problems",
+      "Poor balance or coordination",
+      "Recent abdominal surgery"
+    ],
+    "breathingPattern": "Exhale as you curl up, inhale as you lower back down",
+    "preparationSteps": [
+      "Sit centered on stability ball",
+      "Walk feet forward until ball rolls under your mid-back",
+      "Position feet flat on floor, hip-width apart",
+      "Place hands lightly behind head or crossed over chest"
+    ],
+    "exerciseType": ["strength", "stability", "isolation"]
+  },
+  {
+    "id": "tums-17",
+    "name": "Fitball Plank Hold",
+    "description": "Assume a plank position with forearms on a stability ball instead of the floor. Maintain a straight body line while balancing on the unstable surface.",
+    "imageUrl": "assets/images/exercises/fitball_plank.jpg",
+    "videoPath": "assets/videos/exercises/fitball_plank_hold.mp4",
+    "sets": 3,
+    "durationSeconds": 30,
+    "reps": 0,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["rectus abdominis", "transverse abdominis", "shoulders", "hip flexors"],
+    "formTips": [
+      "Position forearms on top of ball, shoulder-width apart",
+      "Create straight line from head to heels",
+      "Engage core to prevent hips from sagging or piking",
+      "Look down at ball to maintain neutral neck"
+    ],
+    "commonMistakes": [
+      "Allowing hips to sag toward floor",
+      "Shrugging shoulders toward ears",
+      "Holding breath instead of breathing normally",
+      "Unstable arm position on ball"
+    ],
+    "equipmentOptions": ["stability ball"],
+    "progressionExercises": ["fitball plank with leg lift", "fitball plank with arm lift", "fitball pike"],
+    "regressionExercises": ["standard floor plank", "wall plank with fitball"],
+    "benefits": [
+      "Intensifies core engagement due to unstable surface",
+      "Improves balance and proprioception",
+      "Enhances shoulder stability",
+      "Develops deeper core muscles for better posture"
+    ],
+    "contraindications": [
+      "Shoulder injury or impingement",
+      "Wrist pain or injury",
+      "Lower back pain",
+      "Poor core strength"
+    ],
+    "breathingPattern": "Maintain normal breathing throughout the hold, avoid breath holding",
+    "preparationSteps": [
+      "Place stability ball on floor with space around it",
+      "Position forearms on top of ball, shoulder-width apart",
+      "Extend legs behind you with feet hip-width apart",
+      "Engage core before lifting into full plank position"
+    ],
+    "exerciseType": ["isometric", "stability", "endurance"]
+  },
+  {
+    "id": "tums-18",
+    "name": "Fitball Plank to Pike",
+    "description": "Start in a plank position with hands on floor and shins or tops of feet on stability ball. Use core strength to pike hips up while rolling the ball toward your hands, then return to plank.",
+    "imageUrl": "assets/images/exercises/fitball_pike.jpg",
+    "videoPath": "assets/videos/exercises/fitball_plank_to_pike.mp4",
+    "sets": 3,
+    "reps": 10,
+    "restBetweenSeconds": 60,
+    "targetArea": "tums",
+    "difficultyLevel": 4,
+    "targetMuscles": ["rectus abdominis", "hip flexors", "shoulders", "lower back", "chest"],
+    "formTips": [
+      "Start with a strong, straight plank position",
+      "Drive hips up while pulling ball toward hands with feet",
+      "Keep legs straight throughout movement",
+      "Maintain shoulder stability (don't let shoulders collapse)"
+    ],
+    "commonMistakes": [
+      "Bending knees during pike",
+      "Insufficient hip height during pike",
+      "Allowing back to round excessively",
+      "Letting ball roll too far or not far enough"
+    ],
+    "equipmentOptions": ["stability ball"],
+    "progressionExercises": ["fitball pike with single leg", "fitball pike push-up", "fitball pike hold"],
+    "regressionExercises": ["fitball tuck instead of pike", "smaller range of motion", "wall pike"],
+    "benefits": [
+      "Intensely engages core muscles, especially upper abs",
+      "Improves shoulder strength and stability",
+      "Enhances hip mobility and hamstring flexibility",
+      "Develops total body coordination and control"
+    ],
+    "contraindications": [
+      "Shoulder injury or impingement",
+      "Wrist pain or injury",
+      "Lower back issues",
+      "Hamstring strain or injury",
+      "Poor core strength"
+    ],
+    "breathingPattern": "Exhale as you pike up, inhale as you return to plank",
+    "preparationSteps": [
+      "Place stability ball on floor with space behind it",
+      "Start in high plank position with hands on floor",
+      "Place shins or tops of feet on stability ball",
+      "Create straight line from head to heels before beginning"
+    ],
+    "exerciseType": ["compound", "stability", "strength"]
+  },
+  {
+    "id": "tums-19",
+    "name": "Fitball Mountain Climber",
+    "description": "Begin in a plank position with hands on floor and shins on stability ball. Alternate bringing knees toward chest in a running motion while maintaining ball stability.",
+    "imageUrl": "assets/images/exercises/fitball_mountain.jpg",
+    "videoPath": "assets/videos/exercises/fitball_mountain_climber.mp4",
+    "sets": 3,
+    "reps": 20,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["rectus abdominis", "hip flexors", "shoulders", "quadriceps"],
+    "formTips": [
+      "Maintain shoulders over wrists throughout",
+      "Control the ball to prevent excessive rolling",
+      "Keep hips level during leg movements",
+      "Drive knee fully toward chest"
+    ],
+    "commonMistakes": [
+      "Letting hips rise or drop during movement",
+      "Allowing ball to roll uncontrollably",
+      "Moving too quickly sacrificing form",
+      "Insufficient knee drive toward chest"
+    ],
+    "equipmentOptions": ["stability ball"],
+    "progressionExercises": ["fitball mountain climber with cross-body knee", "single leg fitball plank with knee drive"],
+    "regressionExercises": ["standard floor mountain climber", "slower tempo fitball mountain climber"],
+    "benefits": [
+      "Intensifies core engagement with added instability",
+      "Improves total body coordination and control",
+      "Engages more stabilizer muscles than floor version",
+      "Enhances shoulder stability while working core"
+    ],
+    "contraindications": [
+      "Shoulder injury or pain",
+      "Wrist issues",
+      "Poor core strength",
+      "Lower back problems",
+      "Hip flexor strains"
+    ],
+    "breathingPattern": "Maintain rhythmic breathing aligned with movement pace",
+    "preparationSteps": [
+      "Place stability ball on floor with space around it",
+      "Position hands on floor in high plank position",
+      "Rest shins on stability ball with legs extended",
+      "Stabilize core and shoulders before beginning movement"
+    ],
+    "exerciseType": ["cardio", "stability", "coordination"]
+  },
+  {
+    "id": "tums-20",
+    "name": "Fitball Alternating Dead Bug",
+    "description": "Lie on your back holding stability ball between extended arms and legs. Simultaneously lower opposite arm and leg, maintaining contact with the ball, then return to start and repeat with opposite limbs.",
+    "imageUrl": "assets/images/exercises/fitball_deadbug.jpg",
+    "videoPath": "assets/videos/exercises/fitball_alternating_dead_bug.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["transverse abdominis", "rectus abdominis", "obliques", "hip flexors"],
+    "formTips": [
+      "Press lower back firmly into floor throughout",
+      "Keep the ball squeezed between arms and legs",
+      "Move with control focusing on stability",
+      "Extend limbs fully without touching floor"
+    ],
+    "commonMistakes": [
+      "Allowing lower back to arch off floor",
+      "Losing contact with the ball",
+      "Moving too quickly without control",
+      "Holding breath during exercise"
+    ],
+    "equipmentOptions": ["stability ball", "exercise mat"],
+    "progressionExercises": ["double extension dead bug with ball", "fitball alternate leg lower"],
+    "regressionExercises": ["regular dead bug", "smaller range of motion"],
+    "benefits": [
+      "Enhances core stability while challenging coordination",
+      "Strengthens deep core muscles in a spine-safe position",
+      "Improves mind-muscle connection",
+      "Develops contralateral movement patterns"
+    ],
+    "contraindications": [
+      "Severe lower back pain",
+      "Recent abdominal surgery",
+      "Shoulder issues",
+      "Advanced pregnancy"
+    ],
+    "breathingPattern": "Inhale as you extend limbs, exhale as you return to starting position",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Hold stability ball with extended arms",
+      "Lift legs to place against ball (tabletop position)",
+      "Press lower back into floor by engaging core"
+    ],
+    "exerciseType": ["stability", "coordination", "endurance"]
+  },
+  {
+    "id": "tums-21",
+    "name": "Fitball Alternating Leg Raise",
+    "description": "Lie face up with legs extended and stability ball held between ankles. Keeping legs straight, lift one leg up while the other stays on the floor, then switch legs in a controlled motion.",
+    "imageUrl": "assets/images/exercises/fitball_leg_raise.jpg",
+    "videoPath": "assets/videos/exercises/fitball_alernating_leg_raise.mp4",
+    "sets": 3,
+    "reps": 16,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["lower rectus abdominis", "hip flexors", "obliques", "inner thighs"],
+    "formTips": [
+      "Press lower back firmly into floor throughout the exercise",
+      "Keep ball secure between ankles without squeezing too hard",
+      "Raise leg with control, not momentum",
+      "Keep legs straight but not locked"
+    ],
+    "commonMistakes": [
+      "Allowing lower back to arch off floor",
+      "Lifting both legs together instead of alternating",
+      "Dropping the ball due to insufficient control",
+      "Rushing the movement"
+    ],
+    "equipmentOptions": ["stability ball", "exercise mat"],
+    "progressionExercises": ["double leg raise with ball", "weighted ankle leg raise with ball"],
+    "regressionExercises": ["bent knee leg raise", "single leg raise without ball"],
+    "benefits": [
+      "Strengthens lower abdominals and hip flexors",
+      "Improves leg control and coordination",
+      "Enhances inner thigh strength (adductors)",
+      "Teaches proper core engagement during leg movement"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Hip flexor strain",
+      "Recent abdominal surgery",
+      "Advanced pregnancy"
+    ],
+    "breathingPattern": "Exhale as you lift leg, inhale as you lower",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Place stability ball between ankles",
+      "Extend legs fully with ball secured",
+      "Press lower back into floor by engaging core"
+    ],
+    "exerciseType": ["isolation", "stability", "endurance"]
+  },
+  {
+    "id": "tums-22",
+    "name": "Fitball Ankle Reach",
+    "description": "Lie on your back with knees bent and stability ball held between feet. Extend arms alongside body, then lift head and shoulders to reach fingers toward ankles while lifting the ball with feet.",
+    "imageUrl": "assets/images/exercises/fitball_ankle_reach.jpg",
+    "videoPath": "assets/videos/exercises/fitball_ankle_reach.mp4",
+    "sets": 3,
+    "reps": 15,
+    "restBetweenSeconds": 30,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["rectus abdominis", "hip flexors", "obliques"],
+    "formTips": [
+      "Hold ball securely between feet (insides of ankles)",
+      "Lift shoulders and upper back off the floor",
+      "Reach fingertips toward ankles (they don't need to touch)",
+      "Keep neck in neutral position (chin slightly tucked)"
+    ],
+    "commonMistakes": [
+      "Pulling on neck when lifting",
+      "Losing control of the ball",
+      "Using momentum instead of core strength",
+      "Lifting feet too high causing lower back strain"
+    ],
+    "equipmentOptions": ["stability ball", "exercise mat"],
+    "progressionExercises": ["fitball ankle reach with leg extension", "weighted ankle reach"],
+    "regressionExercises": ["partial crunch with ball", "ankle reach without ball"],
+    "benefits": [
+      "Engages upper and lower abdominals simultaneously",
+      "Improves coordination between upper and lower body",
+      "Adds challenge to basic crunch movements",
+      "Develops control and core stability"
+    ],
+    "contraindications": [
+      "Neck pain or injury",
+      "Lower back issues",
+      "Recent abdominal surgery",
+      "Hip flexor strain"
+    ],
+    "breathingPattern": "Exhale as you lift and reach, inhale as you lower back down",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Bend knees and place stability ball between feet",
+      "Position arms alongside body",
+      "Engage core before beginning the movement"
+    ],
+    "exerciseType": ["coordination", "strength", "endurance"]
+  },
+  {
+    "id": "tums-23",
+    "name": "Fitball Ball Pass",
+    "description": "Lie on your back with arms extended overhead holding a stability ball. Simultaneously lift arms and legs to pass the ball from hands to feet at the top, then lower limbs and repeat in reverse.",
+    "imageUrl": "assets/images/exercises/fitball_pass.jpg",
+    "videoPath": "assets/videos/exercises/fitball_ball_pass.mp4",
+    "sets": 3,
+    "reps": 10,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["rectus abdominis", "hip flexors", "shoulder flexors", "upper back"],
+    "formTips": [
+      "Start with arms extended overhead and legs straight",
+      "Lift shoulders and legs simultaneously toward center",
+      "Transfer ball securely from hands to feet (or feet to hands)",
+      "Lower with control, not allowing limbs to drop quickly"
+    ],
+    "commonMistakes": [
+      "Allowing lower back to arch off floor",
+      "Dropping the ball during transfers",
+      "Using momentum instead of control",
+      "Incomplete range of motion"
+    ],
+    "equipmentOptions": ["stability ball", "exercise mat"],
+    "progressionExercises": ["fitball v-sit pass", "weighted ball pass"],
+    "regressionExercises": ["bent knee ball pass", "partial range pass"],
+    "benefits": [
+      "Creates complete abdominal contraction (upper and lower)",
+      "Improves coordination and control",
+      "Develops shoulder mobility and strength",
+      "Enhances body awareness and proprioception"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Shoulder impingement or injury",
+      "Recent abdominal surgery",
+      "Neck problems"
+    ],
+    "breathingPattern": "Exhale during the lifting and passing phase, inhale during lowering",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Hold stability ball with arms extended overhead",
+      "Extend legs flat on floor",
+      "Engage core before beginning movement"
+    ],
+    "exerciseType": ["compound", "coordination", "strength"]
+  },
+  {
+    "id": "tums-24",
+    "name": "Fitball Double Leg Hold",
+    "description": "Lie on your back holding a stability ball between extended legs. Use core strength to lift legs and ball off the floor to a 45-degree angle, hold, then lower with control.",
+    "imageUrl": "assets/images/exercises/fitball_leg_hold.jpg",
+    "videoPath": "assets/videos/exercises/fitball_double_leg_hold.mp4",
+    "sets": 3,
+    "durationSeconds": 20,
+    "reps": 0,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["lower rectus abdominis", "hip flexors", "transverse abdominis", "adductors"],
+    "formTips": [
+      "Press lower back firmly into floor throughout",
+      "Hold ball securely between ankles",
+      "Maintain a 45-degree angle or lower to reduce back strain",
+      "Keep legs straight but not locked"
+    ],
+    "commonMistakes": [
+      "Allowing lower back to arch off floor",
+      "Legs too high (90 degrees) reducing effectiveness",
+      "Dropping ball due to insufficient leg pressure",
+      "Holding breath during the hold"
+    ],
+    "equipmentOptions": ["stability ball", "exercise mat"],
+    "progressionExercises": ["fitball leg hold with small pulses", "longer hold duration"],
+    "regressionExercises": ["fitball leg hold at higher angle", "single leg hold with ball"],
+    "benefits": [
+      "Intensely engages lower abdominal region",
+      "Strengthens hip flexors in controlled environment",
+      "Improves static strength and endurance",
+      "Teaches proper abdominal bracing during leg movements"
+    ],
+    "contraindications": [
+      "Lower back pain or issues",
+      "Hip flexor strain",
+      "Recent abdominal surgery",
+      "Pregnancy"
+    ],
+    "breathingPattern": "Maintain steady breathing throughout the hold - avoid breath holding",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Place stability ball between ankles",
+      "Extend legs upward to 90 degrees initially",
+      "Press lower back firmly into floor by engaging core"
+    ],
+    "exerciseType": ["isometric", "endurance", "stability"]
+  },
+  {
+    "id": "tums-25",
+    "name": "Fitball Leg Lowering",
+    "description": "Lie on your back holding a stability ball between feet. Starting with legs vertically extended, slowly lower legs and ball toward floor without touching, then raise back up.",
+    "imageUrl": "assets/images/exercises/fitball_leg_lowering.jpg",
+    "videoPath": "assets/videos/exercises/fitball_leg_lowering.mp4",
+    "sets": 3,
+    "reps": 10,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["lower rectus abdominis", "hip flexors", "transverse abdominis", "adductors"],
+    "formTips": [
+      "Press lower back firmly into floor throughout entire movement",
+      "Lower legs only as far as you can maintain back contact with floor",
+      "Move slowly and with control",
+      "Keep legs straight but not locked at the knee"
+    ],
+    "commonMistakes": [
+      "Allowing lower back to arch off floor",
+      "Lowering legs too far",
+      "Moving too quickly, losing control",
+      "Dropping or losing the ball"
+    ],
+    "equipmentOptions": ["stability ball", "exercise mat"],
+    "progressionExercises": ["slower tempo leg lowering", "paused reps at bottom range"],
+    "regressionExercises": ["smaller range of motion", "bent knee leg lowering with ball"],
+    "benefits": [
+      "Builds significant lower abdominal strength",
+      "Teaches proper core engagement with leg movement",
+      "Improves hip flexor control and strength",
+      "Enhances overall core stability"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Weak core strength",
+      "Recent abdominal surgery",
+      "Pregnancy"
+    ],
+    "breathingPattern": "Inhale as you lower legs, exhale as you lift back up",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Place stability ball between feet/ankles",
+      "Lift legs to vertical position (90 degrees to floor)",
+      "Press lower back into floor by engaging core"
+    ],
+    "exerciseType": ["strength", "control", "endurance"]
+  },
+  {
+    "id": "tums-26",
+    "name": "Fitball Plank to Tuck",
+    "description": "Start in a plank position with hands on floor and shins on stability ball. Pull knees toward chest while rolling the ball forward, then extend legs back to plank position.",
+    "imageUrl": "assets/images/exercises/fitball_tuck.jpg",
+    "videoPath": "assets/videos/exercises/fitball_plank_to_tuck.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["rectus abdominis", "hip flexors", "shoulders", "chest"],
+    "formTips": [
+      "Maintain shoulders directly over wrists throughout",
+      "Pull knees toward chest by engaging core, not just legs",
+      "Control the ball movement in both directions",
+      "Keep hips level, avoid sagging or piking"
+    ],
+    "commonMistakes": [
+      "Letting hips sag during plank phase",
+      "Moving shoulders back instead of keeping them over wrists",
+      "Using momentum rather than control",
+      "Incomplete knee tuck (not bringing knees close enough to chest)"
+    ],
+    "equipmentOptions": ["stability ball"],
+    "progressionExercises": ["fitball tuck with pike", "single leg fitball tuck", "tuck with twist"],
+    "regressionExercises": ["fitball tuck from knees", "smaller range of motion tuck"],
+    "benefits": [
+      "Develops core strength and endurance",
+      "Improves shoulder stability and strength",
+      "Enhances total body coordination",
+      "Builds functional strength for daily activities"
+    ],
+    "contraindications": [
+      "Wrist pain or injury",
+      "Shoulder impingement",
+      "Lower back issues",
+      "Recent abdominal surgery"
+    ],
+    "breathingPattern": "Exhale as you tuck knees in, inhale as you extend back to plank",
+    "preparationSteps": [
+      "Place stability ball on floor with space behind it",
+      "Assume high plank position with hands on floor",
+      "Rest shins on stability ball with legs extended",
+      "Engage core and set shoulders before beginning movement"
+    ],
+    "exerciseType": ["compound", "stability", "strength"]
+  },
+  {
+    "id": "tums-27",
+    "name": "Fitball Prayer Crunch",
+    "description": "Sit on a stability ball and walk feet forward until ball is supporting mid-back. With hands pressed together in prayer position, crunch up while twisting to alternate sides.",
+    "imageUrl": "assets/images/exercises/fitball_prayer.jpg",
+    "videoPath": "assets/videos/exercises/fitball_prayer_crunch.mp4",
+    "sets": 3,
+    "reps": 16,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["rectus abdominis", "obliques", "transverse abdominis"],
+    "formTips": [
+      "Position ball under mid-back for proper support",
+      "Press palms together at chest height",
+      "Rotate from the ribcage, not just the arms",
+      "Keep neck neutral, don't pull with head"
+    ],
+    "commonMistakes": [
+      "Ball positioned too high (under neck) or too low",
+      "Insufficient rotation during crunch",
+      "Using momentum instead of control",
+      "Hunching shoulders forward"
+    ],
+    "equipmentOptions": ["stability ball"],
+    "progressionExercises": ["fitball prayer crunch with extended arms", "weighted fitball prayer crunch"],
+    "regressionExercises": ["fitball crunch without rotation", "seated rotation"],
+    "benefits": [
+      "Targets obliques and rotational core muscles",
+      "Improves spinal mobility and rotation",
+      "Enhances balance and stability",
+      "Provides greater range of motion than floor exercises"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Neck issues",
+      "Poor balance",
+      "Recent abdominal surgery"
+    ],
+    "breathingPattern": "Exhale as you crunch and rotate, inhale as you return to start position",
+    "preparationSteps": [
+      "Sit centered on stability ball",
+      "Walk feet forward until ball rolls under mid-back",
+      "Place hands in prayer position at chest height",
+      "Ensure feet are flat on floor, hip-width apart"
+    ],
+    "exerciseType": ["rotation", "stability", "strength"]
+  },
+  {
+    "id": "tums-28",
+    "name": "Fitball Reverse Crunch",
+    "description": "Lie on your back with stability ball held between calves and hamstrings. Engage lower abs to lift hips off floor while pulling ball toward chest, then lower with control.",
+    "imageUrl": "assets/images/exercises/fitball_reverse_crunch.jpg",
+    "videoPath": "assets/videos/exercises/fitball_reverse_crunch.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["lower rectus abdominis", "hip flexors", "obliques"],
+    "formTips": [
+      "Position ball securely between calves and hamstrings (back of legs)",
+      "Initiate movement from lower abs, not momentum",
+      "Lift hips slightly off the mat at top of movement",
+      "Control the descent, don't just drop legs"
+    ],
+    "commonMistakes": [
+      "Using momentum/swinging legs",
+      "Not lifting hips off the floor",
+      "Rolling ball too far up legs",
+      "Dropping legs too quickly on descent"
+    ],
+    "equipmentOptions": ["stability ball", "exercise mat"],
+    "progressionExercises": ["stability ball reverse crunch with hip lift", "weighted reverse crunch with ball"],
+    "regressionExercises": ["partial reverse crunch with ball", "reverse crunch without ball"],
+    "benefits": [
+      "Targets lower portion of rectus abdominis",
+      "Reduces strain on neck and upper back",
+      "Provides proprioceptive feedback with ball",
+      "Teaches proper lower abdominal activation"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Recent abdominal surgery",
+      "Pregnancy",
+      "Hiatal hernia"
+    ],
+    "breathingPattern": "Exhale as you lift legs/hips, inhale as you lower",
+    "preparationSteps": [
+      "Lie on your back on a mat",
+      "Place stability ball between calves and hamstrings",
+      "Position arms at sides for support",
+      "Engage core before beginning movement"
+    ],
+    "exerciseType": ["isolation", "strength", "control"]
+  },
+  {
+    "id": "tums-29",
+    "name": "Fitball Tuck",
+    "description": "Sit on a stability ball with feet on floor. Roll backward until mid-back is on ball, then pull knees toward chest in a tucking motion and extend back out.",
+    "imageUrl": "assets/images/exercises/fitball_tuck_sit.jpg",
+    "videoPath": "assets/videos/exercises/fitball_tuck.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 45,
+    "targetArea": "tums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["rectus abdominis", "hip flexors", "obliques"],
+    "formTips": [
+      "Start with ball supporting mid-back",
+      "Keep head and shoulders on ball during movement",
+      "Pull knees directly toward chest",
+      "Extend legs without locking knees"
+    ],
+    "commonMistakes": [
+      "Lifting head and shoulders off ball",
+      "Using momentum rather than control",
+      "Insufficient knee lift/tuck",
+      "Rolling too far on ball losing stability"
+    ],
+    "equipmentOptions": ["stability ball"],
+    "progressionExercises": ["fitball tuck with leg extension", "single leg fitball tuck"],
+    "regressionExercises": ["partial tuck", "standing wall ball tuck"],
+    "benefits": [
+      "Engages core while supported on ball",
+      "Improves hip flexor coordination with abdominals",
+      "Enhances balance and stability",
+      "Provides greater range of motion than floor exercises"
+    ],
+    "contraindications": [
+      "Lower back pain",
+      "Poor balance",
+      "Recent abdominal surgery",
+      "Hip flexor strain"
+    ],
+    "breathingPattern": "Exhale as you tuck knees in, inhale as you extend legs",
+    "preparationSteps": [
+      "Sit centered on stability ball",
+      "Walk feet forward until ball rolls under mid-back",
+      "Place hands lightly on ball beside body for support",
+      "Position feet hip-width apart on floor"
+    ],
+    "exerciseType": ["stability", "strength", "control"]
+  }
+]

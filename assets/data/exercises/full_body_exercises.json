@@ -1,0 +1,437 @@
+[
+    {
+      "id": "full-1",
+      "name": "Burpee",
+      "description": "Begin standing, then squat down and place hands on floor, kick feet back to a plank position, perform a push-up, jump feet back to hands, and explosively jump up with arms overhead.",
+      "imageUrl": "assets/images/exercises/burpee.jpg",
+      "videoPath": "assets/videos/exercises/burpee.mp4",
+      "sets": 3,
+      "reps": 10,
+      "restBetweenSeconds": 60,
+      "targetArea": "fullBody",
+      "difficultyLevel": 4,
+      "targetMuscles": ["quadriceps", "hamstrings", "glutes", "shoulders", "chest", "triceps", "core"],
+      "formTips": [
+        "Maintain a strong core throughout the entire movement",
+        "Land softly with knees slightly bent after jumping",
+        "Keep shoulders stacked over wrists in plank position",
+        "Control your descent in the push-up portion"
+      ],
+      "commonMistakes": [
+        "Rounding the back during the plank/push-up",
+        "Not performing a full range of motion",
+        "Landing with straight legs on the jump",
+        "Holding breath during the exercise"
+      ],
+      "equipmentOptions": ["none"],
+      "progressionExercises": ["burpee with tuck jump", "double burpee (two push-ups)"],
+      "regressionExercises": ["step-back burpee", "burpee without push-up", "burpee without jump"],
+      "benefits": [
+        "Elevates heart rate for cardiovascular conditioning",
+        "Builds full-body strength and power",
+        "Burns significant calories in short time periods",
+        "Improves coordination and agility"
+      ],
+      "contraindications": [
+        "Shoulder injury or pain",
+        "Wrist problems",
+        "Lower back issues",
+        "Knee injuries",
+        "Heart conditions",
+        "High blood pressure (uncontrolled)"
+      ],
+      "breathingPattern": "Inhale as you lower to squat, exhale during the push-up, inhale as you jump feet forward, exhale during the jump",
+      "preparationSteps": [
+        "Start in a standing position with feet shoulder-width apart",
+        "Ensure you have enough space around you",
+        "Keep your core engaged throughout the movement",
+        "Prepare mentally for an intense exercise"
+      ],
+      "exerciseType": ["compound", "cardio", "power", "strength"]
+    },
+    {
+      "id": "full-2",
+      "name": "Mountain Climber",
+      "description": "Begin in a plank position with hands under shoulders. Rapidly alternate bringing knees toward chest in a running motion while maintaining a stable upper body.",
+      "imageUrl": "assets/images/exercises/mountain_climber.jpg",
+      "videoPath": "assets/videos/exercises/mountain_climber.mp4",
+      "sets": 3,
+      "durationSeconds": 30,
+      "reps": 0,
+      "restBetweenSeconds": 45,
+      "targetArea": "fullBody",
+      "difficultyLevel": 3,
+      "targetMuscles": ["core", "hip flexors", "shoulders", "chest", "quadriceps"],
+      "formTips": [
+        "Keep hips level and in line with shoulders (avoid piking)",
+        "Drive knees forward with control and speed",
+        "Maintain a strong plank position throughout",
+        "Keep shoulders stacked over wrists"
+      ],
+      "commonMistakes": [
+        "Bouncing hips up and down",
+        "Not bringing knees far enough forward",
+        "Sagging in the lower back",
+        "Moving too slowly to elevate heart rate"
+      ],
+      "equipmentOptions": ["none", "exercise mat", "sliders"],
+      "progressionExercises": ["mountain climber with cross-body knee drive", "mountain climber on decline"],
+      "regressionExercises": ["slow-tempo mountain climber", "incline mountain climber on bench or wall"],
+      "benefits": [
+        "Combines strength training with cardiovascular benefit",
+        "Strengthens core while improving hip mobility",
+        "Burns calories and increases heart rate efficiently",
+        "Develops coordination and agility"
+      ],
+      "contraindications": [
+        "Wrist pain or injury",
+        "Shoulder impingement",
+        "Lower back pain",
+        "Recent abdominal surgery"
+      ],
+      "breathingPattern": "Breathe rhythmically with movement; avoid holding breath",
+      "preparationSteps": [
+        "Start in a high plank position with hands directly under shoulders",
+        "Set feet hip-width apart",
+        "Engage core and establish a stable position",
+        "Look slightly ahead to maintain neutral neck alignment"
+      ],
+      "exerciseType": ["cardio", "endurance", "stability"]
+    },
+    {
+      "id": "full-3",
+      "name": "Push-Up",
+      "description": "Begin in a high plank position with hands slightly wider than shoulders. Lower your body until chest nearly touches the floor, then push back up to the starting position.",
+      "imageUrl": "assets/images/exercises/push_up.jpg",
+      "videoPath": "assets/videos/exercises/push_up.mp4",
+      "sets": 3,
+      "reps": 10,
+      "restBetweenSeconds": 60,
+      "targetArea": "fullBody",
+      "difficultyLevel": 3,
+      "targetMuscles": ["chest", "shoulders", "triceps", "core", "serratus anterior"],
+      "formTips": [
+        "Keep body in a straight line from head to heels",
+        "Position hands slightly wider than shoulder-width",
+        "Lower until chest is about an inch from the floor",
+        "Keep elbows at roughly a 45-degree angle from body"
+      ],
+      "commonMistakes": [
+        "Sagging or piking at the hips",
+        "Flaring elbows out too wide",
+        "Not lowering far enough or going too deep",
+        "Holding breath during the movement"
+      ],
+      "equipmentOptions": ["none", "exercise mat", "push-up handles"],
+      "progressionExercises": ["decline push-up", "diamond push-up", "one-leg push-up"],
+      "regressionExercises": ["knee push-up", "incline push-up", "wall push-up"],
+      "benefits": [
+        "Builds upper body strength and muscular endurance",
+        "Strengthens core and stabilizer muscles",
+        "Improves posture and shoulder stability",
+        "Can be done anywhere with no equipment"
+      ],
+      "contraindications": [
+        "Wrist pain or injury",
+        "Shoulder impingement or injury",
+        "Elbow pain",
+        "Recent chest surgery"
+      ],
+      "breathingPattern": "Inhale as you lower, exhale as you push up",
+      "preparationSteps": [
+        "Start in a high plank position with hands slightly wider than shoulders",
+        "Set feet together or hip-width apart for stability",
+        "Engage core and glutes to maintain a straight body line",
+        "Position gaze slightly ahead of hands for neutral neck alignment"
+      ],
+      "exerciseType": ["push", "strength", "endurance"]
+    },
+    {
+      "id": "full-4",
+      "name": "Box Push-Up",
+      "description": "A modified push-up performed from a box position (hands and knees) with knees on the ground. Lower chest toward the floor by bending elbows, then push back up.",
+      "imageUrl": "assets/images/exercises/box_push_up.jpg",
+      "videoPath": "assets/videos/exercises/box_push_up.mp4",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 45,
+      "targetArea": "fullBody",
+      "difficultyLevel": 2,
+      "targetMuscles": ["chest", "shoulders", "triceps", "core"],
+      "formTips": [
+        "Align hands directly under shoulders",
+        "Keep back flat and core engaged",
+        "Lower until chest is 1-2 inches from floor",
+        "Fully extend arms at the top without locking elbows"
+      ],
+      "commonMistakes": [
+        "Placing hands too far forward",
+        "Letting hips sag during the movement",
+        "Not lowering chest far enough",
+        "Shrugging shoulders toward ears"
+      ],
+      "equipmentOptions": ["none", "exercise mat"],
+      "progressionExercises": ["regular push-up", "incline push-up"],
+      "regressionExercises": ["wall push-up", "bench push-up"],
+      "benefits": [
+        "Builds upper body strength with reduced load",
+        "Prepares for standard push-ups",
+        "Develops chest, shoulder and tricep strength",
+        "Ideal for beginners or those with limited upper body strength"
+      ],
+      "contraindications": [
+        "Wrist pain or carpal tunnel syndrome",
+        "Shoulder impingement",
+        "Elbow injury",
+        "Knee pain when kneeling"
+      ],
+      "breathingPattern": "Inhale as you lower, exhale as you push up",
+      "preparationSteps": [
+        "Start on hands and knees in a box position",
+        "Place hands directly beneath shoulders, slightly wider than shoulder-width",
+        "Keep knees under hips at 90-degree angles",
+        "Engage core to stabilize the spine before beginning"
+      ],
+      "exerciseType": ["push", "strength", "endurance"]
+    },
+    {
+      "id": "full-5",
+      "name": "Knee Push-Up",
+      "description": "A modified push-up performed with knees on the ground and ankles crossed. Lower chest toward the floor by bending elbows, then push back up while maintaining a straight line from head to knees.",
+      "imageUrl": "assets/images/exercises/knee_pushup.jpg",
+      "videoPath": "assets/videos/exercises/knee_pushup.mp4",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 45,
+      "targetArea": "fullBody",
+      "difficultyLevel": 2,
+      "targetMuscles": ["chest", "shoulders", "triceps", "core"],
+      "formTips": [
+        "Keep body in a straight line from head to knees",
+        "Position hands slightly wider than shoulders",
+        "Lower until chest nearly touches the floor",
+        "Keep elbows at about 45 degrees from body"
+      ],
+      "commonMistakes": [
+        "Sagging or piking at the hips",
+        "Placing hands too far forward or outward",
+        "Not lowering chest far enough",
+        "Letting the head drop forward"
+      ],
+      "equipmentOptions": ["none", "exercise mat", "push-up handles"],
+      "progressionExercises": ["standard push-up", "incline push-up"],
+      "regressionExercises": ["wall push-up", "elevated box push-up"],
+      "benefits": [
+        "Builds upper body strength with reduced loading",
+        "Helps develop proper push-up form",
+        "Strengthens chest, shoulders, and triceps",
+        "Improves core stability"
+      ],
+      "contraindications": [
+        "Wrist pain or injury",
+        "Shoulder impingement",
+        "Knee discomfort when kneeling",
+        "Elbow pain"
+      ],
+      "breathingPattern": "Inhale as you lower your body, exhale as you push back up",
+      "preparationSteps": [
+        "Kneel on an exercise mat for comfort",
+        "Place hands on the floor slightly wider than shoulders",
+        "Cross ankles and lift feet off the ground",
+        "Engage core to maintain a straight line from head to knees"
+      ],
+      "exerciseType": ["push", "strength", "endurance"]
+    },
+    {
+      "id": "full-6",
+      "name": "Superman",
+      "description": "Lie face down with arms extended overhead. Simultaneously lift arms, chest, and legs off the floor, hold briefly, then lower back down with control.",
+      "imageUrl": "assets/images/exercises/superman.jpg",
+      "videoPath": "assets/videos/exercises/superman.mp4",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 45,
+      "targetArea": "fullBody",
+      "difficultyLevel": 2,
+      "targetMuscles": ["erector spinae", "gluteus maximus", "shoulders", "hamstrings", "upper back"],
+      "formTips": [
+        "Engage core before lifting limbs",
+        "Lift arms and legs to a comfortable height (a few inches is sufficient)",
+        "Keep neck in a neutral position, looking at the floor",
+        "Focus on lengthening through fingertips and toes"
+      ],
+      "commonMistakes": [
+        "Hyperextending the neck (looking up too much)",
+        "Lifting too high causing lower back strain",
+        "Using momentum instead of control",
+        "Holding breath during the hold"
+      ],
+      "equipmentOptions": ["none", "exercise mat"],
+      "progressionExercises": ["superman with longer hold", "alternating superman"],
+      "regressionExercises": ["bird dog", "alternating arm/leg raises"],
+      "benefits": [
+        "Strengthens the entire posterior chain",
+        "Improves posture and counters effects of sitting",
+        "Stabilizes the spine and core",
+        "Helps alleviate lower back pain when done correctly"
+      ],
+      "contraindications": [
+        "Severe lower back pain or injury",
+        "Recent abdominal surgery",
+        "Pregnancy (especially late stages)",
+        "Neck injury"
+      ],
+      "breathingPattern": "Inhale as you prepare, exhale as you lift, breathe normally during the hold, inhale as you lower",
+      "preparationSteps": [
+        "Lie face down on a mat with arms extended overhead",
+        "Position legs straight and together",
+        "Place forehead on the mat for neutral neck alignment",
+        "Engage your core gently before beginning the movement"
+      ],
+      "exerciseType": ["extension", "strength", "stability"]
+    },
+    {
+      "id": "full-7",
+      "name": "Swimmer and Superman",
+      "description": "A combination exercise where you alternate between the superman position (all limbs lifted) and a swimming motion where opposite arm and leg lower while the others remain elevated.",
+      "imageUrl": "assets/images/exercises/superman.jpg",
+      "videoPath": "assets/videos/exercises/swimmer_and_superman.mp4",
+      "sets": 3,
+      "reps": 10,
+      "restBetweenSeconds": 45,
+      "targetArea": "fullBody",
+      "difficultyLevel": 3,
+      "targetMuscles": ["erector spinae", "gluteus maximus", "shoulders", "trapezius", "rhomboids", "hamstrings"],
+      "formTips": [
+        "Maintain core engagement throughout",
+        "Keep movements controlled and rhythmic",
+        "Lift only as high as comfortable without strain",
+        "Focus on the contraction in your back muscles"
+      ],
+      "commonMistakes": [
+        "Jerky, uncontrolled movements",
+        "Excessive lower back arching",
+        "Looking up and straining neck",
+        "Rushing through the swimming motion"
+      ],
+      "equipmentOptions": ["none", "exercise mat"],
+      "progressionExercises": ["resistance band swimmer", "weighted superman"],
+      "regressionExercises": ["alternating arm and leg lifts", "prone upper or lower body lifts only"],
+      "benefits": [
+        "Develops coordination while strengthening the back",
+        "Improves muscular endurance in posterior chain",
+        "Enhances spinal stability and core function",
+        "Helps counteract effects of prolonged sitting"
+      ],
+      "contraindications": [
+        "Acute lower back pain or injury",
+        "Shoulder impingement",
+        "Neck problems",
+        "Late-stage pregnancy"
+      ],
+      "breathingPattern": "Establish a rhythm with your movements - typically inhale during one phase and exhale during the other",
+      "preparationSteps": [
+        "Lie face down on a mat with arms extended overhead",
+        "Position legs straight and together",
+        "Engage your core gently to support your spine",
+        "Start with a full superman position (all limbs lifted)"
+      ],
+      "exerciseType": ["extension", "endurance", "coordination"]
+    },
+    {
+      "id": "full-8",
+      "name": "Bird Dog",
+      "description": "Start on hands and knees. Simultaneously extend one arm forward and the opposite leg back while maintaining a stable core. Return to starting position and repeat with opposite limbs.",
+      "imageUrl": "assets/images/exercises/bird_dog.jpg",
+      "videoPath": "assets/videos/exercises/bird_dog.mp4",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 30,
+      "targetArea": "fullBody",
+      "difficultyLevel": 1,
+      "targetMuscles": ["core", "erector spinae", "gluteus maximus", "shoulders", "hip extensors"],
+      "formTips": [
+        "Keep hips and shoulders square to the floor throughout",
+        "Extend arm and leg fully without overarching back",
+        "Maintain a neutral spine and engaged core",
+        "Move with control rather than speed"
+      ],
+      "commonMistakes": [
+        "Rotating hips or shoulders during extension",
+        "Sagging in the lower back",
+        "Lifting arm or leg too high",
+        "Moving too quickly and losing stability"
+      ],
+      "equipmentOptions": ["none", "exercise mat"],
+      "progressionExercises": ["bird dog with hold", "bird dog with elbow to knee"],
+      "regressionExercises": ["single limb raises (arm or leg only)"],
+      "benefits": [
+        "Improves core stability and balance",
+        "Strengthens back and hip extensors simultaneously",
+        "Enhances coordination between upper and lower body",
+        "Promotes proper spinal alignment"
+      ],
+      "contraindications": [
+        "Wrist pain or injury",
+        "Shoulder instability",
+        "Knee pain when kneeling",
+        "Acute lower back pain"
+      ],
+      "breathingPattern": "Inhale as you prepare, exhale as you extend limbs, inhale as you return to starting position",
+      "preparationSteps": [
+        "Start on hands and knees in tabletop position",
+        "Place hands directly under shoulders and knees under hips",
+        "Keep back flat (neutral spine) and head in line with spine",
+        "Engage your core by drawing navel toward spine"
+      ],
+      "exerciseType": ["stability", "coordination", "endurance"]
+    },
+    {
+      "id": "full-9",
+      "name": "One Leg Push-Up",
+      "description": "A challenging push-up variation where one leg is lifted off the ground, increasing the core stability demands while performing a standard push-up.",
+      "imageUrl": "assets/images/exercises/push_up.jpg",
+      "videoPath": "assets/videos/exercises/one_leg_pushup.mp4",
+      "sets": 3,
+      "reps": 8,
+      "restBetweenSeconds": 60,
+      "targetArea": "fullBody",
+      "difficultyLevel": 4,
+      "targetMuscles": ["chest", "shoulders", "triceps", "core", "hip stabilizers"],
+      "formTips": [
+        "Maintain a straight body line from head to extended foot",
+        "Keep hips square to the floor (avoid rotation)",
+        "Engage core strongly throughout the movement",
+        "Perform full range of motion push-up while balancing"
+      ],
+      "commonMistakes": [
+        "Allowing hips to rotate or sag",
+        "Lifting leg too high",
+        "Shortening the push-up range of motion",
+        "Rushing through repetitions"
+      ],
+      "equipmentOptions": ["none", "exercise mat"],
+      "progressionExercises": ["explosive one-leg push-up", "archer push-up"],
+      "regressionExercises": ["standard push-up", "push-up with foot tap"],
+      "benefits": [
+        "Increases core and hip stability demands",
+        "Builds unilateral strength and balance",
+        "Enhances body awareness and coordination",
+        "Adds challenge to standard push-up training"
+      ],
+      "contraindications": [
+        "Shoulder injury or impingement",
+        "Wrist pain or injury",
+        "Lower back issues",
+        "Poor core stability"
+      ],
+      "breathingPattern": "Inhale as you lower, exhale as you push up",
+      "preparationSteps": [
+        "Begin in a standard push-up position with hands under shoulders",
+        "Engage your core firmly",
+        "Lift one leg a few inches off the ground",
+        "Ensure hips are level before beginning the push-up motion"
+      ],
+      "exerciseType": ["push", "stability", "strength"]
+    }
+  ]

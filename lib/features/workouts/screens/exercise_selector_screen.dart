@@ -655,6 +655,196 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
                       }),
                     ],
 
+                    const SizedBox(height: 16),
+
+                    // Exercise Type
+                    if (exercise.exerciseType.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Exercise Type',
+                        style: Theme.of(context).textTheme.displaySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children:
+                            exercise.exerciseType
+                                .map(
+                                  (type) => Chip(
+                                    label: Text(type),
+                                    backgroundColor: AppColors.popBlue
+                                        .withOpacity(0.2),
+                                    labelStyle: TextStyle(
+                                      color: AppColors.popBlue,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                      ),
+                    ],
+
+                    const SizedBox(height: 16),
+
+                    // Preparation Steps
+                    if (exercise.preparationSteps.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Preparation',
+                        style: Theme.of(context).textTheme.displaySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      ...exercise.preparationSteps.map(
+                        (step) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${exercise.preparationSteps.indexOf(step) + 1}.',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(step)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 16),
+
+                    // Breathing Pattern
+                    if (exercise.breathingPattern.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Breathing',
+                        style: Theme.of(context).textTheme.displaySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.air, color: AppColors.popTurquoise),
+                          const SizedBox(width: 12),
+                          Expanded(child: Text(exercise.breathingPattern)),
+                        ],
+                      ),
+                    ],
+
+                    const SizedBox(height: 16),
+
+                    // Benefits
+                    if (exercise.benefits.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Benefits',
+                        style: Theme.of(context).textTheme.displaySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      ...exercise.benefits.map(
+                        (benefit) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.star,
+                                color: AppColors.popYellow,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(benefit)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 16),
+
+                    // Contraindications
+                    if (exercise.contraindications.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.warning_amber,
+                                  color: Colors.red,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Exercise Caution If You Have:',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            ...exercise.contraindications.map(
+                              (item) => Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: 4.0,
+                                  left: 8.0,
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      '•',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(child: Text(item)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 16),
+
+                    // Equipment options
+                    if (exercise.equipmentOptions.isNotEmpty) ...[
+                      Text(
+                        'Equipment Options',
+                        style: Theme.of(context).textTheme.displaySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children:
+                            exercise.equipmentOptions
+                                .map(
+                                  (equipment) => Chip(
+                                    label: Text(equipment),
+                                    backgroundColor: AppColors.offWhite,
+                                  ),
+                                )
+                                .toList(),
+                      ),
+                    ],
+
+                    const SizedBox(height: 24),
+
                     // Action buttons
                     const SizedBox(height: 24),
                     Row(

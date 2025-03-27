@@ -24,6 +24,11 @@ class Exercise extends Equatable {
   final List<String> commonMistakes; // Common mistakes to avoid
   final List<String> progressionExercises; // Harder variations
   final List<String> regressionExercises; // Easier variations
+  final List<String> benefits;
+  final List<String> contraindications;
+  final String breathingPattern;
+  final List<String> preparationSteps;
+  final List<String> exerciseType;
 
   // Accessibility features
   final List<ExerciseModification> modifications;
@@ -54,6 +59,11 @@ class Exercise extends Equatable {
     this.modifications = const [],
     this.equipmentOptions = const [],
     this.videoPath,
+    this.benefits = const [],
+    this.contraindications = const [],
+    this.breathingPattern = '',
+    this.preparationSteps = const [],
+    this.exerciseType = const [],
   });
 
   @override
@@ -105,6 +115,11 @@ class Exercise extends Equatable {
     List<ExerciseModification>? modifications,
     List<String>? equipmentOptions,
     String? videoPath,
+    List<String>? benefits,
+    List<String>? contraindications,
+    String? breathingPattern,
+    List<String>? preparationSteps,
+    List<String>? exerciseType,
   }) {
     return Exercise(
       id: id ?? this.id,
@@ -129,6 +144,11 @@ class Exercise extends Equatable {
       modifications: modifications ?? this.modifications,
       equipmentOptions: equipmentOptions ?? this.equipmentOptions,
       videoPath: videoPath ?? this.videoPath,
+      benefits: benefits ?? this.benefits,
+      contraindications: contraindications ?? this.contraindications,
+      breathingPattern: breathingPattern ?? this.breathingPattern,
+      preparationSteps: preparationSteps ?? this.preparationSteps,
+      exerciseType: exerciseType ?? this.exerciseType,
     );
   }
 
@@ -156,6 +176,11 @@ class Exercise extends Equatable {
       'modifications': modifications.map((m) => m.toMap()).toList(),
       'equipmentOptions': equipmentOptions,
       'videoPath': videoPath,
+      'benefits': benefits,
+      'contraindications': contraindications,
+      'breathingPattern': breathingPattern,
+      'preparationSteps': preparationSteps,
+      'exerciseType': exerciseType,
     };
   }
 
@@ -207,6 +232,21 @@ class Exercise extends Equatable {
               ? List<String>.from(map['equipmentOptions'])
               : [],
       videoPath: map['videoPath'],
+      benefits:
+          map['benefits'] != null ? List<String>.from(map['benefits']) : [],
+      contraindications:
+          map['contraindications'] != null
+              ? List<String>.from(map['contraindications'])
+              : [],
+      breathingPattern: map['breathingPattern'] ?? '',
+      preparationSteps:
+          map['preparationSteps'] != null
+              ? List<String>.from(map['preparationSteps'])
+              : [],
+      exerciseType:
+          map['exerciseType'] != null
+              ? List<String>.from(map['exerciseType'])
+              : [],
     );
   }
 }
@@ -230,13 +270,13 @@ class ExerciseModification extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        description,
-        imageUrl,
-        videoUrl,
-        forAccessibilityNeeds,
-      ];
+    id,
+    title,
+    description,
+    imageUrl,
+    videoUrl,
+    forAccessibilityNeeds,
+  ];
 
   Map<String, dynamic> toMap() {
     return {

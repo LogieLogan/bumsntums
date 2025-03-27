@@ -1,0 +1,380 @@
+[
+  {
+    "id": "bums-1",
+    "name": "Glute Bridge",
+    "description": "Lie on your back with knees bent and feet flat on the floor. Lift your hips toward the ceiling, squeezing your glutes at the top, then lower back down.",
+    "imageUrl": "assets/images/exercises/glute_bridge.jpg",
+    "videoPath": "assets/videos/exercises/glute_bridge.mp4",
+    "sets": 3,
+    "reps": 15,
+    "restBetweenSeconds": 30,
+    "targetArea": "bums",
+    "difficultyLevel": 1,
+    "targetMuscles": ["gluteus maximus", "hamstrings", "lower back"],
+    "formTips": [
+      "Keep your core engaged throughout the movement",
+      "Push through your heels to engage your glutes fully",
+      "Keep your knees in line with your hips"
+    ],
+    "commonMistakes": [
+      "Arching the lower back excessively",
+      "Not squeezing glutes at the top",
+      "Pushing through toes instead of heels"
+    ],
+    "equipmentOptions": ["none", "resistance band"],
+    "progressionExercises": ["single-leg glute bridge", "weighted glute bridge"],
+    "regressionExercises": ["partial range glute bridge"],
+    "benefits": [
+      "Strengthens glute muscles for improved posture",
+      "Activates hip extensors which helps with daily movements",
+      "Reduces lower back pain by promoting proper pelvic alignment"
+    ],
+    "contraindications": [
+      "Acute lower back injury",
+      "Recent hip surgery or injury"
+    ],
+    "breathingPattern": "Inhale as you lower your hips, exhale as you lift and squeeze",
+    "preparationSteps": [
+      "Lie on your back on a yoga mat",
+      "Bend your knees and place feet flat on the floor hip-width apart",
+      "Position feet about 12 inches from your buttocks",
+      "Place arms at your sides, palms facing down"
+    ],
+    "exerciseType": ["hinge", "strength", "stability"]
+  },
+  {
+    "id": "bums-2",
+    "name": "Donkey Kick",
+    "description": "Start on all fours with hands under shoulders and knees under hips. Keeping the knee bent at 90 degrees, lift one leg until the foot is facing the ceiling, then lower without touching the ground.",
+    "imageUrl": "assets/images/exercises/donkey_kick.jpg",
+    "videoPath": "assets/videos/exercises/donkey_kick.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 30,
+    "targetArea": "bums",
+    "difficultyLevel": 1,
+    "targetMuscles": ["gluteus maximus", "gluteus medius", "lower back"],
+    "formTips": [
+      "Keep your core engaged and back flat",
+      "Focus on using your glute to lift the leg",
+      "Control the movement both up and down",
+      "Keep the working leg at a 90-degree angle throughout"
+    ],
+    "commonMistakes": [
+      "Arching the back",
+      "Using momentum to swing the leg",
+      "Rotating the hip outward",
+      "Lifting the leg too high and compromising form"
+    ],
+    "equipmentOptions": ["none", "ankle weights"],
+    "progressionExercises": ["donkey kick pulse", "resistance band donkey kick"],
+    "regressionExercises": ["glute squeezes"],
+    "benefits": [
+      "Isolates and strengthens the glute muscles",
+      "Helps correct muscle imbalances between sides",
+      "Improves hip stability and mobility",
+      "Enhances lower back support"
+    ],
+    "contraindications": [
+      "Wrist pain or carpal tunnel syndrome",
+      "Acute knee pain when in the quadruped position",
+      "Late-stage pregnancy"
+    ],
+    "breathingPattern": "Inhale as you prepare, exhale as you lift the leg, inhale as you lower",
+    "preparationSteps": [
+      "Position yourself on all fours on a mat",
+      "Align hands directly under shoulders and knees under hips",
+      "Ensure your back is flat (neutral spine)",
+      "Engage your core to stabilize your pelvis"
+    ],
+    "exerciseType": ["isolation", "stability", "strength"]
+  },
+  {
+    "id": "bums-3",
+    "name": "Donkey Kick Pulse",
+    "description": "From the donkey kick position with your leg lifted, perform small, controlled pulses at the top range of motion to intensify glute activation.",
+    "imageUrl": "assets/images/exercises/donkey_kick.jpg",
+    "videoPath": "assets/videos/exercises/donkey_kick_pulse.mp4",
+    "sets": 3,
+    "reps": 15,
+    "restBetweenSeconds": 30,
+    "targetArea": "bums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["gluteus maximus", "gluteus medius", "lower back"],
+    "formTips": [
+      "Maintain a neutral spine throughout the pulses",
+      "Keep the pulses small and controlled",
+      "Focus on squeezing the glute at the top of each pulse",
+      "Maintain the 90-degree bend in your knee"
+    ],
+    "commonMistakes": [
+      "Using momentum instead of controlled movement",
+      "Allowing the back to arch",
+      "Letting the hip rotate outward",
+      "Making the pulses too large"
+    ],
+    "equipmentOptions": ["none", "ankle weights"],
+    "progressionExercises": ["resistance band donkey kick pulse", "weighted donkey kick pulse"],
+    "regressionExercises": ["standard donkey kick"],
+    "benefits": [
+      "Intensifies glute muscle activation through sustained tension",
+      "Builds muscular endurance in the glute muscles",
+      "Enhances mind-muscle connection for better glute recruitment",
+      "Helps develop the rounded shape of the glutes"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Wrist pain or weakness",
+      "Hip joint issues",
+      "Late-stage pregnancy"
+    ],
+    "breathingPattern": "Maintain steady breathing throughout the pulses, avoiding breath holding",
+    "preparationSteps": [
+      "Begin in the quadruped position (hands and knees)",
+      "Lift one leg up with knee bent to 90 degrees, foot toward ceiling",
+      "Maintain the lifted position with your leg at the top range of motion",
+      "Engage your core and keep your working leg's hip squared to the floor"
+    ],
+    "exerciseType": ["isolation", "endurance", "strength"]
+  },
+  {
+    "id": "bums-4",
+    "name": "Glute Kickback",
+    "description": "From a quadruped position, extend one leg straight back and up, squeezing the glute at the top, then return to starting position without touching the floor.",
+    "imageUrl": "assets/images/exercises/side_leg_lift.jpg",
+    "videoPath": "assets/videos/exercises/glute_kickback.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 30,
+    "targetArea": "bums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["gluteus maximus", "hamstrings", "lower back"],
+    "formTips": [
+      "Keep your leg straight but not locked during the extension",
+      "Focus on squeezing your glute to drive the movement",
+      "Maintain a neutral spine position",
+      "Keep your hips square to the ground"
+    ],
+    "commonMistakes": [
+      "Arching the lower back",
+      "Swinging the leg with momentum",
+      "Lifting the leg too high (past hip height)",
+      "Rotating the hip during the movement"
+    ],
+    "equipmentOptions": ["none", "ankle weights", "resistance band"],
+    "progressionExercises": ["glute kickback pulse", "weighted glute kickback"],
+    "regressionExercises": ["smaller range of motion kickback"],
+    "benefits": [
+      "Targets the gluteus maximus through hip extension",
+      "Strengthens the connection between glutes and hamstrings",
+      "Improves hip extension strength for daily activities",
+      "Helps develop the lower portion of the glutes"
+    ],
+    "contraindications": [
+      "Lower back issues or injuries",
+      "Wrist pain or weakness",
+      "Knee pain in the supporting leg",
+      "Hip impingement"
+    ],
+    "breathingPattern": "Inhale as you prepare, exhale as you extend the leg, inhale as you return",
+    "preparationSteps": [
+      "Start on all fours with hands under shoulders and knees under hips",
+      "Ensure your back is in a neutral position (not arched or rounded)",
+      "Engage your core muscles to stabilize your torso",
+      "Slightly shift your weight to the supporting side"
+    ],
+    "exerciseType": ["isolation", "strength", "stability"]
+  },
+  {
+    "id": "bums-5",
+    "name": "Glute Kickback Pulse",
+    "description": "With your leg extended straight behind you in the glute kickback position, perform small pulses at the top range of motion to intensify glute activation.",
+    "imageUrl": "assets/images/exercises/side_leg_lift.jpg",
+    "videoPath": "assets/videos/exercises/glute_kickback_pulse.mp4",
+    "sets": 3,
+    "reps": 15,
+    "restBetweenSeconds": 30,
+    "targetArea": "bums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["gluteus maximus", "hamstrings", "lower back"],
+    "formTips": [
+      "Keep the leg straight but not locked during pulses",
+      "Make the pulses small and controlled",
+      "Maintain a strong core to prevent back arching",
+      "Focus on squeezing the glute with each pulse"
+    ],
+    "commonMistakes": [
+      "Using large, uncontrolled movements",
+      "Allowing the back to arch",
+      "Lifting the leg too high above hip level",
+      "Letting the hips rotate or tilt"
+    ],
+    "equipmentOptions": ["none", "ankle weights", "resistance band"],
+    "progressionExercises": ["weighted glute kickback pulse", "single-leg deadlift pulse"],
+    "regressionExercises": ["standard glute kickback"],
+    "benefits": [
+      "Creates sustained tension in the glutes for greater muscle activation",
+      "Builds muscular endurance in the posterior chain",
+      "Enhances gluteal muscle definition",
+      "Improves hip extension control"
+    ],
+    "contraindications": [
+      "Lower back pain or injury",
+      "Significant hamstring tightness",
+      "Hip joint problems",
+      "Balance issues"
+    ],
+    "breathingPattern": "Maintain consistent breathing throughout the pulses, avoiding breath holding",
+    "preparationSteps": [
+      "Begin in the quadruped position (hands and knees)",
+      "Extend one leg straight back to hip height",
+      "Maintain the extended position without letting the leg drop",
+      "Engage your core and stabilize before beginning pulses"
+    ],
+    "exerciseType": ["isolation", "endurance", "stability"]
+  },
+  {
+    "id": "bums-6",
+    "name": "Fire Hydrant",
+    "description": "From a quadruped position, lift one leg out to the side while keeping the knee bent at 90 degrees, then lower back to starting position without touching the ground.",
+    "imageUrl": "assets/images/exercises/side_leg_lift.jpg",
+    "videoPath": "assets/videos/exercises/firehydrant.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 30,
+    "targetArea": "bums",
+    "difficultyLevel": 1,
+    "targetMuscles": ["gluteus medius", "gluteus minimus", "hip abductors"],
+    "formTips": [
+      "Keep your core engaged to prevent torso rotation",
+      "Maintain a 90-degree bend in your working leg",
+      "Keep your back flat and head in line with your spine",
+      "Focus on lifting with the hip, not tilting the pelvis"
+    ],
+    "commonMistakes": [
+      "Rotating the torso as the leg lifts",
+      "Allowing the back to sag",
+      "Lifting the leg with momentum instead of control",
+      "Tilting the pelvis instead of moving from the hip joint"
+    ],
+    "equipmentOptions": ["none", "resistance band"],
+    "progressionExercises": ["resistance band fire hydrant", "fire hydrant pulse"],
+    "regressionExercises": ["smaller range of motion fire hydrant"],
+    "benefits": [
+      "Strengthens the gluteus medius, important for hip stability",
+      "Improves hip abduction strength and mobility",
+      "Helps prevent knee problems by strengthening outer hip muscles",
+      "Contributes to side hip definition"
+    ],
+    "contraindications": [
+      "Knee pain in the working leg",
+      "Wrist pain or carpal tunnel",
+      "Hip joint problems",
+      "Lower back pain"
+    ],
+    "breathingPattern": "Inhale as you prepare, exhale as you lift the leg outward, inhale as you lower",
+    "preparationSteps": [
+      "Start on all fours with hands under shoulders and knees under hips",
+      "Keep your back flat and neck neutral",
+      "Engage your core muscles to stabilize your pelvis",
+      "Ensure your supporting hand and knee are firmly placed"
+    ],
+    "exerciseType": ["isolation", "stability", "mobility"]
+  },
+  {
+    "id": "bums-7",
+    "name": "Side Leg Lift",
+    "description": "Lie on your side with legs extended and stacked. Lift the top leg up while keeping it straight, then lower with control without touching the bottom leg.",
+    "imageUrl": "assets/images/exercises/side_leg_lift.jpg",
+    "videoPath": "assets/videos/exercises/side_leg_lift.mp4",
+    "sets": 3,
+    "reps": 15,
+    "restBetweenSeconds": 30,
+    "targetArea": "bums",
+    "difficultyLevel": 1,
+    "targetMuscles": ["gluteus medius", "gluteus minimus", "tensor fasciae latae", "hip abductors"],
+    "formTips": [
+      "Keep your body in a straight line from head to feet",
+      "Lift the leg with control, avoiding swinging motions",
+      "Keep the leg straight but not locked",
+      "Maintain neutral spine and pelvis positioning"
+    ],
+    "commonMistakes": [
+      "Allowing the hips to roll forward or backward",
+      "Using momentum to swing the leg up",
+      "Lifting the leg too high causing the pelvis to tilt",
+      "Not keeping the movement controlled during lowering"
+    ],
+    "equipmentOptions": ["none", "ankle weights", "resistance band"],
+    "progressionExercises": ["side leg lift pulse", "weighted side leg lift"],
+    "regressionExercises": ["bent-leg side lift", "smaller range side leg lift"],
+    "benefits": [
+      "Specifically targets the gluteus medius for outer hip strength",
+      "Improves hip stability for better balance and gait",
+      "Helps prevent knee and lower back pain",
+      "Develops the side hip area for toning"
+    ],
+    "contraindications": [
+      "Hip bursitis or inflammation",
+      "IT band syndrome",
+      "Acute lower back pain",
+      "Recent hip surgery"
+    ],
+    "breathingPattern": "Inhale as you prepare, exhale as you lift the leg, inhale as you lower",
+    "preparationSteps": [
+      "Lie on your side on a mat",
+      "Stack your legs with feet together",
+      "Align your head, shoulders, hips, and feet in a straight line",
+      "Support your head with your bottom arm, place top hand on floor/hip for stability"
+    ],
+    "exerciseType": ["isolation", "stability", "strength"]
+  },
+  {
+    "id": "bums-8",
+    "name": "Side Leg Lift Pulse",
+    "description": "From the side leg lift position with your top leg elevated, perform small pulses at the top range of motion to intensify hip abductor activation.",
+    "imageUrl": "assets/images/exercises/side_leg_lift.jpg",
+    "videoPath": "assets/videos/exercises/side_leg_lift_pulse.mp4",
+    "sets": 3,
+    "reps": 20,
+    "restBetweenSeconds": 30,
+    "targetArea": "bums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["gluteus medius", "gluteus minimus", "tensor fasciae latae", "hip abductors"],
+    "formTips": [
+      "Keep the pulses small and controlled",
+      "Maintain a neutral pelvis throughout the exercise",
+      "Focus on using the side hip muscles, not momentum",
+      "Keep the leg straight but not locked at the knee"
+    ],
+    "commonMistakes": [
+      "Using large bouncing movements instead of controlled pulses",
+      "Allowing the pelvis to tilt during pulses",
+      "Letting the foot flex or point inconsistently",
+      "Rolling the hip forward or backward"
+    ],
+    "equipmentOptions": ["none", "ankle weights", "resistance band"],
+    "progressionExercises": ["weighted side leg lift pulse", "side plank with leg lift pulse"],
+    "regressionExercises": ["standard side leg lift", "smaller range pulses"],
+    "benefits": [
+      "Creates sustained tension in the hip abductors for greater activation",
+      "Builds muscular endurance in the side hip muscles",
+      "Improves hip stabilization for better balance",
+      "Enhances the mind-muscle connection with the gluteus medius"
+    ],
+    "contraindications": [
+      "IT band syndrome",
+      "Hip joint pain or inflammation",
+      "Lower back issues",
+      "Piriformis syndrome"
+    ],
+    "breathingPattern": "Maintain consistent breathing throughout the pulses, avoiding breath holding",
+    "preparationSteps": [
+      "Lie on your side on a mat with legs stacked",
+      "Support your head with your bottom arm",
+      "Place your top hand on the mat or hip for stability",
+      "Lift your top leg to create a straight line with your body before pulsing"
+    ],
+    "exerciseType": ["isolation", "endurance", "stability"]
+  }
+]

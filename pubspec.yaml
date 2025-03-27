@@ -104,6 +104,7 @@ flutter:
     - assets/logo/
     - assets/videos/exercises/
     - .env
+    - assets/data/exercises/
 
 flavorizr:
   flavors:

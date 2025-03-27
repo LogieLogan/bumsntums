@@ -1,0 +1,482 @@
+[
+    {
+      "id": "arms-1",
+      "name": "Dumbbell Bench Press",
+      "description": "Lie on a bench with a dumbbell in each hand at chest level. Press the weights straight up until arms are extended, then lower back to starting position.",
+      "imageUrl": "assets/images/exercises/dumbbell_bench_press.jpg",
+      "videoPath": "assets/videos/exercises/dumbbell_bench_press.mp4",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 60,
+      "targetArea": "arms",
+      "difficultyLevel": 3,
+      "targetMuscles": ["chest", "shoulders", "triceps"],
+      "formTips": [
+        "Keep wrists straight and aligned with forearms",
+        "Press dumbbells directly upward, not inward or outward",
+        "Maintain contact between shoulders and bench",
+        "Lower weights until elbows reach approximately 90 degrees"
+      ],
+      "commonMistakes": [
+        "Arching back excessively",
+        "Bouncing weights off chest",
+        "Flaring elbows too wide",
+        "Inadequate range of motion"
+      ],
+      "equipmentOptions": ["dumbbells", "bench", "stability ball (as bench alternative)"],
+      "progressionExercises": ["incline dumbbell press", "alternating dumbbell press", "floor press to bench press"],
+      "regressionExercises": ["floor dumbbell press", "lighter weight", "partial range of motion"],
+      "benefits": [
+        "Builds chest, shoulder, and tricep strength",
+        "Allows greater range of motion than barbell bench press",
+        "Improves stabilizer muscle engagement",
+        "Helps correct muscle imbalances between sides"
+      ],
+      "contraindications": [
+        "Shoulder injury or impingement",
+        "Wrist pain or injury",
+        "Recent chest or shoulder surgery",
+        "Severe rotator cuff issues"
+      ],
+      "breathingPattern": "Inhale during the lowering phase, exhale during the pressing phase",
+      "preparationSteps": [
+        "Select appropriate weight dumbbells",
+        "Position yourself on a flat bench",
+        "Hold dumbbells at chest level with palms facing forward",
+        "Plant feet firmly on the ground for stability"
+      ],
+      "exerciseType": ["push", "compound", "strength"]
+    },
+    {
+      "id": "arms-2",
+      "name": "Dumbbell Tricep Kickback",
+      "description": "With one arm supporting your body, bend forward at the hips. Hold a dumbbell in the other hand with your elbow bent at 90 degrees, then extend your arm straight back, engaging your tricep.",
+      "imageUrl": "assets/images/exercises/tricep_kickback.jpg",
+      "videoPath": "assets/videos/exercises/dumbbell_tricep_kickback.mp4",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 45,
+      "targetArea": "arms",
+      "difficultyLevel": 2,
+      "targetMuscles": ["triceps", "shoulders (stabilizers)"],
+      "formTips": [
+        "Keep upper arm parallel to floor throughout movement",
+        "Fully extend arm at the top of the movement",
+        "Maintain neutral spine and engaged core",
+        "Keep wrist straight, not flexed or extended"
+      ],
+      "commonMistakes": [
+        "Moving upper arm during extension",
+        "Using momentum instead of tricep control",
+        "Hunching shoulders",
+        "Not extending arm fully at the top"
+      ],
+      "equipmentOptions": ["dumbbells", "resistance band", "cable machine"],
+      "progressionExercises": ["heavy tricep kickback", "single leg tricep kickback", "kickback with rotation"],
+      "regressionExercises": ["seated tricep kickback", "lighter weight", "two-arm kickback"],
+      "benefits": [
+        "Isolates and strengthens the triceps (back of arms)",
+        "Improves arm definition and appearance",
+        "Enhances pushing strength for everyday activities",
+        "Improves stability and coordination"
+      ],
+      "contraindications": [
+        "Elbow pain or injury",
+        "Shoulder impingement",
+        "Wrist issues",
+        "Lower back problems (for bent-over position)"
+      ],
+      "breathingPattern": "Exhale as you extend arm back, inhale as you return to starting position",
+      "preparationSteps": [
+        "Hold dumbbell in one hand",
+        "Place opposite hand and knee on bench for support",
+        "Bend at hips to create flat back position",
+        "Bring upper arm parallel to floor with elbow bent at 90 degrees"
+      ],
+      "exerciseType": ["isolation", "strength", "toning"]
+    },
+    {
+      "id": "arms-3",
+      "name": "Dumbbell Tricep Lying Extension",
+      "description": "Lie on your back holding dumbbells above chest with arms extended. Bend elbows to lower weights toward head, keeping upper arms stationary, then extend arms back up.",
+      "imageUrl": "assets/images/exercises/dumbbell_tricep.jpg",
+      "videoPath": "assets/videos/exercises/dumbbell_tricep_lying_extension.mp4",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 60,
+      "targetArea": "arms",
+      "difficultyLevel": 3,
+      "targetMuscles": ["triceps", "shoulders (stabilizers)"],
+      "formTips": [
+        "Keep upper arms fixed and pointing straight up",
+        "Lower weights to either side of head (not behind)",
+        "Fully extend arms at the top without locking elbows",
+        "Maintain neutral wrist position throughout"
+      ],
+      "commonMistakes": [
+        "Allowing elbows to flare outward",
+        "Moving the upper arms during the exercise",
+        "Using momentum rather than control",
+        "Lowering weight too far behind head"
+      ],
+      "equipmentOptions": ["dumbbells", "bench", "exercise mat (for floor version)"],
+      "progressionExercises": ["EZ bar skull crusher", "decline tricep extension", "single-arm extension"],
+      "regressionExercises": ["lighter weight", "reduced range of motion", "seated tricep extension"],
+      "benefits": [
+        "Effectively isolates all three heads of the triceps",
+        "Builds strength for pushing movements",
+        "Improves arm definition and appearance",
+        "Enhances elbow stability"
+      ],
+      "contraindications": [
+        "Elbow pain or injury",
+        "Shoulder impingement",
+        "Neck problems",
+        "Recent upper body injury"
+      ],
+      "breathingPattern": "Inhale during the lowering phase, exhale during the extension phase",
+      "preparationSteps": [
+        "Lie on bench or floor with feet flat",
+        "Hold dumbbells with palms facing each other",
+        "Extend arms above chest with slight inward angle",
+        "Keep shoulders down and back before beginning"
+      ],
+      "exerciseType": ["isolation", "strength", "toning"]
+    },
+    {
+      "id": "arms-4",
+      "name": "Standing Dumbbell Curl",
+      "description": "Stand holding dumbbells at your sides with palms facing forward. Keeping upper arms stationary, curl weights toward shoulders by bending elbows, then lower back to starting position.",
+      "imageUrl": "assets/images/exercises/dumbbell_curl.jpg",
+      "videoPath": "assets/videos/exercises/standing_dumbbell_curl.mp4",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 45,
+      "targetArea": "arms",
+      "difficultyLevel": 2,
+      "targetMuscles": ["biceps", "forearms", "shoulders (stabilizers)"],
+      "formTips": [
+        "Keep upper arms fixed against sides throughout movement",
+        "Fully supinate wrists (palms up) at top of curl",
+        "Maintain upright posture with shoulders back",
+        "Control the lowering phase, don't just drop weights"
+      ],
+      "commonMistakes": [
+        "Swinging torso to generate momentum",
+        "Moving elbows forward or away from body",
+        "Using too heavy weight with poor form",
+        "Incomplete range of motion"
+      ],
+      "equipmentOptions": ["dumbbells", "resistance bands", "kettlebells"],
+      "progressionExercises": ["alternating hammer curls", "incline dumbbell curl", "concentration curl"],
+      "regressionExercises": ["seated dumbbell curl", "lighter weight", "partial curls"],
+      "benefits": [
+        "Builds bicep strength and size",
+        "Improves elbow stability",
+        "Enhances arm appearance and definition",
+        "Strengthens grip and forearm muscles"
+      ],
+      "contraindications": [
+        "Elbow pain or injury",
+        "Wrist issues",
+        "Bicep tendon inflammation",
+        "Recent arm or shoulder surgery"
+      ],
+      "breathingPattern": "Exhale as you curl weights up, inhale as you lower",
+      "preparationSteps": [
+        "Stand with feet shoulder-width apart",
+        "Hold dumbbells at sides with palms facing forward",
+        "Engage core and maintain straight back",
+        "Keep slight bend in knees for stability"
+      ],
+      "exerciseType": ["isolation", "strength", "toning"]
+    },
+    {
+      "id": "arms-5",
+      "name": "Dumbbell Rear Delt Row",
+      "description": "Bend forward at the hips with dumbbells hanging down. Pull weights up and out to the sides, focusing on squeezing shoulder blades together, then lower with control.",
+      "imageUrl": "assets/images/exercises/dumbbell_row.jpg",
+      "videoPath": "assets/videos/exercises/dumbbell_rear_delt_row.mp4",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 45,
+      "targetArea": "arms",
+      "difficultyLevel": 2,
+      "targetMuscles": ["rear deltoids", "middle trapezius", "rhomboids", "biceps"],
+      "formTips": [
+        "Hinge forward from hips with flat back (about 45-degree angle)",
+        "Pull dumbbells up and slightly outward (not straight up)",
+        "Focus on squeezing shoulder blades together",
+        "Keep elbows slightly higher than wrists at top position"
+      ],
+      "commonMistakes": [
+        "Rounding the back",
+        "Pulling with biceps instead of back/shoulders",
+        "Not hinging properly at hips",
+        "Using momentum rather than control"
+      ],
+      "equipmentOptions": ["dumbbells", "resistance bands", "cable machine"],
+      "progressionExercises": ["bent-over reverse fly", "face pull", "incline rear delt row"],
+      "regressionExercises": ["seated bent-over row", "lighter weights", "supported bent row"],
+      "benefits": [
+        "Strengthens often-neglected rear shoulder muscles",
+        "Improves posture and shoulder balance",
+        "Helps prevent shoulder injuries",
+        "Enhances shoulder definition and appearance"
+      ],
+      "contraindications": [
+        "Lower back pain or injury",
+        "Shoulder impingement or injury",
+        "Severe neck problems",
+        "Recent shoulder surgery"
+      ],
+      "breathingPattern": "Exhale as you pull weights up, inhale as you lower",
+      "preparationSteps": [
+        "Stand with feet shoulder-width apart",
+        "Hold dumbbells in front of thighs",
+        "Hinge forward at hips maintaining flat back",
+        "Let arms hang straight down with palms facing each other"
+      ],
+      "exerciseType": ["pull", "compound", "strength"]
+    },
+    {
+      "id": "arms-6",
+      "name": "Dumbbell Flick Back",
+      "description": "Stand with dumbbells at sides, palms facing inward. Lift arms behind you in a flicking motion, focusing on contracting the triceps, then return to starting position.",
+      "imageUrl": "assets/images/exercises/dumbbell_flick.jpg",
+      "videoPath": "assets/videos/exercises/dumbbell_flick_back.mp4",
+      "sets": 3,
+      "reps": 15,
+      "restBetweenSeconds": 30,
+      "targetArea": "arms",
+      "difficultyLevel": 2,
+      "targetMuscles": ["triceps", "shoulders (posterior)"],
+      "formTips": [
+        "Keep slight bend in knees and hinge slightly forward",
+        "Maintain neutral spine and engaged core",
+        "Focus on extending arms straight back behind you",
+        "Keep movement controlled, not bouncy"
+      ],
+      "commonMistakes": [
+        "Using momentum instead of tricep control",
+        "Arching lower back excessively",
+        "Shrugging shoulders during movement",
+        "Bending forward too much"
+      ],
+      "equipmentOptions": ["dumbbells", "resistance bands", "water bottles"],
+      "progressionExercises": ["heavier dumbbell flick", "tricep kickback", "overhead tricep extension"],
+      "regressionExercises": ["lighter weights", "reduced range of motion", "alternating arms"],
+      "benefits": [
+        "Targets triceps from a different angle than traditional exercises",
+        "Improves arm definition, especially back of arms",
+        "Requires minimal equipment",
+        "Can be performed anywhere with limited space"
+      ],
+      "contraindications": [
+        "Shoulder impingement or injury",
+        "Elbow pain or limited range of motion",
+        "Lower back issues (due to forward lean)",
+        "Recent upper body surgery"
+      ],
+      "breathingPattern": "Exhale as you extend arms back, inhale as you return to starting position",
+      "preparationSteps": [
+        "Stand with feet hip-width apart",
+        "Hold light dumbbells at sides with palms facing in",
+        "Engage core and maintain good posture",
+        "Hinge slightly forward from hips"
+      ],
+      "exerciseType": ["isolation", "toning", "endurance"]
+    },
+    {
+      "id": "arms-7",
+      "name": "Dumbbell Punch Exercise",
+      "description": "Stand in a split stance holding dumbbells at shoulder height. Alternately extend arms forward in a punching motion while rotating torso slightly.",
+      "imageUrl": "assets/images/exercises/dumbbell_punch.jpg",
+      "videoPath": "assets/videos/exercises/dumbbell_punch_exercise.mp4",
+      "sets": 3,
+      "reps": 20,
+      "restBetweenSeconds": 45,
+      "targetArea": "arms",
+      "difficultyLevel": 2,
+      "targetMuscles": ["shoulders", "triceps", "chest", "core"],
+      "formTips": [
+        "Maintain athletic stance with slight bend in knees",
+        "Rotate torso slightly with each punch",
+        "Fully extend arm during punch without locking elbow",
+        "Keep core engaged throughout movement"
+      ],
+      "commonMistakes": [
+        "Punching too high or too low",
+        "Not rotating torso with punches",
+        "Using excessively heavy weights",
+        "Allowing shoulders to hunch up toward ears"
+      ],
+      "equipmentOptions": ["dumbbells", "resistance bands", "water bottles"],
+      "progressionExercises": ["speed punches", "lunge with punch", "cross-body punches"],
+      "regressionExercises": ["seated punches", "lighter weights", "slower tempo"],
+      "benefits": [
+        "Combines strength training with cardio benefits",
+        "Improves coordination between upper and lower body",
+        "Engages multiple muscle groups simultaneously",
+        "Enhances functional strength for rotational movements"
+      ],
+      "contraindications": [
+        "Shoulder injuries or impingement",
+        "Elbow pain or injury",
+        "Lower back issues",
+        "Neck problems"
+      ],
+      "breathingPattern": "Exhale with each punch, inhale during retraction",
+      "preparationSteps": [
+        "Stand with feet shoulder-width apart in split stance",
+        "Hold dumbbells at shoulder height with elbows bent",
+        "Engage core and maintain athletic posture",
+        "Keep slight bend in knees for stability"
+      ],
+      "exerciseType": ["cardio", "strength", "coordination"]
+    },
+    {
+      "id": "arms-8",
+      "name": "Dumbbell Crunch and Punch",
+      "description": "Lie on your back with knees bent, holding lightweight dumbbells at shoulders. Crunch up while simultaneously extending one arm in a punching motion, then lower and repeat on other side.",
+      "imageUrl": "assets/images/exercises/dumbbell_crunch.jpg",
+      "videoPath": "assets/videos/exercises/dumbbell_crunch_and_punch.mp4",
+      "sets": 3,
+      "reps": 20,
+      "restBetweenSeconds": 45,
+      "targetArea": "arms",
+      "difficultyLevel": 2,
+      "targetMuscles": ["abdominals", "shoulders", "triceps", "obliques"],
+      "formTips": [
+        "Keep movement controlled - quality over speed",
+        "Punch directly over chest, not toward ceiling",
+        "Lift shoulder blades off ground during crunch",
+        "Maintain space between chin and chest"
+      ],
+      "commonMistakes": [
+        "Pulling on neck with free hand",
+        "Using momentum instead of muscle control",
+        "Lifting too high, straining lower back",
+        "Holding breath during exercise"
+      ],
+      "equipmentOptions": ["dumbbells", "medicine ball", "water bottles"],
+      "progressionExercises": ["bicycle crunch with punch", "stability ball crunch and punch", "v-sit punch"],
+      "regressionExercises": ["crunch without weights", "partial range of motion", "alternating sides more slowly"],
+      "benefits": [
+        "Combines core and upper body strengthening",
+        "Enhances rotational core stability",
+        "Improves coordination between upper and lower body",
+        "Engages multiple muscle groups efficiently"
+      ],
+      "contraindications": [
+        "Lower back pain or injury",
+        "Neck problems",
+        "Shoulder impingement",
+        "Recent abdominal surgery"
+      ],
+      "breathingPattern": "Exhale during crunch and punch, inhale as you lower back down",
+      "preparationSteps": [
+        "Lie on your back on a mat",
+        "Bend knees with feet flat on floor",
+        "Hold light dumbbells at shoulder height",
+        "Engage core before beginning movement"
+      ],
+      "exerciseType": ["compound", "coordination", "strength"]
+    },
+    {
+      "id": "arms-9",
+      "name": "Dumbbell Decline Floor Press",
+      "description": "Lie on your back with knees bent and feet elevated on a bench or stability ball. Hold dumbbells at chest level, then press weights upward until arms are extended.",
+      "imageUrl": "assets/images/exercises/dumbbell_decline.jpg",
+      "videoPath": "assets/videos/exercises/dumbbell_decline_floor_press.mp4",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 60,
+      "targetArea": "arms",
+      "difficultyLevel": 3,
+      "targetMuscles": ["chest (lower portion)", "triceps", "shoulders"],
+      "formTips": [
+        "Keep lower back pressed into the floor throughout",
+        "Press dumbbells straight up, not inward",
+        "Lower weights until elbows lightly touch the floor",
+        "Maintain stability with elevated legs"
+      ],
+      "commonMistakes": [
+        "Arching lower back off floor",
+        "Losing stability in elevated legs",
+        "Bouncing elbows off floor",
+        "Allowing dumbbells to drift too far forward or backward"
+      ],
+      "equipmentOptions": ["dumbbells", "bench or stability ball (for foot elevation)"],
+      "progressionExercises": ["weighted decline press", "single arm decline press", "decline press with leg drops"],
+      "regressionExercises": ["floor press without elevation", "incline press", "lighter weights"],
+      "benefits": [
+        "Targets lower chest muscles more effectively",
+        "Reduces shoulder stress compared to bench press",
+        "Engages core stability with leg elevation",
+        "Provides natural range of motion limitations for safety"
+      ],
+      "contraindications": [
+        "Shoulder injuries or impingement",
+        "Lower back problems",
+        "Neck pain or injury",
+        "Poor core stability"
+      ],
+      "breathingPattern": "Inhale during lowering phase, exhale during pressing phase",
+      "preparationSteps": [
+        "Lie on floor with knees bent",
+        "Elevate feet on bench or stability ball",
+        "Hold dumbbells at chest level with palms facing forward",
+        "Engage core and press lower back into floor"
+      ],
+      "exerciseType": ["push", "compound", "strength"]
+    },
+    {
+      "id": "arms-10",
+      "name": "Dumbbell Seated In and Out",
+      "description": "Sit on a bench holding dumbbells at shoulder height. Extend arms forward while simultaneously rotating palms from facing in to facing down, then return to start position.",
+      "imageUrl": "assets/images/exercises/dumbbell_seated.jpg",
+      "videoPath": "assets/videos/exercises/dumbbell_seated_in_and_out.mp4",
+      "sets": 3,
+      "reps": 15,
+      "restBetweenSeconds": 45,
+      "targetArea": "arms",
+      "difficultyLevel": 2,
+      "targetMuscles": ["shoulders (anterior)", "triceps", "chest"],
+      "formTips": [
+        "Keep back straight and core engaged throughout",
+        "Extend arms at shoulder height (not higher or lower)",
+        "Rotate wrists smoothly as arms extend",
+        "Control the movement in both directions"
+      ],
+      "commonMistakes": [
+        "Shrugging shoulders toward ears",
+        "Extending arms above shoulder height",
+        "Using excessive weight causing form breakdown",
+        "Moving too quickly without control"
+      ],
+      "equipmentOptions": ["dumbbells", "resistance bands", "water bottles"],
+      "progressionExercises": ["standing in and out", "seated in and out with press", "unilateral in and out"],
+      "regressionExercises": ["lighter weights", "smaller range of motion", "alternating arms"],
+      "benefits": [
+        "Strengthens anterior deltoids and shoulder stabilizers",
+        "Improves shoulder mobility and control",
+        "Enhances mind-muscle connection in shoulders",
+        "Low-impact shoulder exercise suitable for most fitness levels"
+      ],
+      "contraindications": [
+        "Shoulder impingement or rotator cuff injury",
+        "Significant shoulder pain",
+        "Recent shoulder surgery",
+        "Severe wrist pain"
+      ],
+      "breathingPattern": "Exhale as you extend arms forward, inhale as you return to starting position",
+      "preparationSteps": [
+        "Sit on bench or chair with back straight",
+        "Hold lightweight dumbbells at shoulder height",
+        "Position elbows at sides with palms facing each other",
+        "Engage core and maintain good posture"
+      ],
+      "exerciseType": ["isolation", "endurance", "mobility"]
+    }
+  ]

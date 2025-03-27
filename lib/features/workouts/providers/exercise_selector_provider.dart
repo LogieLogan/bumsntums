@@ -1,7 +1,8 @@
 // lib/features/workouts/providers/exercise_selector_provider.dart
+import 'package:bums_n_tums/features/workouts/services/exercise_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/exercise.dart';
-import '../services/exercise_db_service.dart';
+import '../providers/exercise_providers.dart';
 
 // State class for the exercise selector
 class ExerciseSelectorState {
@@ -33,7 +34,7 @@ class ExerciseSelectorState {
       allExercises: allExercises ?? this.allExercises,
       exercises: exercises ?? this.exercises,
       searchQuery: searchQuery ?? this.searchQuery,
-      filterTargetArea: filterTargetArea,
+      filterTargetArea: filterTargetArea ?? this.filterTargetArea,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
     );
@@ -42,7 +43,7 @@ class ExerciseSelectorState {
 
 // Provider for the exercise selector
 class ExerciseSelectorNotifier extends StateNotifier<ExerciseSelectorState> {
-  final ExerciseDBService _exerciseService;
+  final ExerciseService _exerciseService;
 
   ExerciseSelectorNotifier(this._exerciseService)
       : super(ExerciseSelectorState());
@@ -81,7 +82,7 @@ class ExerciseSelectorNotifier extends StateNotifier<ExerciseSelectorState> {
   }
 
   // Filter exercises by difficulty level
-  void filterByDifficultyLevel(int? difficultyLevel) {
+  void filterByDifficultyLevel(int? difficultyLevel) async {
     if (state.allExercises.isEmpty) return;
 
     if (difficultyLevel == null) {
@@ -89,15 +90,21 @@ class ExerciseSelectorNotifier extends StateNotifier<ExerciseSelectorState> {
       return;
     }
 
-    final filtered = state.allExercises.where((exercise) {
-      return exercise.difficultyLevel == difficultyLevel;
-    }).toList();
-
-    state = state.copyWith(exercises: filtered);
+    state = state.copyWith(isLoading: true);
+    
+    try {
+      final filtered = await _exerciseService.getExercisesByDifficulty(difficultyLevel);
+      state = state.copyWith(exercises: filtered, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to filter by difficulty: ${e.toString()}',
+      );
+    }
   }
 
   // Filter exercises by equipment
-  void filterByEquipment(String? equipment) {
+  void filterByEquipment(String? equipment) async {
     if (state.allExercises.isEmpty) return;
 
     if (equipment == null) {
@@ -105,47 +112,52 @@ class ExerciseSelectorNotifier extends StateNotifier<ExerciseSelectorState> {
       return;
     }
 
-    final filtered = state.allExercises.where((exercise) {
-      return exercise.equipmentOptions.contains(equipment.toLowerCase());
-    }).toList();
-
-    state = state.copyWith(exercises: filtered);
+    state = state.copyWith(isLoading: true);
+    
+    try {
+      final filtered = await _exerciseService.getExercisesByEquipment(equipment);
+      state = state.copyWith(exercises: filtered, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to filter by equipment: ${e.toString()}',
+      );
+    }
   }
 
   // Apply all filters (search query and target area)
-  void _applyFilters() {
+  void _applyFilters() async {
     if (state.allExercises.isEmpty) return;
-
-    var filtered = List<Exercise>.from(state.allExercises);
-
-    // Apply search filter if any
-    if (state.searchQuery.isNotEmpty) {
-      final query = state.searchQuery.toLowerCase();
-      filtered = filtered.where((exercise) {
-        return exercise.name.toLowerCase().contains(query) ||
-            exercise.description.toLowerCase().contains(query) ||
-            exercise.targetMuscles.any((muscle) => muscle.toLowerCase().contains(query));
-      }).toList();
+    
+    state = state.copyWith(isLoading: true);
+    
+    try {
+      List<Exercise> filtered;
+      
+      if (state.searchQuery.isNotEmpty) {
+        // If there's a search query, use that
+        filtered = await _exerciseService.searchExercises(state.searchQuery);
+      } else if (state.filterTargetArea != null && state.filterTargetArea!.isNotEmpty) {
+        // Otherwise, filter by target area if specified
+        filtered = await _exerciseService.getExercisesByTargetArea(state.filterTargetArea!);
+      } else {
+        // If no filters, use all exercises
+        filtered = List<Exercise>.from(state.allExercises);
+      }
+      
+      state = state.copyWith(exercises: filtered, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to apply filters: ${e.toString()}',
+      );
     }
-
-    // Apply target area filter if any
-    if (state.filterTargetArea != null && state.filterTargetArea!.isNotEmpty) {
-      filtered = filtered.where((exercise) {
-        return exercise.targetArea.toLowerCase() == state.filterTargetArea!.toLowerCase();
-      }).toList();
-    }
-
-    state = state.copyWith(exercises: filtered);
   }
 }
 
-// Providers
-final exerciseDBServiceProvider = Provider<ExerciseDBService>((ref) {
-  return ExerciseDBService();
-});
-
+// Provider that uses our new exercise service
 final exerciseSelectorProvider =
     StateNotifierProvider<ExerciseSelectorNotifier, ExerciseSelectorState>((ref) {
-  final exerciseService = ref.watch(exerciseDBServiceProvider);
+  final exerciseService = ref.watch(exerciseServiceProvider);
   return ExerciseSelectorNotifier(exerciseService);
 });

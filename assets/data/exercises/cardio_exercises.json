@@ -1,0 +1,405 @@
+[
+    {
+      "id": "cardio-1",
+      "name": "Jumping Jacks",
+      "description": "Begin standing with feet together and arms at sides. Jump feet outward while raising arms overhead, then jump feet back together as arms return to sides.",
+      "imageUrl": "assets/images/exercises/jumping_jacks.jpg",
+      "videoPath": "assets/videos/exercises/jumping_jacks.mp4",
+      "sets": 3,
+      "durationSeconds": 30,
+      "reps": 0,
+      "restBetweenSeconds": 30,
+      "targetArea": "cardio",
+      "difficultyLevel": 1,
+      "targetMuscles": ["shoulders", "hip abductors", "calves", "core"],
+      "formTips": [
+        "Land softly on balls of feet when jumping out and in",
+        "Extend arms fully overhead without locking elbows",
+        "Keep jumps low to the ground for better control",
+        "Maintain a consistent, controlled rhythm"
+      ],
+      "commonMistakes": [
+        "Landing heavily or flat-footed",
+        "Not extending arms fully overhead",
+        "Moving too quickly with poor form",
+        "Hunching shoulders toward ears"
+      ],
+      "equipmentOptions": ["none"],
+      "progressionExercises": ["plyo jacks", "cross jacks", "weighted jumping jacks"],
+      "regressionExercises": ["step jack (no jump)", "partial range of motion"],
+      "benefits": [
+        "Elevates heart rate quickly",
+        "Engages multiple muscle groups simultaneously",
+        "Improves coordination and rhythm",
+        "Burns calories efficiently",
+        "Requires no equipment and minimal space"
+      ],
+      "contraindications": [
+        "Ankle, knee, or hip injuries",
+        "Shoulder impingement or injury",
+        "Severe joint pain",
+        "Advanced pregnancy",
+        "Significant balance issues"
+      ],
+      "breathingPattern": "Find a rhythm with your movement - typically exhale on the outward jump, inhale on the inward jump",
+      "preparationSteps": [
+        "Clear adequate space around you",
+        "Stand with feet together",
+        "Relax shoulders and arms at sides",
+        "Engage core slightly before beginning"
+      ],
+      "exerciseType": ["cardio", "coordination", "endurance"]
+    },
+    {
+      "id": "cardio-2",
+      "name": "Jumping Squat",
+      "description": "A dynamic squat variation where you explosively jump upward from the bottom squat position, landing softly back into a squat to begin the next repetition.",
+      "imageUrl": "assets/images/exercises/jumping_squat.jpg",
+      "videoPath": "assets/videos/exercises/jumping_squat.mp4",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 45,
+      "targetArea": "cardio",
+      "difficultyLevel": 3,
+      "targetMuscles": ["quadriceps", "gluteus maximus", "hamstrings", "calves", "core"],
+      "formTips": [
+        "Lower into a half-squat before jumping",
+        "Swing arms up as you jump for momentum",
+        "Land softly with knees slightly bent",
+        "Control the landing by going directly into the next rep"
+      ],
+      "commonMistakes": [
+        "Landing with straight legs",
+        "Allowing knees to cave inward",
+        "Not using arms to help with the movement",
+        "Excessive forward lean"
+      ],
+      "equipmentOptions": ["none"],
+      "progressionExercises": ["weighted jumping squat", "tuck jump", "box jump"],
+      "regressionExercises": ["bodyweight squat", "squat with heel raise", "partial jump squat"],
+      "benefits": [
+        "Combines strength and cardio training simultaneously",
+        "Builds explosive power in the lower body",
+        "Elevates heart rate quickly",
+        "Burns significant calories per minute",
+        "Improves athletic performance"
+      ],
+      "contraindications": [
+        "Knee injuries or pain",
+        "Ankle instability",
+        "Lower back issues",
+        "Heart conditions (consult doctor)",
+        "Osteoporosis or joint fragility"
+      ],
+      "breathingPattern": "Inhale as you lower, exhale forcefully as you jump",
+      "preparationSteps": [
+        "Stand with feet shoulder-width apart",
+        "Position arms in front for balance",
+        "Engage core and maintain upright posture",
+        "Ensure adequate space above and around you"
+      ],
+      "exerciseType": ["plyometric", "power", "cardio"]
+    },
+    {
+      "id": "cardio-3",
+      "name": "High Knees",
+      "description": "A running-in-place exercise where you lift knees toward chest in an exaggerated running motion, keeping a quick pace while staying in one spot.",
+      "imageUrl": "assets/images/exercises/high_knees.jpg",
+      "videoPath": "",
+      "sets": 3,
+      "durationSeconds": 30,
+      "reps": 0,
+      "restBetweenSeconds": 30,
+      "targetArea": "cardio",
+      "difficultyLevel": 2,
+      "targetMuscles": ["hip flexors", "quadriceps", "hamstrings", "calves", "core"],
+      "formTips": [
+        "Drive knees up to hip height or higher",
+        "Land lightly on balls of feet",
+        "Keep torso upright with slight forward lean",
+        "Pump arms in opposition to legs"
+      ],
+      "commonMistakes": [
+        "Not lifting knees high enough",
+        "Landing heavily on feet",
+        "Leaning too far forward or backward",
+        "Moving too slowly to elevate heart rate"
+      ],
+      "equipmentOptions": ["none"],
+      "progressionExercises": ["high knees with resistance band", "high knees with weights", "power skips"],
+      "regressionExercises": ["marching in place", "alternating knee lifts", "slower pace"],
+      "benefits": [
+        "Increases heart rate quickly",
+        "Strengthens hip flexors and core",
+        "Improves running form and knee lift",
+        "Enhances coordination and rhythm",
+        "Can be performed in limited space"
+      ],
+      "contraindications": [
+        "Hip flexor strain or injury",
+        "Knee pain",
+        "Ankle instability",
+        "Severe lower back pain",
+        "Unconditioned cardiovascular system"
+      ],
+      "breathingPattern": "Find a rhythm with your movement, typically inhaling for 2-3 knee lifts and exhaling for 2-3 lifts",
+      "preparationSteps": [
+        "Stand with feet hip-width apart",
+        "Engage core and maintain good posture",
+        "Begin with a slow marching motion to warm up",
+        "Gradually increase speed and height of knee lift"
+      ],
+      "exerciseType": ["cardio", "endurance", "coordination"]
+    },
+    {
+      "id": "cardio-4",
+      "name": "Mountain Climber",
+      "description": "Begin in a plank position with hands under shoulders. Rapidly alternate bringing knees toward chest in a running motion while maintaining a stable upper body.",
+      "imageUrl": "assets/images/exercises/mountain_climber.jpg",
+      "videoPath": "assets/videos/exercises/mountain_climber.mp4",
+      "sets": 3,
+      "durationSeconds": 30,
+      "reps": 0,
+      "restBetweenSeconds": 45,
+      "targetArea": "cardio",
+      "difficultyLevel": 3,
+      "targetMuscles": ["core", "hip flexors", "shoulders", "chest", "quadriceps"],
+      "formTips": [
+        "Keep hips low and in line with shoulders",
+        "Drive knees forward with control and speed",
+        "Maintain a strong plank position throughout",
+        "Keep shoulders stacked over wrists"
+      ],
+      "commonMistakes": [
+        "Bouncing hips up and down",
+        "Not bringing knees far enough forward",
+        "Sagging in the lower back",
+        "Moving too slowly to elevate heart rate"
+      ],
+      "equipmentOptions": ["none", "exercise mat", "sliders"],
+      "progressionExercises": ["mountain climber with cross-body knee drive", "mountain climber on decline", "spider mountain climber"],
+      "regressionExercises": ["slow-tempo mountain climber", "incline mountain climber on bench"],
+      "benefits": [
+        "Combines strength training with cardiovascular benefit",
+        "Strengthens core while improving hip mobility",
+        "Burns calories and increases heart rate efficiently",
+        "Develops coordination and agility"
+      ],
+      "contraindications": [
+        "Wrist pain or injury",
+        "Shoulder impingement",
+        "Lower back pain",
+        "Recent abdominal surgery"
+      ],
+      "breathingPattern": "Breathe rhythmically with movement; avoid holding breath",
+      "preparationSteps": [
+        "Start in a high plank position with hands directly under shoulders",
+        "Set feet hip-width apart",
+        "Engage core and establish a stable position",
+        "Look slightly ahead to maintain neutral neck alignment"
+      ],
+      "exerciseType": ["cardio", "endurance", "stability"]
+    },
+    {
+      "id": "cardio-5",
+      "name": "Burpee",
+      "description": "Begin standing, then squat down and place hands on floor, kick feet back to a plank position, perform a push-up, jump feet back to hands, and explosively jump up with arms overhead.",
+      "imageUrl": "assets/images/exercises/burpee.jpg",
+      "videoPath": "assets/videos/exercises/burpee.mp4",
+      "sets": 3,
+      "reps": 10,
+      "restBetweenSeconds": 60,
+      "targetArea": "cardio",
+      "difficultyLevel": 4,
+      "targetMuscles": ["quadriceps", "hamstrings", "glutes", "shoulders", "chest", "triceps", "core"],
+      "formTips": [
+        "Maintain a strong core throughout the entire movement",
+        "Land softly with knees slightly bent after jumping",
+        "Keep shoulders stacked over wrists in plank position",
+        "Control your descent in the push-up portion"
+      ],
+      "commonMistakes": [
+        "Rounding the back during the plank/push-up",
+        "Not performing a full range of motion",
+        "Landing with straight legs on the jump",
+        "Holding breath during the exercise"
+      ],
+      "equipmentOptions": ["none"],
+      "progressionExercises": ["burpee with tuck jump", "double burpee", "burpee pull-up"],
+      "regressionExercises": ["step-back burpee", "burpee without push-up", "burpee without jump"],
+      "benefits": [
+        "Elevates heart rate for maximum cardiovascular conditioning",
+        "Builds full-body strength and power",
+        "Burns significant calories in short time periods",
+        "Improves coordination and agility",
+        "Develops mental toughness"
+      ],
+      "contraindications": [
+        "Shoulder injury or pain",
+        "Wrist problems",
+        "Lower back issues",
+        "Knee injuries",
+        "Heart conditions",
+        "High blood pressure (uncontrolled)"
+      ],
+      "breathingPattern": "Inhale as you lower to squat, exhale during the push-up, inhale as you jump feet forward, exhale during the jump",
+      "preparationSteps": [
+        "Start in a standing position with feet shoulder-width apart",
+        "Ensure you have enough space around you",
+        "Keep your core engaged throughout the movement",
+        "Prepare mentally for an intense exercise"
+      ],
+      "exerciseType": ["compound", "cardio", "power", "strength"]
+    },
+    {
+      "id": "cardio-6",
+      "name": "Jumping Lunge",
+      "description": "Begin in a lunge position, then explosively jump upward switching legs in mid-air, landing softly with opposite leg forward, immediately lowering into the next lunge.",
+      "imageUrl": "assets/images/exercises/jumping_lunges.jpg",
+      "videoPath": "",
+      "sets": 3,
+      "reps": 12,
+      "restBetweenSeconds": 60,
+      "targetArea": "cardio",
+      "difficultyLevel": 4,
+      "targetMuscles": ["quadriceps", "gluteus maximus", "hamstrings", "calves", "core"],
+      "formTips": [
+        "Keep torso upright throughout the movement",
+        "Land softly with control, absorbing impact through legs",
+        "Maintain 90-degree angles in both knees at bottom position",
+        "Use arms to help propel body upward during jump"
+      ],
+      "commonMistakes": [
+        "Landing heavily with straight legs",
+        "Allowing front knee to extend past toes",
+        "Letting torso lean too far forward",
+        "Not switching legs completely in mid-air"
+      ],
+      "equipmentOptions": ["none"],
+      "progressionExercises": ["weighted jumping lunges", "double pulse jumping lunge", "continuous jump lunges"],
+      "regressionExercises": ["split squat", "alternating lunges (no jump)", "stationary lunges"],
+      "benefits": [
+        "Builds explosive power in the lower body",
+        "Improves unilateral strength and balance",
+        "Elevates heart rate significantly",
+        "Enhances athletic performance and coordination",
+        "Increases caloric expenditure"
+      ],
+      "contraindications": [
+        "Knee injuries or pain",
+        "Ankle instability",
+        "Hip problems",
+        "Lower back issues",
+        "Balance problems",
+        "Untreated hypertension"
+      ],
+      "breathingPattern": "Exhale as you jump, inhale as you land and lower",
+      "preparationSteps": [
+        "Start in a split stance with one foot forward, one back",
+        "Lower into a lunge position with knees at 90 degrees",
+        "Position arms for balance and momentum",
+        "Ensure adequate space around you"
+      ],
+      "exerciseType": ["plyometric", "unilateral", "cardio", "power"]
+    },
+    {
+      "id": "cardio-7",
+      "name": "Skater Jumps",
+      "description": "A lateral jumping exercise where you leap from side to side, landing on one foot while the other leg crosses behind, mimicking a speed skater's movement pattern.",
+      "imageUrl": "assets/images/exercises/skater_jumps.jpg",
+      "videoPath": "",
+      "sets": 3,
+      "reps": 20,
+      "restBetweenSeconds": 45,
+      "targetArea": "cardio",
+      "difficultyLevel": 3,
+      "targetMuscles": ["gluteus medius", "quadriceps", "hip adductors", "calves", "core"],
+      "formTips": [
+        "Push off outside edge of foot when jumping laterally",
+        "Land softly with knee slightly bent to absorb impact",
+        "Touch hand or elbow to opposite knee for rotation",
+        "Maintain low center of gravity throughout"
+      ],
+      "commonMistakes": [
+        "Jumping too high instead of focusing on lateral distance",
+        "Landing with straight leg",
+        "Not allowing trailing leg to cross behind",
+        "Poor upper body coordination with lower body"
+      ],
+      "equipmentOptions": ["none"],
+      "progressionExercises": ["skater jumps with hold", "skater jumps over obstacle", "continuous skater jumps"],
+      "regressionExercises": ["stationary side taps", "lateral step touches", "skater without jump"],
+      "benefits": [
+        "Improves lateral agility and coordination",
+        "Strengthens outer thighs and hip stabilizers",
+        "Provides cardiovascular conditioning",
+        "Enhances balance and proprioception",
+        "Burns calories through multi-planar movement"
+      ],
+      "contraindications": [
+        "Ankle sprains or instability",
+        "Knee injuries, especially ACL/MCL",
+        "Hip problems",
+        "Balance disorders",
+        "Vertigo"
+      ],
+      "breathingPattern": "Exhale as you push off for each jump, inhale as you land",
+      "preparationSteps": [
+        "Start standing on one leg with soft knee",
+        "Position arms in ready position",
+        "Clear enough space for lateral movement (4-5 feet each side)",
+        "Begin with smaller jumps and gradually increase distance"
+      ],
+      "exerciseType": ["lateral", "plyometric", "cardio", "agility"]
+    },
+    {
+      "id": "cardio-8",
+      "name": "Medicine Ball Slams",
+      "description": "Lift a medicine ball overhead, then forcefully throw it to the ground using your core and upper body strength. Catch the ball on the bounce or pick it up and repeat.",
+      "imageUrl": "assets/images/exercises/medicine_ball_slams.jpg",
+      "videoPath": "assets/videos/exercises/medicine_ball_slams.mp4",
+      "sets": 3,
+      "reps": 15,
+      "restBetweenSeconds": 45,
+      "targetArea": "cardio",
+      "difficultyLevel": 3,
+      "targetMuscles": ["shoulders", "core", "lats", "triceps", "quadriceps"],
+      "formTips": [
+        "Fully extend arms overhead before slamming",
+        "Use core and hips to generate power, not just arms",
+        "Slam ball directly downward in front of feet",
+        "Bend knees slightly to follow through and retrieve ball"
+      ],
+      "commonMistakes": [
+        "Using only arms instead of whole body",
+        "Not fully extending overhead before slam",
+        "Rounding back when picking up the ball",
+        "Throwing ball forward instead of straight down"
+      ],
+      "equipmentOptions": ["medicine ball", "slam ball"],
+      "progressionExercises": ["heavier ball", "squat to overhead slam", "alternating side slams"],
+      "regressionExercises": ["lighter ball", "partial overhead extension", "controlled slams"],
+      "benefits": [
+        "Releases stress and tension through explosive movement",
+        "Builds power in the core and upper body",
+        "Elevates heart rate quickly",
+        "Enhances total body coordination",
+        "Provides a satisfying high-intensity exercise"
+      ],
+      "contraindications": [
+        "Shoulder injuries or impingement",
+        "Lower back pain or injury",
+        "Hypertension",
+        "Hernias",
+        "Wrist or elbow issues"
+      ],
+      "breathingPattern": "Inhale as you lift the ball overhead, forcefully exhale during the slam",
+      "preparationSteps": [
+        "Select appropriate weight medicine ball (6-20 lbs)",
+        "Stand with feet shoulder-width apart",
+        "Ensure adequate ceiling height for full extension",
+        "Clear space around you to avoid obstacles"
+      ],
+      "exerciseType": ["power", "cardio", "stress-relief"]
+    }
+  ]

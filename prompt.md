@@ -1,9 +1,7 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
-Area of focus:
-phase 2 of implemntation plan - phase 2 of workouts
-review specs and current state 
-update specs / create new ones 
+MAIN FOCUS AREA:
+phase 2 of implemntation plan - workouts spec
 
 
 project structure: 
@@ -244,8 +242,7 @@ project structure:
     ├── 12_accessibility.md
     ├── 13_ux_ui_spec.md
     ├── 14a_workouts.md
-    ├── 14b_workout_tracking_analytics.md
-    └── 15_media_system.md
+    └── 14b_workout_tracking_analytics.md
 
 Which of these files do you want to review? 
 

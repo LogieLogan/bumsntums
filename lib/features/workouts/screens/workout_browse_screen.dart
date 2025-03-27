@@ -20,6 +20,7 @@ import '../widgets/workout_card.dart';
 import '../widgets/category_card.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
+import 'package:go_router/go_router.dart';
 
 class WorkoutBrowseScreen extends ConsumerStatefulWidget {
   const WorkoutBrowseScreen({super.key});
@@ -480,18 +481,20 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                OutlinedButton(
-                  onPressed: () => _showWorkoutCreationOptions(context),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 44),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.add, size: 18),
-                      SizedBox(width: 8),
-                      Text("Create New Workout"),
-                    ],
+                Card(
+                  child: ListTile(
+                    leading: const Icon(
+                      Icons.fitness_center,
+                      color: AppColors.salmon,
+                    ),
+                    title: const Text('Exercise Library'),
+                    subtitle: const Text(
+                      'Browse all exercises with form tips and videos',
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: () {
+                      context.push('/exercise-library');
+                    },
                   ),
                 ),
               ],
