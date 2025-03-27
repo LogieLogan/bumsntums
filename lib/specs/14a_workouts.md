@@ -201,7 +201,8 @@ Community trend insights that highlight popular workouts
 - [x] Workout progress indicator
 - [x] Pre-workout setup screen
 - [x] Exercise video playback during workout
-- [ ] Enhanced voice guidance with customization options
+- [ ] Default voice guidance off
+- [ ] Explore using gpt-4o-mini-tts api for voice guidance
 - [ ] Haptic feedback integration
 - [ ] On-the-fly exercise modification
 - [ ] Form tips display during exercises
