@@ -3,7 +3,6 @@
       "id": "cardio-1",
       "name": "Jumping Jacks",
       "description": "Begin standing with feet together and arms at sides. Jump feet outward while raising arms overhead, then jump feet back together as arms return to sides.",
-      "imageUrl": "assets/images/exercises/jumping_jacks.jpg",
       "videoPath": "assets/videos/exercises/jumping_jacks.mp4",
       "sets": 3,
       "durationSeconds": 30,
@@ -54,7 +53,6 @@
       "id": "cardio-2",
       "name": "Jumping Squat",
       "description": "A dynamic squat variation where you explosively jump upward from the bottom squat position, landing softly back into a squat to begin the next repetition.",
-      "imageUrl": "assets/images/exercises/jumping_squat.jpg",
       "videoPath": "assets/videos/exercises/jumping_squat.mp4",
       "sets": 3,
       "reps": 12,
@@ -104,7 +102,6 @@
       "id": "cardio-3",
       "name": "High Knees",
       "description": "A running-in-place exercise where you lift knees toward chest in an exaggerated running motion, keeping a quick pace while staying in one spot.",
-      "imageUrl": "assets/images/exercises/high_knees.jpg",
       "videoPath": "",
       "sets": 3,
       "durationSeconds": 30,
@@ -152,59 +149,9 @@
       "exerciseType": ["cardio", "endurance", "coordination"]
     },
     {
-      "id": "cardio-4",
-      "name": "Mountain Climber",
-      "description": "Begin in a plank position with hands under shoulders. Rapidly alternate bringing knees toward chest in a running motion while maintaining a stable upper body.",
-      "imageUrl": "assets/images/exercises/mountain_climber.jpg",
-      "videoPath": "assets/videos/exercises/mountain_climber.mp4",
-      "sets": 3,
-      "durationSeconds": 30,
-      "reps": 0,
-      "restBetweenSeconds": 45,
-      "targetArea": "cardio",
-      "difficultyLevel": 3,
-      "targetMuscles": ["core", "hip flexors", "shoulders", "chest", "quadriceps"],
-      "formTips": [
-        "Keep hips low and in line with shoulders",
-        "Drive knees forward with control and speed",
-        "Maintain a strong plank position throughout",
-        "Keep shoulders stacked over wrists"
-      ],
-      "commonMistakes": [
-        "Bouncing hips up and down",
-        "Not bringing knees far enough forward",
-        "Sagging in the lower back",
-        "Moving too slowly to elevate heart rate"
-      ],
-      "equipmentOptions": ["none", "exercise mat", "sliders"],
-      "progressionExercises": ["mountain climber with cross-body knee drive", "mountain climber on decline", "spider mountain climber"],
-      "regressionExercises": ["slow-tempo mountain climber", "incline mountain climber on bench"],
-      "benefits": [
-        "Combines strength training with cardiovascular benefit",
-        "Strengthens core while improving hip mobility",
-        "Burns calories and increases heart rate efficiently",
-        "Develops coordination and agility"
-      ],
-      "contraindications": [
-        "Wrist pain or injury",
-        "Shoulder impingement",
-        "Lower back pain",
-        "Recent abdominal surgery"
-      ],
-      "breathingPattern": "Breathe rhythmically with movement; avoid holding breath",
-      "preparationSteps": [
-        "Start in a high plank position with hands directly under shoulders",
-        "Set feet hip-width apart",
-        "Engage core and establish a stable position",
-        "Look slightly ahead to maintain neutral neck alignment"
-      ],
-      "exerciseType": ["cardio", "endurance", "stability"]
-    },
-    {
       "id": "cardio-5",
       "name": "Burpee",
       "description": "Begin standing, then squat down and place hands on floor, kick feet back to a plank position, perform a push-up, jump feet back to hands, and explosively jump up with arms overhead.",
-      "imageUrl": "assets/images/exercises/burpee.jpg",
       "videoPath": "assets/videos/exercises/burpee.mp4",
       "sets": 3,
       "reps": 10,
@@ -255,7 +202,6 @@
       "id": "cardio-6",
       "name": "Jumping Lunge",
       "description": "Begin in a lunge position, then explosively jump upward switching legs in mid-air, landing softly with opposite leg forward, immediately lowering into the next lunge.",
-      "imageUrl": "assets/images/exercises/jumping_lunges.jpg",
       "videoPath": "",
       "sets": 3,
       "reps": 12,
@@ -306,7 +252,6 @@
       "id": "cardio-7",
       "name": "Skater Jumps",
       "description": "A lateral jumping exercise where you leap from side to side, landing on one foot while the other leg crosses behind, mimicking a speed skater's movement pattern.",
-      "imageUrl": "assets/images/exercises/skater_jumps.jpg",
       "videoPath": "",
       "sets": 3,
       "reps": 20,
@@ -351,55 +296,5 @@
         "Begin with smaller jumps and gradually increase distance"
       ],
       "exerciseType": ["lateral", "plyometric", "cardio", "agility"]
-    },
-    {
-      "id": "cardio-8",
-      "name": "Medicine Ball Slams",
-      "description": "Lift a medicine ball overhead, then forcefully throw it to the ground using your core and upper body strength. Catch the ball on the bounce or pick it up and repeat.",
-      "imageUrl": "assets/images/exercises/medicine_ball_slams.jpg",
-      "videoPath": "assets/videos/exercises/medicine_ball_slams.mp4",
-      "sets": 3,
-      "reps": 15,
-      "restBetweenSeconds": 45,
-      "targetArea": "cardio",
-      "difficultyLevel": 3,
-      "targetMuscles": ["shoulders", "core", "lats", "triceps", "quadriceps"],
-      "formTips": [
-        "Fully extend arms overhead before slamming",
-        "Use core and hips to generate power, not just arms",
-        "Slam ball directly downward in front of feet",
-        "Bend knees slightly to follow through and retrieve ball"
-      ],
-      "commonMistakes": [
-        "Using only arms instead of whole body",
-        "Not fully extending overhead before slam",
-        "Rounding back when picking up the ball",
-        "Throwing ball forward instead of straight down"
-      ],
-      "equipmentOptions": ["medicine ball", "slam ball"],
-      "progressionExercises": ["heavier ball", "squat to overhead slam", "alternating side slams"],
-      "regressionExercises": ["lighter ball", "partial overhead extension", "controlled slams"],
-      "benefits": [
-        "Releases stress and tension through explosive movement",
-        "Builds power in the core and upper body",
-        "Elevates heart rate quickly",
-        "Enhances total body coordination",
-        "Provides a satisfying high-intensity exercise"
-      ],
-      "contraindications": [
-        "Shoulder injuries or impingement",
-        "Lower back pain or injury",
-        "Hypertension",
-        "Hernias",
-        "Wrist or elbow issues"
-      ],
-      "breathingPattern": "Inhale as you lift the ball overhead, forcefully exhale during the slam",
-      "preparationSteps": [
-        "Select appropriate weight medicine ball (6-20 lbs)",
-        "Stand with feet shoulder-width apart",
-        "Ensure adequate ceiling height for full extension",
-        "Clear space around you to avoid obstacles"
-      ],
-      "exerciseType": ["power", "cardio", "stress-relief"]
     }
   ]

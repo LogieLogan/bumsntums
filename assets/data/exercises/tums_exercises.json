@@ -2,8 +2,7 @@
   {
     "id": "tums-1",
     "name": "Abdominal Crunch",
-    "description": "Lie on your back with knees bent and feet on the floor. Place hands across chest or behind ears. Contract your abs to lift your shoulders off the floor, then lower with control.",
-    "imageUrl": "assets/images/exercises/abdominal_crunch.jpg",
+    "description": "Lie on your back with knees bent and feet on the floor. Place hands across chest or behind ears. Contract your abs to lift your shoulders off the floor, then lower with control.",    
     "videoPath": "assets/videos/exercises/abdominal_crunch.mp4",
     "sets": 3,
     "reps": 15,
@@ -50,8 +49,7 @@
   {
     "id": "tums-2",
     "name": "Bicycle Crunch",
-    "description": "Lie on your back with hands behind head and knees lifted. Bring opposite elbow to knee while extending the other leg straight, then switch sides in a pedaling motion.",
-    "imageUrl": "assets/images/exercises/bicycle_crunch.jpg",
+    "description": "Lie on your back with hands behind head and knees lifted. Bring opposite elbow to knee while extending the other leg straight, then switch sides in a pedaling motion.",    
     "videoPath": "assets/videos/exercises/bicycle_crunch.mp4",
     "sets": 3,
     "reps": 20,
@@ -98,8 +96,7 @@
   {
     "id": "tums-3",
     "name": "Straight Arm Plank",
-    "description": "Hold a push-up position with your weight on your hands and toes. Keep your body in a straight line from head to heels.",
-    "imageUrl": "assets/images/exercises/plank.jpg",
+    "description": "Hold a push-up position with your weight on your hands and toes. Keep your body in a straight line from head to heels.",    
     "videoPath": "assets/videos/exercises/straight_arm_plank.mp4",
     "sets": 3,
     "durationSeconds": 30,
@@ -148,8 +145,7 @@
   {
     "id": "tums-4",
     "name": "Russian Twist",
-    "description": "Sit on the floor with knees bent and feet slightly lifted. Lean back at a 45-degree angle, then rotate your torso from side to side while keeping your core engaged.",
-    "imageUrl": "assets/images/exercises/russian_twist.jpg",
+    "description": "Sit on the floor with knees bent and feet slightly lifted. Lean back at a 45-degree angle, then rotate your torso from side to side while keeping your core engaged.",    
     "videoPath": "assets/videos/exercises/russian_twist.mp4",
     "sets": 3,
     "reps": 20,
@@ -196,8 +192,7 @@
   {
     "id": "tums-5",
     "name": "Reverse Crunch",
-    "description": "Lie on your back with knees bent at 90 degrees. Using your lower abs, lift your hips off the floor by bringing your knees toward your chest, then lower with control.",
-    "imageUrl": "assets/images/exercises/reverse_crunch.jpg",
+    "description": "Lie on your back with knees bent at 90 degrees. Using your lower abs, lift your hips off the floor by bringing your knees toward your chest, then lower with control.",    
     "videoPath": "assets/videos/exercises/reverse_crunch.mp4",
     "sets": 3,
     "reps": 15,
@@ -244,8 +239,7 @@
   {
     "id": "tums-6",
     "name": "Leg Drop",
-    "description": "Lie on your back with legs extended straight up. Keeping one leg up, slowly lower the other leg toward the floor without touching, then switch legs in a controlled motion.",
-    "imageUrl": "assets/images/exercises/leg_drop.jpg",
+    "description": "Lie on your back with legs extended straight up. Keeping one leg up, slowly lower the other leg toward the floor without touching, then switch legs in a controlled motion.",    
     "videoPath": "assets/videos/exercises/leg_drop.mp4",
     "sets": 3,
     "reps": 16,
@@ -292,8 +286,7 @@
   {
     "id": "tums-7",
     "name": "Leg In and Out",
-    "description": "Sit with knees bent and feet slightly off the floor. Lean back slightly to balance, then alternate between extending legs out straight and pulling them back in toward your chest.",
-    "imageUrl": "assets/images/exercises/leg_in_and_out.jpg",
+    "description": "Sit with knees bent and feet slightly off the floor. Lean back slightly to balance, then alternate between extending legs out straight and pulling them back in toward your chest.",    
     "videoPath": "assets/videos/exercises/leg_in_and_out.mp4",
     "sets": 3,
     "reps": 15,
@@ -340,8 +333,7 @@
   {
     "id": "tums-8",
     "name": "Side Crunch",
-    "description": "Lie on your back with knees bent and dropped to one side. Place hands behind head and crunch up toward the same side, focusing on oblique engagement. Repeat on both sides.",
-    "imageUrl": "assets/images/exercises/side_crunch.jpg",
+    "description": "Lie on your back with knees bent and dropped to one side. Place hands behind head and crunch up toward the same side, focusing on oblique engagement. Repeat on both sides.",    
     "videoPath": "assets/videos/exercises/side_crunch.mp4",
     "sets": 3,
     "reps": 12,
@@ -388,8 +380,7 @@
   {
     "id": "tums-9",
     "name": "Sit Up",
-    "description": "Lie on your back with knees bent and feet flat on the floor. With hands across chest or by ears, use your core to lift your entire upper body off the floor to a seated position, then lower back down.",
-    "imageUrl": "assets/images/exercises/sit_up.jpg",
+    "description": "Lie on your back with knees bent and feet flat on the floor. With hands across chest or by ears, use your core to lift your entire upper body off the floor to a seated position, then lower back down.",    
     "videoPath": "assets/videos/exercises/sit_up.mp4",
     "sets": 3,
     "reps": 12,
@@ -436,8 +427,7 @@
   {
     "id": "tums-10",
     "name": "V-Up",
-    "description": "Lie on your back with arms extended overhead and legs straight. Simultaneously lift your arms and legs to create a V-shape with your body, then lower back to starting position.",
-    "imageUrl": "assets/images/exercises/v_up.jpg",
+    "description": "Lie on your back with arms extended overhead and legs straight. Simultaneously lift your arms and legs to create a V-shape with your body, then lower back to starting position.",    
     "videoPath": "assets/videos/exercises/v-_up.mp4",
     "sets": 3,
     "reps": 10,
@@ -484,8 +474,7 @@
   {
     "id": "tums-11",
     "name": "V Crunch",
-    "description": "Lie on your back with legs extended and arms along sides. Simultaneously lift your upper body and legs, extending arms parallel to legs to form a V shape, then lower back down.",
-    "imageUrl": "assets/images/exercises/v_crunch.jpg",
+    "description": "Lie on your back with legs extended and arms along sides. Simultaneously lift your upper body and legs, extending arms parallel to legs to form a V shape, then lower back down.",    
     "videoPath": "assets/videos/exercises/v_crunch.mp4",
     "sets": 3,
     "reps": 12,
@@ -532,8 +521,7 @@
   {
     "id": "tums-12",
     "name": "Plank with Leg Lift",
-    "description": "Start in a plank position with weight on forearms. While maintaining a stable torso, lift one leg straight up a few inches, hold briefly, then lower and repeat with the other leg.",
-    "imageUrl": "assets/images/exercises/plank.jpg",
+    "description": "Start in a plank position with weight on forearms. While maintaining a stable torso, lift one leg straight up a few inches, hold briefly, then lower and repeat with the other leg.",    
     "videoPath": "assets/videos/exercises/plank_leg_up.mp4",
     "sets": 3,
     "reps": 10,
@@ -580,8 +568,7 @@
   {
     "id": "tums-13",
     "name": "Dead Bug",
-    "description": "Lie on your back with arms extended toward ceiling and legs in tabletop position. Simultaneously lower opposite arm and leg toward the floor while maintaining lower back contact with the mat, then return to start position.",
-    "imageUrl": "assets/images/exercises/dead_bug.jpg",
+    "description": "Lie on your back with arms extended toward ceiling and legs in tabletop position. Simultaneously lower opposite arm and leg toward the floor while maintaining lower back contact with the mat, then return to start position.",    
     "videoPath": "assets/videos/exercises/dead_bug.mp4",
     "sets": 3,
     "reps": 12,
@@ -628,8 +615,7 @@
   {
     "id": "tums-14",
     "name": "Diagonal Plank",
-    "description": "From a standard plank position, rotate your body to one side, extending the top arm toward the ceiling in a side plank variation, then return to center and repeat on the other side.",
-    "imageUrl": "assets/images/exercises/plank.jpg",
+    "description": "From a standard plank position, rotate your body to one side, extending the top arm toward the ceiling in a side plank variation, then return to center and repeat on the other side.",    
     "videoPath": "assets/videos/exercises/diagonal_plank.mp4",
     "sets": 3,
     "reps": 10,
@@ -676,8 +662,7 @@
   {
     "id": "tums-15",
     "name": "Prone Flutter Kick",
-    "description": "Lie face down with legs extended, arms overhead or by sides. Lift chest and legs slightly off floor, then alternate small kicks with legs while maintaining the lifted position.",
-    "imageUrl": "assets/images/exercises/prone_flutter.jpg",
+    "description": "Lie face down with legs extended, arms overhead or by sides. Lift chest and legs slightly off floor, then alternate small kicks with legs while maintaining the lifted position.",    
     "videoPath": "assets/videos/exercises/prone_flutter_kick.mp4",
     "sets": 3,
     "durationSeconds": 30,
@@ -725,8 +710,7 @@
   {
     "id": "tums-16",
     "name": "Fitball Crunch",
-    "description": "Sit on a stability ball and walk feet forward until ball is supporting middle/lower back. Place hands behind head and perform a crunch, lifting shoulders off the ball.",
-    "imageUrl": "assets/images/exercises/fitball_crunch.jpg",
+    "description": "Sit on a stability ball and walk feet forward until ball is supporting middle/lower back. Place hands behind head and perform a crunch, lifting shoulders off the ball.",    
     "videoPath": "assets/videos/exercises/fitball_crunch.mp4",
     "sets": 3,
     "reps": 15,
@@ -773,8 +757,7 @@
   {
     "id": "tums-17",
     "name": "Fitball Plank Hold",
-    "description": "Assume a plank position with forearms on a stability ball instead of the floor. Maintain a straight body line while balancing on the unstable surface.",
-    "imageUrl": "assets/images/exercises/fitball_plank.jpg",
+    "description": "Assume a plank position with forearms on a stability ball instead of the floor. Maintain a straight body line while balancing on the unstable surface.",    
     "videoPath": "assets/videos/exercises/fitball_plank_hold.mp4",
     "sets": 3,
     "durationSeconds": 30,
@@ -822,8 +805,7 @@
   {
     "id": "tums-18",
     "name": "Fitball Plank to Pike",
-    "description": "Start in a plank position with hands on floor and shins or tops of feet on stability ball. Use core strength to pike hips up while rolling the ball toward your hands, then return to plank.",
-    "imageUrl": "assets/images/exercises/fitball_pike.jpg",
+    "description": "Start in a plank position with hands on floor and shins or tops of feet on stability ball. Use core strength to pike hips up while rolling the ball toward your hands, then return to plank.",    
     "videoPath": "assets/videos/exercises/fitball_plank_to_pike.mp4",
     "sets": 3,
     "reps": 10,
@@ -871,8 +853,7 @@
   {
     "id": "tums-19",
     "name": "Fitball Mountain Climber",
-    "description": "Begin in a plank position with hands on floor and shins on stability ball. Alternate bringing knees toward chest in a running motion while maintaining ball stability.",
-    "imageUrl": "assets/images/exercises/fitball_mountain.jpg",
+    "description": "Begin in a plank position with hands on floor and shins on stability ball. Alternate bringing knees toward chest in a running motion while maintaining ball stability.",    
     "videoPath": "assets/videos/exercises/fitball_mountain_climber.mp4",
     "sets": 3,
     "reps": 20,
@@ -920,8 +901,7 @@
   {
     "id": "tums-20",
     "name": "Fitball Alternating Dead Bug",
-    "description": "Lie on your back holding stability ball between extended arms and legs. Simultaneously lower opposite arm and leg, maintaining contact with the ball, then return to start and repeat with opposite limbs.",
-    "imageUrl": "assets/images/exercises/fitball_deadbug.jpg",
+    "description": "Lie on your back holding stability ball between extended arms and legs. Simultaneously lower opposite arm and leg, maintaining contact with the ball, then return to start and repeat with opposite limbs.",    
     "videoPath": "assets/videos/exercises/fitball_alternating_dead_bug.mp4",
     "sets": 3,
     "reps": 12,
@@ -968,8 +948,7 @@
   {
     "id": "tums-21",
     "name": "Fitball Alternating Leg Raise",
-    "description": "Lie face up with legs extended and stability ball held between ankles. Keeping legs straight, lift one leg up while the other stays on the floor, then switch legs in a controlled motion.",
-    "imageUrl": "assets/images/exercises/fitball_leg_raise.jpg",
+    "description": "Lie face up with legs extended and stability ball held between ankles. Keeping legs straight, lift one leg up while the other stays on the floor, then switch legs in a controlled motion.",    
     "videoPath": "assets/videos/exercises/fitball_alernating_leg_raise.mp4",
     "sets": 3,
     "reps": 16,
@@ -1016,8 +995,7 @@
   {
     "id": "tums-22",
     "name": "Fitball Ankle Reach",
-    "description": "Lie on your back with knees bent and stability ball held between feet. Extend arms alongside body, then lift head and shoulders to reach fingers toward ankles while lifting the ball with feet.",
-    "imageUrl": "assets/images/exercises/fitball_ankle_reach.jpg",
+    "description": "Lie on your back with knees bent and stability ball held between feet. Extend arms alongside body, then lift head and shoulders to reach fingers toward ankles while lifting the ball with feet.",    
     "videoPath": "assets/videos/exercises/fitball_ankle_reach.mp4",
     "sets": 3,
     "reps": 15,
@@ -1064,8 +1042,7 @@
   {
     "id": "tums-23",
     "name": "Fitball Ball Pass",
-    "description": "Lie on your back with arms extended overhead holding a stability ball. Simultaneously lift arms and legs to pass the ball from hands to feet at the top, then lower limbs and repeat in reverse.",
-    "imageUrl": "assets/images/exercises/fitball_pass.jpg",
+    "description": "Lie on your back with arms extended overhead holding a stability ball. Simultaneously lift arms and legs to pass the ball from hands to feet at the top, then lower limbs and repeat in reverse.",    
     "videoPath": "assets/videos/exercises/fitball_ball_pass.mp4",
     "sets": 3,
     "reps": 10,
@@ -1112,8 +1089,7 @@
   {
     "id": "tums-24",
     "name": "Fitball Double Leg Hold",
-    "description": "Lie on your back holding a stability ball between extended legs. Use core strength to lift legs and ball off the floor to a 45-degree angle, hold, then lower with control.",
-    "imageUrl": "assets/images/exercises/fitball_leg_hold.jpg",
+    "description": "Lie on your back holding a stability ball between extended legs. Use core strength to lift legs and ball off the floor to a 45-degree angle, hold, then lower with control.",    
     "videoPath": "assets/videos/exercises/fitball_double_leg_hold.mp4",
     "sets": 3,
     "durationSeconds": 20,
@@ -1161,8 +1137,7 @@
   {
     "id": "tums-25",
     "name": "Fitball Leg Lowering",
-    "description": "Lie on your back holding a stability ball between feet. Starting with legs vertically extended, slowly lower legs and ball toward floor without touching, then raise back up.",
-    "imageUrl": "assets/images/exercises/fitball_leg_lowering.jpg",
+    "description": "Lie on your back holding a stability ball between feet. Starting with legs vertically extended, slowly lower legs and ball toward floor without touching, then raise back up.",    
     "videoPath": "assets/videos/exercises/fitball_leg_lowering.mp4",
     "sets": 3,
     "reps": 10,
@@ -1209,8 +1184,7 @@
   {
     "id": "tums-26",
     "name": "Fitball Plank to Tuck",
-    "description": "Start in a plank position with hands on floor and shins on stability ball. Pull knees toward chest while rolling the ball forward, then extend legs back to plank position.",
-    "imageUrl": "assets/images/exercises/fitball_tuck.jpg",
+    "description": "Start in a plank position with hands on floor and shins on stability ball. Pull knees toward chest while rolling the ball forward, then extend legs back to plank position.",    
     "videoPath": "assets/videos/exercises/fitball_plank_to_tuck.mp4",
     "sets": 3,
     "reps": 12,
@@ -1257,8 +1231,7 @@
   {
     "id": "tums-27",
     "name": "Fitball Prayer Crunch",
-    "description": "Sit on a stability ball and walk feet forward until ball is supporting mid-back. With hands pressed together in prayer position, crunch up while twisting to alternate sides.",
-    "imageUrl": "assets/images/exercises/fitball_prayer.jpg",
+    "description": "Sit on a stability ball and walk feet forward until ball is supporting mid-back. With hands pressed together in prayer position, crunch up while twisting to alternate sides.",    
     "videoPath": "assets/videos/exercises/fitball_prayer_crunch.mp4",
     "sets": 3,
     "reps": 16,
@@ -1305,8 +1278,7 @@
   {
     "id": "tums-28",
     "name": "Fitball Reverse Crunch",
-    "description": "Lie on your back with stability ball held between calves and hamstrings. Engage lower abs to lift hips off floor while pulling ball toward chest, then lower with control.",
-    "imageUrl": "assets/images/exercises/fitball_reverse_crunch.jpg",
+    "description": "Lie on your back with stability ball held between calves and hamstrings. Engage lower abs to lift hips off floor while pulling ball toward chest, then lower with control.",    
     "videoPath": "assets/videos/exercises/fitball_reverse_crunch.mp4",
     "sets": 3,
     "reps": 12,
@@ -1353,8 +1325,7 @@
   {
     "id": "tums-29",
     "name": "Fitball Tuck",
-    "description": "Sit on a stability ball with feet on floor. Roll backward until mid-back is on ball, then pull knees toward chest in a tucking motion and extend back out.",
-    "imageUrl": "assets/images/exercises/fitball_tuck_sit.jpg",
+    "description": "Sit on a stability ball with feet on floor. Roll backward until mid-back is on ball, then pull knees toward chest in a tucking motion and extend back out.",    
     "videoPath": "assets/videos/exercises/fitball_tuck.mp4",
     "sets": 3,
     "reps": 12,
@@ -1397,5 +1368,52 @@
       "Position feet hip-width apart on floor"
     ],
     "exerciseType": ["stability", "strength", "control"]
-  }
+  },
+  {
+      "id": "tum-30",
+      "name": "Dumbbell Crunch and Punch",
+      "description": "Lie on your back with knees bent, holding lightweight dumbbells at shoulders. Crunch up while simultaneously extending one arm in a punching motion, then lower and repeat on other side.",      
+      "videoPath": "assets/videos/exercises/dumbbell_crunch_and_punch.mp4",
+      "sets": 3,
+      "reps": 20,
+      "restBetweenSeconds": 45,
+      "targetArea": "tums",
+      "difficultyLevel": 2,
+      "targetMuscles": ["abdominals", "shoulders", "triceps", "obliques"],
+      "formTips": [
+        "Keep movement controlled - quality over speed",
+        "Punch directly over chest, not toward ceiling",
+        "Lift shoulder blades off ground during crunch",
+        "Maintain space between chin and chest"
+      ],
+      "commonMistakes": [
+        "Pulling on neck with free hand",
+        "Using momentum instead of muscle control",
+        "Lifting too high, straining lower back",
+        "Holding breath during exercise"
+      ],
+      "equipmentOptions": ["dumbbells", "medicine ball", "water bottles"],
+      "progressionExercises": ["bicycle crunch with punch", "stability ball crunch and punch", "v-sit punch"],
+      "regressionExercises": ["crunch without weights", "partial range of motion", "alternating sides more slowly"],
+      "benefits": [
+        "Combines core and upper body strengthening",
+        "Enhances rotational core stability",
+        "Improves coordination between upper and lower body",
+        "Engages multiple muscle groups efficiently"
+      ],
+      "contraindications": [
+        "Lower back pain or injury",
+        "Neck problems",
+        "Shoulder impingement",
+        "Recent abdominal surgery"
+      ],
+      "breathingPattern": "Exhale during crunch and punch, inhale as you lower back down",
+      "preparationSteps": [
+        "Lie on your back on a mat",
+        "Bend knees with feet flat on floor",
+        "Hold light dumbbells at shoulder height",
+        "Engage core before beginning movement"
+      ],
+      "exerciseType": ["compound", "coordination", "strength"]
+    }
 ]

@@ -307,15 +307,12 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
           ),
         ),
 
-        // Controls row (if showing controls and enough space)
-        if (widget.showControls) ...[
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Only show YouTube button if no local video
-              if (!hasVideo && hasYoutubeVideo)
-                ElevatedButton.icon(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (!hasVideo && hasYoutubeVideo)
+              Flexible(
+                child: ElevatedButton.icon(
                   onPressed: () => _showVideoDialog(context),
                   icon: const Icon(Icons.play_arrow),
                   label: const Text('Watch Video'),
@@ -324,19 +321,20 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
                     foregroundColor: Colors.white,
                   ),
                 ),
+              ),
 
-              if (!hasVideo && hasYoutubeVideo) const SizedBox(width: 8),
+            if (!hasVideo && hasYoutubeVideo) const SizedBox(width: 8),
 
-              // Instructions button
-              TextButton.icon(
+            Flexible(
+              child: TextButton.icon(
                 onPressed: () => _showInstructionsDialog(context),
                 icon: const Icon(Icons.info_outline),
                 label: const Text('View Instructions'),
                 style: TextButton.styleFrom(foregroundColor: AppColors.salmon),
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ],
     );
   }

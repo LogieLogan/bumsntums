@@ -3,7 +3,6 @@
       "id": "legs-1",
       "name": "Squat",
       "description": "Stand with feet shoulder-width apart, lower your body as if sitting in a chair by bending knees and pushing hips back, keeping chest up, then push through heels to return to standing.",
-      "imageUrl": "assets/images/exercises/squat.jpg",
       "videoPath": "assets/videos/exercises/squat.mp4",
       "sets": 3,
       "reps": 15,
@@ -51,7 +50,6 @@
       "id": "legs-2",
       "name": "Squat Pulse",
       "description": "Descend into a squat position, then perform small up and down movements (pulses) without returning to standing, maintaining constant tension on the legs.",
-      "imageUrl": "assets/images/exercises/squat.jpg",
       "videoPath": "assets/videos/exercises/squat_pulse.mp4",
       "sets": 3,
       "reps": 20,
@@ -99,7 +97,6 @@
       "id": "legs-3",
       "name": "Chair Squat",
       "description": "A squat variation performed with a chair or bench behind you as a target and safety measure. Lower until your glutes touch the chair, then push back up to standing.",
-      "imageUrl": "assets/images/exercises/squat.jpg",
       "videoPath": "assets/videos/exercises/chair_squat.mp4",
       "sets": 3,
       "reps": 12,
@@ -147,7 +144,6 @@
       "id": "legs-4",
       "name": "Jumping Squat",
       "description": "A dynamic squat variation where you explosively jump upward from the bottom squat position, landing softly back into a squat to begin the next repetition.",
-      "imageUrl": "assets/images/exercises/jumping_squat.jpg",
       "videoPath": "assets/videos/exercises/jumping_squat.mp4",
       "sets": 3,
       "reps": 10,
@@ -197,7 +193,6 @@
       "id": "legs-5",
       "name": "Lunge",
       "description": "Step forward with one leg, lowering your hips until both knees are bent at about 90 degrees. Push back up to starting position and repeat on the other side.",
-      "imageUrl": "assets/images/exercises/lunge.jpg",
       "videoPath": "assets/videos/exercises/lunge.mp4",
       "sets": 3,
       "reps": 10,
@@ -245,7 +240,6 @@
       "id": "legs-6",
       "name": "Curtsy Lunge",
       "description": "A lunge variation where you step one leg diagonally behind the other and lower into a curtsy position. Push back to starting position and repeat on both sides.",
-      "imageUrl": "assets/images/exercises/curtsy_lunge.jpg",
       "videoPath": "assets/videos/exercises/curtsy_lunge.mp4",
       "sets": 3,
       "reps": 10,
@@ -293,7 +287,6 @@
       "id": "legs-7",
       "name": "Side Lunge",
       "description": "From a standing position, step one leg out to the side and bend that knee, keeping the other leg straight. Push back to center and repeat on both sides.",
-      "imageUrl": "assets/images/exercises/side_lunge.jpg",
       "videoPath": "assets/videos/exercises/side_lunge.mp4",
       "sets": 3,
       "reps": 10,
@@ -341,7 +334,6 @@
       "id": "legs-8",
       "name": "Split Squat",
       "description": "A stationary lunge where one foot is positioned in front and one behind. Lower your body straight down and up without changing foot position.",
-      "imageUrl": "assets/images/exercises/split_squat.jpg",
       "videoPath": "assets/videos/exercises/split_squat.mp4",
       "sets": 3,
       "reps": 10,
@@ -389,7 +381,6 @@
       "id": "legs-9",
       "name": "Plie Squat",
       "description": "A squat with feet wider than shoulder-width and toes pointed outward. Lower your body straight down then push back up, focusing on inner thighs and glutes.",
-      "imageUrl": "assets/images/exercises/plie_squat.jpg",
       "videoPath": "assets/videos/exercises/plie_squat.mp4",
       "sets": 3,
       "reps": 15,
@@ -437,7 +428,6 @@
       "id": "legs-10",
       "name": "Pistol Box Squat",
       "description": "A modified single-leg squat where you lower on one leg until you touch a box or bench, using it as depth gauge and safety. Rise back up using primarily the working leg.",
-      "imageUrl": "assets/images/exercises/pistol_box_squat.jpg",
       "videoPath": "assets/videos/exercises/pistol_box_squat.mp4",
       "sets": 3,
       "reps": 8,
@@ -485,7 +475,6 @@
       "id": "legs-11",
       "name": "Step Up Exercise",
       "description": "Stand in front of a step or bench. Place one foot on the step and push through that heel to lift your body up, bringing the other foot up. Step back down and repeat, alternating legs.",
-      "imageUrl": "assets/images/exercises/step_up.jpg",
       "videoPath": "assets/videos/exercises/step_up_exercise.mp4",
       "sets": 3,
       "reps": 12,
@@ -533,7 +522,6 @@
       "id": "legs-12",
       "name": "Wall Sit",
       "description": "An isometric exercise where you position your back against a wall and lower until thighs are parallel to the ground, holding this seated position without actual seat support.",
-      "imageUrl": "assets/images/exercises/wall_sit.jpg",
       "videoPath": "assets/videos/exercises/wall_sit.mp4",
       "sets": 3,
       "durationSeconds": 30,
@@ -577,5 +565,364 @@
         "Brace core and prepare for the slide down"
       ],
       "exerciseType": ["isometric", "endurance", "stability"]
-    }
-  ]
+    },
+    {
+        "id": "legs-13",
+        "name": "Dumbbell Calf Raise",
+        "description": "A standing exercise where you lift your heels off the ground while holding dumbbells, engaging the calf muscles.",
+        "videoPath": "assets/videos/exercises/dumbbell_calf_raise.mp4",
+        "sets": 3,
+        "durationSeconds": 0,
+        "reps": 15,
+        "restBetweenSeconds": 45,
+        "targetArea": "legs",
+        "difficultyLevel": 2,
+        "targetMuscles": ["calves"],
+        "formTips": [
+          "Keep feet hip-width apart",
+          "Rise onto the balls of your feet slowly",
+          "Lower heels down with control",
+          "Engage core to maintain balance"
+        ],
+        "commonMistakes": [
+          "Bouncing up and down too quickly",
+          "Not achieving full range of motion",
+          "Leaning forward or backward",
+          "Not controlling the lowering phase"
+        ],
+        "equipmentOptions": ["dumbbells", "barbell", "calf raise machine"],
+        "progressionExercises": ["single-leg calf raise", "weighted calf raise"],
+        "regressionExercises": ["bodyweight calf raise", "assisted calf raise"],
+        "benefits": [
+          "Strengthens calf muscles",
+          "Improves ankle stability",
+          "Enhances jumping and sprinting ability"
+        ],
+        "contraindications": ["Achilles tendon issues", "Plantar fasciitis", "Ankle instability"],
+        "breathingPattern": "Inhale while lowering, exhale while rising",
+        "preparationSteps": [
+          "Stand tall with dumbbells in each hand",
+          "Position feet shoulder-width apart",
+          "Engage core and maintain upright posture"
+        ],
+        "exerciseType": ["strength", "endurance"]
+      },
+      {
+        "id": "legs-14",
+        "name": "Dumbbell Jumping Squat",
+        "description": "A dynamic exercise combining a squat with an explosive jump, using dumbbells for added resistance.",
+        "videoPath": "assets/videos/exercises/dumbbell_jumping_squat.mp4",
+        "sets": 3,
+        "durationSeconds": 0,
+        "reps": 12,
+        "restBetweenSeconds": 60,
+        "targetArea": "legs",
+        "difficultyLevel": 3,
+        "targetMuscles": ["quadriceps", "hamstrings", "glutes", "calves"],
+        "formTips": [
+          "Keep chest up and back straight",
+          "Engage core to maintain stability",
+          "Land softly to reduce impact on joints",
+          "Ensure knees track over toes"
+        ],
+        "commonMistakes": [
+          "Not fully extending in the jump",
+          "Landing with locked knees",
+          "Leaning forward excessively",
+          "Holding breath during the jump"
+        ],
+        "equipmentOptions": ["dumbbells", "bodyweight (regression)"],
+        "progressionExercises": ["box jump", "weighted depth jump"],
+        "regressionExercises": ["bodyweight jump squat", "regular squat"],
+        "benefits": [
+          "Develops explosive power",
+          "Strengthens lower body muscles",
+          "Improves coordination and balance"
+        ],
+        "contraindications": ["Knee injuries", "Ankle instability", "Lower back pain"],
+        "breathingPattern": "Inhale as you squat, exhale as you jump",
+        "preparationSteps": [
+          "Hold dumbbells at your sides",
+          "Stand with feet shoulder-width apart",
+          "Engage core and maintain neutral spine"
+        ],
+        "exerciseType": ["power", "strength", "plyometrics"]
+      },
+      {
+        "id": "legs-15",
+        "name": "Dumbbell Lunge",
+        "description": "A lower-body strength exercise that involves stepping forward into a lunge position while holding dumbbells.",
+        "videoPath": "assets/videos/exercises/dumbbell_lunge.mp4",
+        "sets": 3,
+        "durationSeconds": 0,
+        "reps": 10,
+        "restBetweenSeconds": 45,
+        "targetArea": "legs",
+        "difficultyLevel": 2,
+        "targetMuscles": ["quadriceps", "hamstrings", "glutes"],
+        "formTips": [
+          "Keep torso upright throughout",
+          "Step forward with control",
+          "Ensure knee does not extend past toes",
+          "Push through heel to return to standing"
+        ],
+        "commonMistakes": [
+          "Leaning too far forward",
+          "Allowing knee to cave inward",
+          "Not maintaining core engagement"
+        ],
+        "equipmentOptions": ["dumbbells", "barbell"],
+        "progressionExercises": ["walking lunges", "weighted Bulgarian split squat"],
+        "regressionExercises": ["bodyweight lunges", "assisted lunges"],
+        "benefits": [
+          "Strengthens lower body and core",
+          "Improves balance and coordination",
+          "Enhances functional movement patterns"
+        ],
+        "contraindications": ["Knee pain", "Hip instability", "Ankle weakness"],
+        "breathingPattern": "Inhale as you step forward, exhale as you push back",
+        "preparationSteps": [
+          "Hold dumbbells at your sides",
+          "Stand with feet hip-width apart",
+          "Engage core and maintain an upright posture"
+        ],
+        "exerciseType": ["strength", "stability"]
+      },
+      {
+        "id": "legs-16",
+        "name": "Dumbbell Plie Squat",
+        "description": "A squat variation with a wide stance, focusing on inner thighs and glutes.",
+        "videoPath": "assets/videos/exercises/dumbbell_plie_squat.mp4",
+        "sets": 3,
+        "durationSeconds": 0,
+        "reps": 12,
+        "restBetweenSeconds": 45,
+        "targetArea": "legs",
+        "difficultyLevel": 2,
+        "targetMuscles": ["quadriceps", "glutes", "adductors"],
+        "formTips": [
+          "Keep feet wider than shoulder-width",
+          "Point toes slightly outward",
+          "Keep chest up and back straight",
+          "Engage inner thighs throughout movement"
+        ],
+        "commonMistakes": [
+          "Allowing knees to collapse inward",
+          "Leaning too far forward",
+          "Not engaging core properly"
+        ],
+        "equipmentOptions": ["dumbbell", "kettlebell"],
+        "progressionExercises": ["weighted sumo squat", "plie squat jump"],
+        "regressionExercises": ["bodyweight plie squat", "assisted squat"],
+        "benefits": [
+          "Targets inner thighs and glutes",
+          "Improves hip mobility",
+          "Enhances lower-body strength"
+        ],
+        "contraindications": ["Hip pain", "Knee instability", "Lower back issues"],
+        "breathingPattern": "Inhale as you lower, exhale as you stand",
+        "preparationSteps": [
+          "Hold a dumbbell with both hands in front",
+          "Stand with a wide stance and toes slightly turned out",
+          "Engage core before lowering into squat"
+        ],
+        "exerciseType": ["strength", "endurance"]
+      },
+      {
+        "id": "legs-17",
+        "name": "Dumbbell Single Leg Deadlift",
+        "description": "A balance-focused deadlift variation where one leg extends back while lowering dumbbells to engage hamstrings and glutes.",
+        "videoPath": "assets/videos/exercises/dumbbell_single_leg_deadlift.mp4",
+        "sets": 3,
+        "durationSeconds": 0,
+        "reps": 10,
+        "restBetweenSeconds": 45,
+        "targetArea": "legs",
+        "difficultyLevel": 3,
+        "targetMuscles": ["hamstrings", "glutes", "core"],
+        "formTips": [
+          "Keep back straight and core engaged",
+          "Hinge at hips while keeping a slight knee bend",
+          "Extend back leg for balance",
+          "Slowly return to starting position"
+        ],
+        "commonMistakes": [
+          "Rounding the back",
+          "Losing balance due to improper core engagement",
+          "Dropping dumbbells too fast"
+        ],
+        "equipmentOptions": ["dumbbells", "kettlebell"],
+        "progressionExercises": ["barbell single-leg deadlift", "bulgarian split squat"],
+        "regressionExercises": ["assisted single-leg deadlift", "regular deadlift"],
+        "benefits": [
+          "Strengthens hamstrings and glutes",
+          "Improves balance and coordination",
+          "Enhances hip stability"
+        ],
+        "contraindications": ["Balance issues", "Hamstring strain", "Lower back pain"],
+        "breathingPattern": "Inhale as you lower, exhale as you return to standing",
+        "preparationSteps": [
+          "Hold a dumbbell in each hand",
+          "Stand with feet hip-width apart",
+          "Engage core and keep shoulders back"
+        ],
+        "exerciseType": ["strength", "stability"]
+      },
+      {
+        "id": "legs-18",
+        "name": "Fitball Alternating Leg Raise",
+        "description": "A core and leg exercise performed on a stability ball to enhance lower body strength and balance.",
+        "videoPath": "assets/videos/exercises/fitball_alternating_leg_raise.mp4",
+        "sets": 3,
+        "durationSeconds": 0,
+        "reps": 12,
+        "restBetweenSeconds": 45,
+        "targetArea": "legs",
+        "difficultyLevel": 2,
+        "targetMuscles": ["glutes", "hamstrings", "core"],
+        "formTips": [
+          "Keep hips stable while raising one leg",
+          "Squeeze glutes at the top",
+          "Control the movement throughout"
+        ],
+        "commonMistakes": [
+          "Lifting leg too fast",
+          "Arching the lower back",
+          "Not engaging the core"
+        ],
+        "equipmentOptions": ["stability ball"],
+        "progressionExercises": ["single-leg glute bridge", "fitball hamstring curl"],
+        "regressionExercises": ["glute bridge", "leg raises on mat"],
+        "benefits": [
+          "Strengthens glutes and hamstrings",
+          "Improves stability and coordination",
+          "Engages core for better balance"
+        ],
+        "contraindications": ["Lower back issues", "Hip instability"],
+        "breathingPattern": "Inhale as you prepare, exhale as you lift the leg",
+        "preparationSteps": [
+          "Lie on a stability ball with feet on the floor",
+          "Engage core and squeeze glutes",
+          "Lift one leg while keeping balance"
+        ],
+        "exerciseType": ["strength", "stability"]
+      },
+      {
+        "id": "legs-19",
+        "name": "Leg Lifts with Resistance Band",
+        "description": "A resistance-based leg lift exercise targeting hip flexors, glutes, and thighs.",
+        "videoPath": "assets/videos/exercises/leg_lifts_with_resistance_band.mp4",
+        "sets": 3,
+        "durationSeconds": 0,
+        "reps": 15,
+        "restBetweenSeconds": 45,
+        "targetArea": "legs",
+        "difficultyLevel": 2,
+        "targetMuscles": ["hip flexors", "glutes", "quadriceps"],
+        "formTips": [
+          "Keep core engaged throughout",
+          "Control the motion while lifting and lowering",
+          "Keep resistance band taut for maximum activation"
+        ],
+        "commonMistakes": [
+          "Using momentum instead of controlled movement",
+          "Not maintaining core engagement",
+          "Bending the knee excessively"
+        ],
+        "equipmentOptions": ["resistance band"],
+        "progressionExercises": ["weighted leg lifts", "hanging leg raises"],
+        "regressionExercises": ["bodyweight leg lifts", "assisted leg raises"],
+        "benefits": [
+          "Strengthens hip flexors and thighs",
+          "Improves flexibility and control",
+          "Enhances lower body endurance"
+        ],
+        "contraindications": ["Hip pain", "Lower back strain"],
+        "breathingPattern": "Exhale as you lift the leg, inhale as you lower",
+        "preparationSteps": [
+          "Wrap resistance band around both legs",
+          "Lie flat on your back with legs extended",
+          "Lift one leg while keeping the other stable"
+        ],
+        "exerciseType": ["strength", "flexibility"]
+      },
+      {
+        "id": "legs-24",
+        "name": "Fitball Single Leg Roll",
+        "description": "A stability ball exercise that challenges hamstrings and core by rolling the ball with one leg while keeping the other lifted.",
+        "videoPath": "assets/videos/exercises/fitball_single_leg_roll.mp4",
+        "sets": 3,
+        "durationSeconds": 0,
+        "reps": 12,
+        "restBetweenSeconds": 45,
+        "targetArea": "legs",
+        "difficultyLevel": 3,
+        "targetMuscles": ["hamstrings", "glutes", "core"],
+        "formTips": [
+          "Keep hips stable throughout the movement",
+          "Engage core for balance",
+          "Roll the ball smoothly without jerking"
+        ],
+        "commonMistakes": [
+          "Dropping the hips too low",
+          "Using momentum instead of controlled movement",
+          "Not keeping the core engaged"
+        ],
+        "equipmentOptions": ["stability ball"],
+        "progressionExercises": ["glute bridge hamstring curl"],
+        "regressionExercises": ["two-leg fitball roll"],
+        "benefits": [
+          "Strengthens hamstrings and glutes",
+          "Improves core stability",
+          "Enhances balance and coordination"
+        ],
+        "contraindications": ["Hamstring strain", "Lower back pain"],
+        "breathingPattern": "Exhale as you roll the ball in, inhale as you extend",
+        "preparationSteps": [
+          "Lie on your back with heels on the ball",
+          "Lift one leg while the other stays on the ball",
+          "Engage core and roll ball towards glutes"
+        ],
+        "exerciseType": ["strength", "stability"]
+      },
+      {
+        "id": "legs-25",
+        "name": "Standing Dumbbell Calf Raise",
+        "description": "A standing calf exercise that strengthens the lower legs by raising onto the balls of the feet while holding dumbbells.",
+        "videoPath": "assets/videos/exercises/standing_dumbbell_calf_raise.mp4",
+        "sets": 3,
+        "durationSeconds": 0,
+        "reps": 15,
+        "restBetweenSeconds": 45,
+        "targetArea": "legs",
+        "difficultyLevel": 1,
+        "targetMuscles": ["calves"],
+        "formTips": [
+          "Engage core for balance",
+          "Raise heels as high as possible",
+          "Lower heels slowly for full range of motion"
+        ],
+        "commonMistakes": [
+          "Bouncing instead of controlled movement",
+          "Leaning forward or backward",
+          "Not fully extending calves at the top"
+        ],
+        "equipmentOptions": ["dumbbells"],
+        "progressionExercises": ["single-leg calf raise"],
+        "regressionExercises": ["bodyweight calf raise"],
+        "benefits": [
+          "Strengthens calf muscles",
+          "Improves balance and ankle stability",
+          "Enhances explosiveness for sports performance"
+        ],
+        "contraindications": ["Achilles tendon issues", "Calf strain"],
+        "breathingPattern": "Exhale as you raise, inhale as you lower",
+        "preparationSteps": [
+          "Hold dumbbells at your sides",
+          "Stand with feet shoulder-width apart",
+          "Engage core and lift heels"
+        ],
+        "exerciseType": ["strength", "endurance"]
+      }
+]
+      

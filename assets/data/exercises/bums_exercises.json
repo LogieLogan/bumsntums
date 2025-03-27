@@ -2,8 +2,7 @@
   {
     "id": "bums-1",
     "name": "Glute Bridge",
-    "description": "Lie on your back with knees bent and feet flat on the floor. Lift your hips toward the ceiling, squeezing your glutes at the top, then lower back down.",
-    "imageUrl": "assets/images/exercises/glute_bridge.jpg",
+    "description": "Lie on your back with knees bent and feet flat on the floor. Lift your hips toward the ceiling, squeezing your glutes at the top, then lower back down.",    
     "videoPath": "assets/videos/exercises/glute_bridge.mp4",
     "sets": 3,
     "reps": 15,
@@ -45,8 +44,7 @@
   {
     "id": "bums-2",
     "name": "Donkey Kick",
-    "description": "Start on all fours with hands under shoulders and knees under hips. Keeping the knee bent at 90 degrees, lift one leg until the foot is facing the ceiling, then lower without touching the ground.",
-    "imageUrl": "assets/images/exercises/donkey_kick.jpg",
+    "description": "Start on all fours with hands under shoulders and knees under hips. Keeping the knee bent at 90 degrees, lift one leg until the foot is facing the ceiling, then lower without touching the ground.",    
     "videoPath": "assets/videos/exercises/donkey_kick.mp4",
     "sets": 3,
     "reps": 12,
@@ -92,8 +90,7 @@
   {
     "id": "bums-3",
     "name": "Donkey Kick Pulse",
-    "description": "From the donkey kick position with your leg lifted, perform small, controlled pulses at the top range of motion to intensify glute activation.",
-    "imageUrl": "assets/images/exercises/donkey_kick.jpg",
+    "description": "From the donkey kick position with your leg lifted, perform small, controlled pulses at the top range of motion to intensify glute activation.",    
     "videoPath": "assets/videos/exercises/donkey_kick_pulse.mp4",
     "sets": 3,
     "reps": 15,
@@ -140,8 +137,7 @@
   {
     "id": "bums-4",
     "name": "Glute Kickback",
-    "description": "From a quadruped position, extend one leg straight back and up, squeezing the glute at the top, then return to starting position without touching the floor.",
-    "imageUrl": "assets/images/exercises/side_leg_lift.jpg",
+    "description": "From a quadruped position, extend one leg straight back and up, squeezing the glute at the top, then return to starting position without touching the floor.",    
     "videoPath": "assets/videos/exercises/glute_kickback.mp4",
     "sets": 3,
     "reps": 12,
@@ -188,8 +184,7 @@
   {
     "id": "bums-5",
     "name": "Glute Kickback Pulse",
-    "description": "With your leg extended straight behind you in the glute kickback position, perform small pulses at the top range of motion to intensify glute activation.",
-    "imageUrl": "assets/images/exercises/side_leg_lift.jpg",
+    "description": "With your leg extended straight behind you in the glute kickback position, perform small pulses at the top range of motion to intensify glute activation.",    
     "videoPath": "assets/videos/exercises/glute_kickback_pulse.mp4",
     "sets": 3,
     "reps": 15,
@@ -236,8 +231,7 @@
   {
     "id": "bums-6",
     "name": "Fire Hydrant",
-    "description": "From a quadruped position, lift one leg out to the side while keeping the knee bent at 90 degrees, then lower back to starting position without touching the ground.",
-    "imageUrl": "assets/images/exercises/side_leg_lift.jpg",
+    "description": "From a quadruped position, lift one leg out to the side while keeping the knee bent at 90 degrees, then lower back to starting position without touching the ground.",    
     "videoPath": "assets/videos/exercises/firehydrant.mp4",
     "sets": 3,
     "reps": 12,
@@ -284,8 +278,7 @@
   {
     "id": "bums-7",
     "name": "Side Leg Lift",
-    "description": "Lie on your side with legs extended and stacked. Lift the top leg up while keeping it straight, then lower with control without touching the bottom leg.",
-    "imageUrl": "assets/images/exercises/side_leg_lift.jpg",
+    "description": "Lie on your side with legs extended and stacked. Lift the top leg up while keeping it straight, then lower with control without touching the bottom leg.",    
     "videoPath": "assets/videos/exercises/side_leg_lift.mp4",
     "sets": 3,
     "reps": 15,
@@ -332,8 +325,7 @@
   {
     "id": "bums-8",
     "name": "Side Leg Lift Pulse",
-    "description": "From the side leg lift position with your top leg elevated, perform small pulses at the top range of motion to intensify hip abductor activation.",
-    "imageUrl": "assets/images/exercises/side_leg_lift.jpg",
+    "description": "From the side leg lift position with your top leg elevated, perform small pulses at the top range of motion to intensify hip abductor activation.",    
     "videoPath": "assets/videos/exercises/side_leg_lift_pulse.mp4",
     "sets": 3,
     "reps": 20,
@@ -376,5 +368,190 @@
       "Lift your top leg to create a straight line with your body before pulsing"
     ],
     "exerciseType": ["isolation", "endurance", "stability"]
-  }
+  },
+  {
+    "id": "bums-9",
+    "name": "Dumbbell Donkey Kick",
+    "description": "A glute isolation exercise where you hold a dumbbell behind the knee and kick the leg upward in a controlled motion.",    
+    "videoPath": "assets/videos/exercises/dumbbell_donkey_kick.mp4",
+    "sets": 3,
+    "reps": 15,
+    "restBetweenSeconds": 30,
+    "targetArea": "bums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["gluteus maximus", "hamstrings", "core"],
+    "formTips": [
+      "Keep the knee bent at a 90-degree angle",
+      "Engage the core to stabilize the spine",
+      "Lift the leg using the glutes, not the lower back",
+      "Move through a full range of motion"
+    ],
+    "commonMistakes": [
+      "Arching the lower back instead of using glutes",
+      "Moving too quickly without control",
+      "Letting the dumbbell slip out of place",
+      "Dropping the knee too low between reps"
+    ],
+    "equipmentOptions": ["dumbbell", "ankle weights"],
+    "progressionExercises": ["resistance band donkey kick", "cable kickback"],
+    "regressionExercises": ["bodyweight donkey kick", "partial range donkey kick"],
+    "benefits": [
+      "Strengthens and shapes the glutes",
+      "Improves hip stability and core control",
+      "Enhances lower body endurance",
+      "Can be done with minimal equipment"
+    ],
+    "contraindications": [
+      "Knee injuries",
+      "Lower back pain",
+      "Hip impingement",
+      "Balance or coordination issues"
+    ],
+    "breathingPattern": "Exhale as you lift the leg, inhale as you lower it",
+    "preparationSteps": [
+      "Start in a tabletop position on all fours",
+      "Place a dumbbell behind one knee",
+      "Engage the core and prepare to lift the leg"
+    ],
+    "exerciseType": ["isolation", "strength"]
+  },
+  {
+    "id": "bums-10",
+    "name": "Dumbbell Hip Hinge",
+    "description": "A foundational movement that strengthens the posterior chain by hinging at the hips while maintaining a neutral spine.",    
+    "videoPath": "assets/videos/exercises/dumbbell_hip_hinge.mp4",
+    "sets": 3,
+    "reps": 12,
+    "restBetweenSeconds": 40,
+    "targetArea": "bums",
+    "difficultyLevel": 3,
+    "targetMuscles": ["gluteus maximus", "hamstrings", "erector spinae"],
+    "formTips": [
+      "Keep the back flat and chest lifted",
+      "Push the hips back, not down",
+      "Engage the glutes and hamstrings to return to standing",
+      "Avoid locking out the knees"
+    ],
+    "commonMistakes": [
+      "Rounding the lower back",
+      "Bending the knees too much (turning it into a squat)",
+      "Using too much weight with poor form",
+      "Not fully extending the hips at the top"
+    ],
+    "equipmentOptions": ["dumbbells", "barbell", "kettlebell"],
+    "progressionExercises": ["Romanian deadlift", "barbell hip thrust"],
+    "regressionExercises": ["bodyweight hip hinge", "shorter range hinge"],
+    "benefits": [
+      "Improves posterior chain strength",
+      "Enhances hip mobility and flexibility",
+      "Builds foundational movement patterns",
+      "Reduces risk of lower back injuries"
+    ],
+    "contraindications": [
+      "Lower back pain",
+      "Hamstring strain",
+      "Hip mobility restrictions",
+      "Sciatica symptoms"
+    ],
+    "breathingPattern": "Inhale as you lower, exhale as you return to standing",
+    "preparationSteps": [
+      "Stand with feet hip-width apart, holding dumbbells",
+      "Brace the core and keep the chest lifted",
+      "Engage the glutes and hamstrings before initiating the hinge"
+    ],
+    "exerciseType": ["compound", "strength"]
+  },
+  {
+    "id": "bums-11",
+    "name": "Dumbbell Hip Thrust",
+    "description": "A powerful glute-building exercise where you thrust the hips upward with a dumbbell resting on your hips.",    
+    "videoPath": "assets/videos/exercises/dumbbell_hip_thrust.mp4",
+    "sets": 3,
+    "reps": 10,
+    "restBetweenSeconds": 45,
+    "targetArea": "bums",
+    "difficultyLevel": 4,
+    "targetMuscles": ["gluteus maximus", "hamstrings", "quadriceps"],
+    "formTips": [
+      "Keep the chin tucked and gaze forward",
+      "Drive through the heels to lift the hips",
+      "Squeeze the glutes at the top for maximum activation",
+      "Avoid overarching the lower back"
+    ],
+    "commonMistakes": [
+      "Lifting with the lower back instead of glutes",
+      "Placing feet too far or too close to the body",
+      "Not fully extending the hips",
+      "Dropping the hips too fast"
+    ],
+    "equipmentOptions": ["dumbbell", "barbell", "resistance band"],
+    "progressionExercises": ["barbell hip thrust", "single-leg hip thrust"],
+    "regressionExercises": ["glute bridge", "bodyweight hip thrust"],
+    "benefits": [
+      "Maximizes glute activation",
+      "Builds explosive hip power",
+      "Improves athletic performance",
+      "Enhances lower body aesthetics"
+    ],
+    "contraindications": [
+      "Lower back issues",
+      "Hip mobility limitations",
+      "Knee pain",
+      "Sciatic nerve discomfort"
+    ],
+    "breathingPattern": "Inhale at the bottom, exhale as you thrust up",
+    "preparationSteps": [
+      "Sit on the floor with a bench behind you",
+      "Place a dumbbell on your hips",
+      "Position feet shoulder-width apart, knees bent",
+      "Brace core and drive hips up"
+    ],
+    "exerciseType": ["compound", "strength"]
+  },
+  {
+    "id": "bums-12",
+    "name": "Fitball Prone Kickup",
+    "description": "A glute-focused exercise where you lie prone on a stability ball and lift your legs upward in a controlled motion.",    
+    "videoPath": "assets/videos/exercises/fitball_prone_kickup.mp4",
+    "sets": 3,
+    "reps": 15,
+    "restBetweenSeconds": 30,
+    "targetArea": "bums",
+    "difficultyLevel": 2,
+    "targetMuscles": ["gluteus maximus", "hamstrings", "lower back"],
+    "formTips": [
+      "Keep the movement controlled without using momentum",
+      "Engage the glutes and hamstrings to lift the legs",
+      "Avoid excessive lower back arching",
+      "Squeeze the glutes at the top of the movement"
+    ],
+    "commonMistakes": [
+      "Lifting the legs too high, causing lower back strain",
+      "Not fully engaging the glutes",
+      "Allowing the stability ball to move excessively",
+      "Holding breath during the movement"
+    ],
+    "equipmentOptions": ["stability ball"],
+    "progressionExercises": ["weighted prone kickup", "single-leg prone kickup"],
+    "regressionExercises": ["bodyweight glute bridge", "floor leg lifts"],
+    "benefits": [
+      "Strengthens glutes and lower back",
+      "Improves balance and coordination",
+      "Engages core for stability",
+      "Enhances posterior chain endurance"
+    ],
+    "contraindications": [
+      "Lower back pain",
+      "Hip flexor tightness",
+      "Spinal injuries",
+      "Sciatica symptoms"
+    ],
+    "breathingPattern": "Exhale as you lift, inhale as you lower",
+    "preparationSteps": [
+      "Lie face down on a stability ball",
+      "Place hands on the floor for balance",
+      "Engage core and glutes before lifting legs"
+    ],
+    "exerciseType": ["isolation", "stability"]
+  }     
 ]

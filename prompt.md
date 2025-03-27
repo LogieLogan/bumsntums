@@ -1,7 +1,8 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-phase 2 of implemntation plan - workouts spec
+complete my exercise assets. left to do:
+Complete exercises json files with exercises i have videos for
 
 
 project structure: 
@@ -93,6 +94,12 @@ project structure:
 │   │   └── screens
 │   │       └── splash_screen.dart
 │   └── workouts
+│       ├── data
+│       │   ├── exercise_repository.dart
+│       │   ├── local_exercise_repository.dart
+│       │   └── sources
+│       │       ├── exercise_data_source.dart
+│       │       └── json_exercise_data_source.dart
 │       ├── models
 │       │   ├── exercise.dart
 │       │   ├── workout.dart
@@ -102,6 +109,8 @@ project structure:
 │       │   ├── workout_stats.dart
 │       │   └── workout_streak.dart
 │       ├── providers
+│       │   ├── exercise_library_provider.dart
+│       │   ├── exercise_providers.dart
 │       │   ├── exercise_selector_provider.dart
 │       │   ├── workout_calendar_provider.dart
 │       │   ├── workout_editor_provider.dart
@@ -116,7 +125,9 @@ project structure:
 │       │   ├── beginner_workouts_screen.dart
 │       │   ├── category_workouts_screen.dart
 │       │   ├── custom_workouts_screen.dart
+│       │   ├── exercise_detail_screen.dart
 │       │   ├── exercise_editor_screen.dart
+│       │   ├── exercise_library_screen.dart
 │       │   ├── exercise_selector_screen.dart
 │       │   ├── favorite_workouts_screen.dart
 │       │   ├── pre_workout_setup_screen.dart
@@ -135,6 +146,7 @@ project structure:
 │       │   └── workout_version_history_screen.dart
 │       ├── services
 │       │   ├── exercise_db_service.dart
+│       │   ├── exercise_service.dart
 │       │   ├── voice_guidance_service.dart
 │       │   ├── workout_planning_service.dart
 │       │   ├── workout_service.dart
@@ -153,8 +165,10 @@ project structure:
 │           │   ├── set_rest_timer.dart
 │           │   └── workout_progress_indicator.dart
 │           ├── exercise_demo_widget.dart
+│           ├── exercise_filter_bar.dart
 │           ├── exercise_image_widget.dart
 │           ├── exercise_list_item.dart
+│           ├── exercise_type_tag.dart
 │           ├── workout_card.dart
 │           └── workout_progress_chart.dart
 ├── firebase_options_dev.dart
@@ -214,7 +228,6 @@ project structure:
 │   │   ├── legal_document_service.dart
 │   │   ├── resource_loader_service.dart
 │   │   ├── shake_detector_service.dart
-│   │   └── video_compression_service.dart
 │   └── theme
 │       ├── app_theme.dart
 │       ├── color_palette.dart

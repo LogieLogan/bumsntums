@@ -49,6 +49,7 @@ import '../../../features/workouts/models/exercise.dart';
             description:
                 'Stand with feet hip-width apart. Lower your body as if sitting into a chair, keeping your chest up and knees behind toes. Push through heels to return to standing.',
             imageUrl: 'assets/images/exercises/squat.jpg',
+            videoPath: 'assets/videos/exercises/squat.mp4',
             sets: 3,
             reps: 10,
             restBetweenSeconds: 40,
@@ -69,6 +70,7 @@ import '../../../features/workouts/models/exercise.dart';
             description:
                 'Lie on your side with your legs straight. Lift your top leg up toward the ceiling, keeping it straight, then lower it back down with control.',
             imageUrl: 'assets/images/exercises/side_leg_lift.jpg',
+            videoPath: 'assets/videos/exercises/side_leg_lift.mp4',
             sets: 2,
             reps: 15,
             restBetweenSeconds: 30,
@@ -80,6 +82,7 @@ import '../../../features/workouts/models/exercise.dart';
             description:
                 'Start on all fours. Keeping your knee bent, lift one leg up behind you until your foot is facing the ceiling, then lower it back down.',
             imageUrl: 'assets/images/exercises/donkey_kick.jpg',
+            videoPath: 'assets/videos/exercises/donkey_kick.mp4',
             sets: 2,
             reps: 12,
             restBetweenSeconds: 30,
@@ -87,10 +90,11 @@ import '../../../features/workouts/models/exercise.dart';
           ),
           Exercise(
             id: 'ex-005',
-            name: 'Reverse Lunges',
+            name: 'Lunges',
             description:
-                'Stand tall, then step one foot back and lower your body until both knees are bent at 90 degrees. Push through your front heel to return to standing.',
-            imageUrl: 'assets/images/exercises/reverse_lunge.jpg',
+                'Stand tall, then step one foot forward and lower your body until both knees are bent at 90 degrees. Push through your front heel to return to standing.',
+            imageUrl: 'assets/images/exercises/lunge.jpg',
+            videoPath: 'assets/videos/exercises/lunge.mp4',
             sets: 2,
             reps: 10,
             restBetweenSeconds: 40,

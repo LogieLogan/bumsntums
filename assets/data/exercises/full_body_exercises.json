@@ -3,7 +3,6 @@
       "id": "full-1",
       "name": "Burpee",
       "description": "Begin standing, then squat down and place hands on floor, kick feet back to a plank position, perform a push-up, jump feet back to hands, and explosively jump up with arms overhead.",
-      "imageUrl": "assets/images/exercises/burpee.jpg",
       "videoPath": "assets/videos/exercises/burpee.mp4",
       "sets": 3,
       "reps": 10,
@@ -53,7 +52,6 @@
       "id": "full-2",
       "name": "Mountain Climber",
       "description": "Begin in a plank position with hands under shoulders. Rapidly alternate bringing knees toward chest in a running motion while maintaining a stable upper body.",
-      "imageUrl": "assets/images/exercises/mountain_climber.jpg",
       "videoPath": "assets/videos/exercises/mountain_climber.mp4",
       "sets": 3,
       "durationSeconds": 30,
@@ -99,154 +97,9 @@
       "exerciseType": ["cardio", "endurance", "stability"]
     },
     {
-      "id": "full-3",
-      "name": "Push-Up",
-      "description": "Begin in a high plank position with hands slightly wider than shoulders. Lower your body until chest nearly touches the floor, then push back up to the starting position.",
-      "imageUrl": "assets/images/exercises/push_up.jpg",
-      "videoPath": "assets/videos/exercises/push_up.mp4",
-      "sets": 3,
-      "reps": 10,
-      "restBetweenSeconds": 60,
-      "targetArea": "fullBody",
-      "difficultyLevel": 3,
-      "targetMuscles": ["chest", "shoulders", "triceps", "core", "serratus anterior"],
-      "formTips": [
-        "Keep body in a straight line from head to heels",
-        "Position hands slightly wider than shoulder-width",
-        "Lower until chest is about an inch from the floor",
-        "Keep elbows at roughly a 45-degree angle from body"
-      ],
-      "commonMistakes": [
-        "Sagging or piking at the hips",
-        "Flaring elbows out too wide",
-        "Not lowering far enough or going too deep",
-        "Holding breath during the movement"
-      ],
-      "equipmentOptions": ["none", "exercise mat", "push-up handles"],
-      "progressionExercises": ["decline push-up", "diamond push-up", "one-leg push-up"],
-      "regressionExercises": ["knee push-up", "incline push-up", "wall push-up"],
-      "benefits": [
-        "Builds upper body strength and muscular endurance",
-        "Strengthens core and stabilizer muscles",
-        "Improves posture and shoulder stability",
-        "Can be done anywhere with no equipment"
-      ],
-      "contraindications": [
-        "Wrist pain or injury",
-        "Shoulder impingement or injury",
-        "Elbow pain",
-        "Recent chest surgery"
-      ],
-      "breathingPattern": "Inhale as you lower, exhale as you push up",
-      "preparationSteps": [
-        "Start in a high plank position with hands slightly wider than shoulders",
-        "Set feet together or hip-width apart for stability",
-        "Engage core and glutes to maintain a straight body line",
-        "Position gaze slightly ahead of hands for neutral neck alignment"
-      ],
-      "exerciseType": ["push", "strength", "endurance"]
-    },
-    {
-      "id": "full-4",
-      "name": "Box Push-Up",
-      "description": "A modified push-up performed from a box position (hands and knees) with knees on the ground. Lower chest toward the floor by bending elbows, then push back up.",
-      "imageUrl": "assets/images/exercises/box_push_up.jpg",
-      "videoPath": "assets/videos/exercises/box_push_up.mp4",
-      "sets": 3,
-      "reps": 12,
-      "restBetweenSeconds": 45,
-      "targetArea": "fullBody",
-      "difficultyLevel": 2,
-      "targetMuscles": ["chest", "shoulders", "triceps", "core"],
-      "formTips": [
-        "Align hands directly under shoulders",
-        "Keep back flat and core engaged",
-        "Lower until chest is 1-2 inches from floor",
-        "Fully extend arms at the top without locking elbows"
-      ],
-      "commonMistakes": [
-        "Placing hands too far forward",
-        "Letting hips sag during the movement",
-        "Not lowering chest far enough",
-        "Shrugging shoulders toward ears"
-      ],
-      "equipmentOptions": ["none", "exercise mat"],
-      "progressionExercises": ["regular push-up", "incline push-up"],
-      "regressionExercises": ["wall push-up", "bench push-up"],
-      "benefits": [
-        "Builds upper body strength with reduced load",
-        "Prepares for standard push-ups",
-        "Develops chest, shoulder and tricep strength",
-        "Ideal for beginners or those with limited upper body strength"
-      ],
-      "contraindications": [
-        "Wrist pain or carpal tunnel syndrome",
-        "Shoulder impingement",
-        "Elbow injury",
-        "Knee pain when kneeling"
-      ],
-      "breathingPattern": "Inhale as you lower, exhale as you push up",
-      "preparationSteps": [
-        "Start on hands and knees in a box position",
-        "Place hands directly beneath shoulders, slightly wider than shoulder-width",
-        "Keep knees under hips at 90-degree angles",
-        "Engage core to stabilize the spine before beginning"
-      ],
-      "exerciseType": ["push", "strength", "endurance"]
-    },
-    {
-      "id": "full-5",
-      "name": "Knee Push-Up",
-      "description": "A modified push-up performed with knees on the ground and ankles crossed. Lower chest toward the floor by bending elbows, then push back up while maintaining a straight line from head to knees.",
-      "imageUrl": "assets/images/exercises/knee_pushup.jpg",
-      "videoPath": "assets/videos/exercises/knee_pushup.mp4",
-      "sets": 3,
-      "reps": 12,
-      "restBetweenSeconds": 45,
-      "targetArea": "fullBody",
-      "difficultyLevel": 2,
-      "targetMuscles": ["chest", "shoulders", "triceps", "core"],
-      "formTips": [
-        "Keep body in a straight line from head to knees",
-        "Position hands slightly wider than shoulders",
-        "Lower until chest nearly touches the floor",
-        "Keep elbows at about 45 degrees from body"
-      ],
-      "commonMistakes": [
-        "Sagging or piking at the hips",
-        "Placing hands too far forward or outward",
-        "Not lowering chest far enough",
-        "Letting the head drop forward"
-      ],
-      "equipmentOptions": ["none", "exercise mat", "push-up handles"],
-      "progressionExercises": ["standard push-up", "incline push-up"],
-      "regressionExercises": ["wall push-up", "elevated box push-up"],
-      "benefits": [
-        "Builds upper body strength with reduced loading",
-        "Helps develop proper push-up form",
-        "Strengthens chest, shoulders, and triceps",
-        "Improves core stability"
-      ],
-      "contraindications": [
-        "Wrist pain or injury",
-        "Shoulder impingement",
-        "Knee discomfort when kneeling",
-        "Elbow pain"
-      ],
-      "breathingPattern": "Inhale as you lower your body, exhale as you push back up",
-      "preparationSteps": [
-        "Kneel on an exercise mat for comfort",
-        "Place hands on the floor slightly wider than shoulders",
-        "Cross ankles and lift feet off the ground",
-        "Engage core to maintain a straight line from head to knees"
-      ],
-      "exerciseType": ["push", "strength", "endurance"]
-    },
-    {
       "id": "full-6",
       "name": "Superman",
       "description": "Lie face down with arms extended overhead. Simultaneously lift arms, chest, and legs off the floor, hold briefly, then lower back down with control.",
-      "imageUrl": "assets/images/exercises/superman.jpg",
       "videoPath": "assets/videos/exercises/superman.mp4",
       "sets": 3,
       "reps": 12,
@@ -294,7 +147,6 @@
       "id": "full-7",
       "name": "Swimmer and Superman",
       "description": "A combination exercise where you alternate between the superman position (all limbs lifted) and a swimming motion where opposite arm and leg lower while the others remain elevated.",
-      "imageUrl": "assets/images/exercises/superman.jpg",
       "videoPath": "assets/videos/exercises/swimmer_and_superman.mp4",
       "sets": 3,
       "reps": 10,
@@ -342,7 +194,6 @@
       "id": "full-8",
       "name": "Bird Dog",
       "description": "Start on hands and knees. Simultaneously extend one arm forward and the opposite leg back while maintaining a stable core. Return to starting position and repeat with opposite limbs.",
-      "imageUrl": "assets/images/exercises/bird_dog.jpg",
       "videoPath": "assets/videos/exercises/bird_dog.mp4",
       "sets": 3,
       "reps": 12,
@@ -390,7 +241,6 @@
       "id": "full-9",
       "name": "One Leg Push-Up",
       "description": "A challenging push-up variation where one leg is lifted off the ground, increasing the core stability demands while performing a standard push-up.",
-      "imageUrl": "assets/images/exercises/push_up.jpg",
       "videoPath": "assets/videos/exercises/one_leg_pushup.mp4",
       "sets": 3,
       "reps": 8,
@@ -433,5 +283,321 @@
         "Ensure hips are level before beginning the push-up motion"
       ],
       "exerciseType": ["push", "stability", "strength"]
-    }
+    },
+    {
+        "id": "full-10",
+        "name": "Medicine Ball Slams",
+        "description": "Lift a medicine ball overhead, then forcefully throw it to the ground using your core and upper body strength. Catch the ball on the bounce or pick it up and repeat.",
+        "videoPath": "assets/videos/exercises/medicine_ball_slams.mp4",
+        "sets": 3,
+        "reps": 15,
+        "restBetweenSeconds": 45,
+        "targetArea": "fullBody",
+        "difficultyLevel": 3,
+        "targetMuscles": ["shoulders", "core", "lats", "triceps", "quadriceps"],
+        "formTips": [
+          "Fully extend arms overhead before slamming",
+          "Use core and hips to generate power, not just arms",
+          "Slam ball directly downward in front of feet",
+          "Bend knees slightly to follow through and retrieve ball"
+        ],
+        "commonMistakes": [
+          "Using only arms instead of whole body",
+          "Not fully extending overhead before slam",
+          "Rounding back when picking up the ball",
+          "Throwing ball forward instead of straight down"
+        ],
+        "equipmentOptions": ["medicine ball", "slam ball"],
+        "progressionExercises": ["heavier ball", "squat to overhead slam", "alternating side slams"],
+        "regressionExercises": ["lighter ball", "partial overhead extension", "controlled slams"],
+        "benefits": [
+          "Releases stress and tension through explosive movement",
+          "Builds power in the core and upper body",
+          "Elevates heart rate quickly",
+          "Enhances total body coordination",
+          "Provides a satisfying high-intensity exercise"
+        ],
+        "contraindications": [
+          "Shoulder injuries or impingement",
+          "Lower back pain or injury",
+          "Hypertension",
+          "Hernias",
+          "Wrist or elbow issues"
+        ],
+        "breathingPattern": "Inhale as you lift the ball overhead, forcefully exhale during the slam",
+        "preparationSteps": [
+          "Select appropriate weight medicine ball (6-20 lbs)",
+          "Stand with feet shoulder-width apart",
+          "Ensure adequate ceiling height for full extension",
+          "Clear space around you to avoid obstacles"
+        ],
+        "exerciseType": ["power", "cardio", "stress-relief"]
+      },
+      {
+        "id": "full-11",
+        "name": "Box Push-Up",
+        "description": "A modified push-up with the hands placed on a raised surface, making it easier to perform while still targeting the chest, shoulders, and triceps.",
+        "videoPath": "assets/videos/exercises/box_push_up.mp4",
+        "sets": 3,
+        "reps": 12,
+        "restBetweenSeconds": 30,
+        "targetArea": "fullBody",
+        "difficultyLevel": 2,
+        "targetMuscles": ["chest", "shoulders", "triceps"],
+        "formTips": [
+          "Keep elbows at a 45-degree angle to your body",
+          "Engage core and avoid letting your hips sag",
+          "Press evenly through your palms",
+          "Avoid locking your elbows at the top of the push-up"
+        ],
+        "commonMistakes": [
+          "Flaring elbows too wide",
+          "Allowing hips to sag or rise",
+          "Not engaging core",
+          "Not going low enough in the push-up"
+        ],
+        "equipmentOptions": ["box", "bench", "platform"],
+        "progressionExercises": ["regular push-up", "incline push-up", "decline push-up"],
+        "regressionExercises": ["wall push-up", "knee push-up"],
+        "benefits": [
+          "Targets upper body strength with reduced intensity",
+          "Improves push-up form and technique",
+          "Engages core and stabilizing muscles",
+          "Helps with muscle endurance and coordination"
+        ],
+        "contraindications": [
+          "Shoulder injuries",
+          "Wrist discomfort",
+          "Lower back issues"
+        ],
+        "breathingPattern": "Inhale as you lower your body, exhale as you push back up",
+        "preparationSteps": [
+          "Position your hands on the raised surface, shoulder-width apart",
+          "Position your feet behind you, with knees slightly bent or straight",
+          "Brace your core and keep your body in a straight line"
+        ],
+        "exerciseType": ["strength", "endurance"]
+      },
+      {
+        "id": "full-12",
+        "name": "Plank and Reach",
+        "description": "In a plank position, alternate reaching one arm forward at a time, engaging the core and stabilizing your body to avoid rotation.",
+        "videoPath": "assets/videos/exercises/plank_and_reach.mp4",
+        "sets": 3,
+        "reps": 12,
+        "restBetweenSeconds": 30,
+        "targetArea": "fullBody",
+        "difficultyLevel": 3,
+        "targetMuscles": ["core", "shoulders", "triceps", "chest", "lower back"],
+        "formTips": [
+          "Keep hips square to the ground during the movement",
+          "Engage your core and avoid letting your back sag",
+          "Reach as far as you can with each arm without rotating your torso",
+          "Keep a neutral neck alignment"
+        ],
+        "commonMistakes": [
+          "Allowing hips to rotate or drop",
+          "Not fully extending the arm",
+          "Holding your breath",
+          "Not maintaining proper plank form"
+        ],
+        "equipmentOptions": ["mat"],
+        "progressionExercises": ["plank to push-up", "plank with arm raise", "stability ball plank and reach"],
+        "regressionExercises": ["modified plank", "knees on the ground", "shorter reach"],
+        "benefits": [
+          "Improves core strength and stability",
+          "Enhances shoulder and chest engagement",
+          "Helps improve balance and coordination",
+          "Strengthens lower back muscles"
+        ],
+        "contraindications": [
+          "Shoulder injuries",
+          "Lower back pain",
+          "Wrist issues"
+        ],
+        "breathingPattern": "Inhale while stabilizing, exhale as you reach forward",
+        "preparationSteps": [
+          "Start in a forearm plank position",
+          "Brace your core and engage your glutes",
+          "Reach one arm forward while maintaining a strong, stable plank"
+        ],
+        "exerciseType": ["core", "stability", "endurance"]
+      },
+      {
+        "id": "full-13",
+        "name": "Plank Leg Up",
+        "description": "From a standard plank position, lift one leg at a time, alternating between legs, while maintaining a stable core and avoiding hip rotation.",
+        "videoPath": "assets/videos/exercises/plank_leg_up.mp4",
+        "sets": 3,
+        "reps": 15,
+        "restBetweenSeconds": 30,
+        "targetArea": "fullBody",
+        "difficultyLevel": 3,
+        "targetMuscles": ["core", "glutes", "shoulders", "lower back"],
+        "formTips": [
+          "Avoid letting your hips rotate as you lift each leg",
+          "Keep your back straight and engage your core throughout",
+          "Lift your leg high enough to feel a challenge, but not too high to lose balance",
+          "Don't hold your breath—breathe steadily"
+        ],
+        "commonMistakes": [
+          "Hips dropping or rotating",
+          "Not engaging core properly",
+          "Not keeping a straight body alignment"
+        ],
+        "equipmentOptions": ["mat"],
+        "progressionExercises": ["stability ball plank leg up", "plank with leg and arm reach"],
+        "regressionExercises": ["kneeling plank leg up", "shorter leg raises"],
+        "benefits": [
+          "Strengthens core and glutes",
+          "Enhances lower back stability",
+          "Improves balance and coordination",
+          "Increases endurance"
+        ],
+        "contraindications": [
+          "Lower back pain",
+          "Shoulder issues",
+          "Hip or knee problems"
+        ],
+        "breathingPattern": "Inhale as you lower your leg, exhale as you lift it",
+        "preparationSteps": [
+          "Start in a forearm plank position",
+          "Brace your core and glutes",
+          "Lift one leg straight up, hold briefly, and return to plank position",
+          "Alternate lifting each leg"
+        ],
+        "exerciseType": ["core", "strength", "stability"]
+      },
+      {
+        "id": "full-14",
+        "name": "Fitball Pushup",
+        "description": "A push-up performed with your hands on a stability ball, increasing the difficulty by challenging your stability while targeting the chest, shoulders, and triceps.",
+        "videoPath": "assets/videos/exercises/fitball_pushup.mp4",
+        "sets": 3,
+        "reps": 10,
+        "restBetweenSeconds": 30,
+        "targetArea": "fullBody",
+        "difficultyLevel": 3,
+        "targetMuscles": ["chest", "shoulders", "triceps", "core"],
+        "formTips": [
+          "Engage core and keep hips aligned with your body",
+          "Perform the push-up with controlled movements",
+          "Do not allow your lower back to sag",
+          "Keep your elbows at a 45-degree angle to your torso"
+        ],
+        "commonMistakes": [
+          "Allowing lower back to sag",
+          "Flaring elbows outward",
+          "Not engaging the core",
+          "Bouncing off the ball"
+        ],
+        "equipmentOptions": ["stability ball"],
+        "progressionExercises": ["decline fitball push-up", "weighted fitball push-up"],
+        "regressionExercises": ["kneeling fitball push-up"],
+        "benefits": [
+          "Increases chest, shoulder, and triceps strength",
+          "Improves core stability",
+          "Engages stabilizing muscles",
+          "Enhances balance and coordination"
+        ],
+        "contraindications": [
+          "Shoulder injuries",
+          "Wrist discomfort",
+          "Lower back pain"
+        ],
+        "breathingPattern": "Inhale as you lower your body, exhale as you push up",
+        "preparationSteps": [
+          "Place your hands on a stability ball, shoulder-width apart",
+          "Position feet behind you for stability",
+          "Engage your core and avoid letting your back sag"
+        ],
+        "exerciseType": ["strength", "stability"]
+      },
+      {
+        "id": "full-15",
+        "name": "Fitball Mountain Climber",
+        "description": "A high-intensity exercise where you perform mountain climbers with your feet placed on a stability ball, enhancing core and cardiovascular endurance.",
+        "videoPath": "assets/videos/exercises/fitball_mountain_climber.mp4",
+        "sets": 3,
+        "reps": 20,
+        "restBetweenSeconds": 45,
+        "targetArea": "fullBody",
+        "difficultyLevel": 4,
+        "targetMuscles": ["core", "shoulders", "legs", "cardio"],
+        "formTips": [
+          "Drive knees toward chest quickly but with control",
+          "Keep hips in line with your body, avoiding sagging or rising",
+          "Maintain a steady pace and proper breathing",
+          "Keep shoulders over your wrists"
+        ],
+        "commonMistakes": [
+          "Letting hips drop or rise",
+          "Lack of control in knee movement",
+          "Holding breath"
+        ],
+        "equipmentOptions": ["stability ball"],
+        "progressionExercises": ["fitball mountain climber with push-up", "elevated fitball mountain climber"],
+        "regressionExercises": ["standard mountain climber", "knee mountain climber"],
+        "benefits": [
+          "Improves cardiovascular endurance",
+          "Strengthens core and shoulders",
+          "Enhances coordination and agility",
+          "Boosts calorie burn"
+        ],
+        "contraindications": [
+          "Shoulder or wrist pain",
+          "Knee injuries",
+          "Back issues"
+        ],
+        "breathingPattern": "Inhale as you extend your leg, exhale as you pull your knee in",
+        "preparationSteps": [
+          "Place your feet on a stability ball and get into a plank position",
+          "Engage your core and avoid letting your hips sag",
+          "Quickly alternate driving each knee toward your chest"
+        ],
+        "exerciseType": ["cardio", "strength", "endurance"]
+      },
+      {
+        "id": "full-16",
+        "name": "Jumping Jacks",
+        "description": "A classic cardio move that involves jumping with your legs and arms simultaneously out and back in, providing an excellent full-body workout.",
+        "videoPath": "assets/videos/exercises/jumping_jacks.mp4",
+        "sets": 3,
+        "reps": 30,
+        "restBetweenSeconds": 30,
+        "targetArea": "fullBody",
+        "difficultyLevel": 2,
+        "targetMuscles": ["legs", "core", "arms", "cardio"],
+        "formTips": [
+          "Jump with a soft landing to protect your joints",
+          "Fully extend your arms and legs at the peak of the jump",
+          "Maintain a steady, controlled pace",
+          "Engage your core to keep your body stable"
+        ],
+        "commonMistakes": [
+          "Landing too hard",
+          "Not fully extending limbs",
+          "Inconsistent timing"
+        ],
+        "equipmentOptions": ["none"],
+        "progressionExercises": ["high-intensity jumping jacks", "jumping jacks with added weight"],
+        "regressionExercises": ["half jumping jacks", "step jacks"],
+        "benefits": [
+          "Improves cardiovascular health",
+          "Strengthens legs, arms, and core",
+          "Increases agility and coordination",
+          "Boosts metabolism"
+        ],
+        "contraindications": [
+          "Joint issues",
+          "Knee or hip pain"
+        ],
+        "breathingPattern": "Inhale as you jump out, exhale as you return to starting position",
+        "preparationSteps": [
+          "Stand with feet together and hands at your sides",
+          "Jump while spreading your legs and raising your arms",
+          "Land softly and return to the starting position"
+        ],
+        "exerciseType": ["cardio", "strength"]
+      }
   ]
