@@ -203,6 +203,7 @@
       "name": "Jumping Lunge",
       "description": "Begin in a lunge position, then explosively jump upward switching legs in mid-air, landing softly with opposite leg forward, immediately lowering into the next lunge.",
       "videoPath": "",
+      "imagePath": "assets/images/exercises/jump_lunge.jpeg",
       "sets": 3,
       "reps": 12,
       "restBetweenSeconds": 60,

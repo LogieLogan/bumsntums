@@ -3,6 +3,7 @@ import 'bums_workouts.dart';
 import 'tums_workouts.dart';
 import 'full_body_workouts.dart';
 import 'quick_workouts.dart';
+import 'cardio_workouts.dart';
 import '../../../features/workouts/models/workout.dart';
 
 class MockWorkoutData {
@@ -13,6 +14,7 @@ class MockWorkoutData {
       ...getTumsWorkouts(),
       ...getFullBodyWorkouts(),
       ...getQuickWorkouts(),
+      ...getCardioWorkouts(),
     ];
   }
   
@@ -27,6 +29,8 @@ class MockWorkoutData {
         return getFullBodyWorkouts();
       case WorkoutCategory.quickWorkout:
         return getQuickWorkouts();
+      case WorkoutCategory.cardio:
+        return getCardioWorkouts();
       default:
         return [];
     }

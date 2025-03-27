@@ -13,6 +13,7 @@ class Exercise extends Equatable {
   final int restBetweenSeconds;
   final String targetArea;
   final String? videoPath;
+  final String? imagePath;
 
   // Enhanced personalization fields
   final double? weight; // Weight used for the exercise (kg/lbs)
@@ -59,6 +60,7 @@ class Exercise extends Equatable {
     this.modifications = const [],
     this.equipmentOptions = const [],
     this.videoPath,
+    this.imagePath,
     this.benefits = const [],
     this.contraindications = const [],
     this.breathingPattern = '',
@@ -90,6 +92,7 @@ class Exercise extends Equatable {
     modifications,
     equipmentOptions,
     videoPath,
+    imagePath,
   ];
 
   Exercise copyWith({
@@ -115,6 +118,7 @@ class Exercise extends Equatable {
     List<ExerciseModification>? modifications,
     List<String>? equipmentOptions,
     String? videoPath,
+    String? imagePath,
     List<String>? benefits,
     List<String>? contraindications,
     String? breathingPattern,
@@ -144,6 +148,7 @@ class Exercise extends Equatable {
       modifications: modifications ?? this.modifications,
       equipmentOptions: equipmentOptions ?? this.equipmentOptions,
       videoPath: videoPath ?? this.videoPath,
+      imagePath: imagePath ?? this.imagePath,
       benefits: benefits ?? this.benefits,
       contraindications: contraindications ?? this.contraindications,
       breathingPattern: breathingPattern ?? this.breathingPattern,
@@ -176,6 +181,7 @@ class Exercise extends Equatable {
       'modifications': modifications.map((m) => m.toMap()).toList(),
       'equipmentOptions': equipmentOptions,
       'videoPath': videoPath,
+      'imagePath': imagePath,
       'benefits': benefits,
       'contraindications': contraindications,
       'breathingPattern': breathingPattern,
@@ -232,6 +238,7 @@ class Exercise extends Equatable {
               ? List<String>.from(map['equipmentOptions'])
               : [],
       videoPath: map['videoPath'],
+      imagePath: map['imagePath'],
       benefits:
           map['benefits'] != null ? List<String>.from(map['benefits']) : [],
       contraindications:

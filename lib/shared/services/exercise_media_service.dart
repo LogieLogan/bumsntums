@@ -35,7 +35,7 @@ class ExerciseMediaService {
   // Get image path for an exercise
   static String getExerciseImagePath(String exerciseName) {
     final normalizedName = _normalizeExerciseName(exerciseName);
-    return '$_exerciseImagesPath/$normalizedName.jpg';
+    return '$_exerciseImagesPath/$normalizedName.jpeg';
   }
 
   // Get video path for an exercise

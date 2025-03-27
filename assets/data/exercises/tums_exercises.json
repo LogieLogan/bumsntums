@@ -428,7 +428,7 @@
     "id": "tums-10",
     "name": "V-Up",
     "description": "Lie on your back with arms extended overhead and legs straight. Simultaneously lift your arms and legs to create a V-shape with your body, then lower back to starting position.",    
-    "videoPath": "assets/videos/exercises/v-_up.mp4",
+    "videoPath": "assets/videos/exercises/v_up.mp4",
     "sets": 3,
     "reps": 10,
     "restBetweenSeconds": 45,

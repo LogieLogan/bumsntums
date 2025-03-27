@@ -1,7 +1,6 @@
 // lib/features/workouts/screens/exercise_library_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/exercise.dart';
 import '../providers/exercise_providers.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/theme/color_palette.dart';

@@ -1,6 +1,13 @@
 // lib/features/workouts/services/workout_service.dart
+import 'package:bums_n_tums/shared/repositories/mock_data/bums_workouts.dart';
+import 'package:bums_n_tums/shared/repositories/mock_data/cardio_workouts.dart';
+import 'package:bums_n_tums/shared/repositories/mock_data/full_body_workouts.dart';
+import 'package:bums_n_tums/shared/repositories/mock_data/quick_workouts.dart';
+import 'package:bums_n_tums/shared/repositories/mock_data/tums_workouts.dart';
+import 'package:bums_n_tums/shared/utils/exercise_reference_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../models/workout.dart';
 import '../models/workout_log.dart';
@@ -10,51 +17,56 @@ class WorkoutService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AnalyticsService _analytics;
   final MockWorkoutRepository _mockRepository = MockWorkoutRepository();
+  bool _isInitialized = false;
+  ProviderContainer? _container;
 
   WorkoutService(this._analytics);
 
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+
+    // Initialize the exercise cache
+    await initializeExerciseCache();
+
+    _isInitialized = true;
+  }
+
   // Get all workouts
   Future<List<Workout>> getAllWorkouts() async {
-    try {
-      // For development, use mock data
-      if (kDebugMode) {
-        return _mockRepository.getAllWorkouts();
-      }
+    await initialize();
 
-      final snapshot = await _firestore.collection('workouts').get();
-      return snapshot.docs
-          .map((doc) => Workout.fromMap({'id': doc.id, ...doc.data()}))
-          .toList();
+    try {
+      // Get workouts from all categories
+      final bumsWorkouts = await getBumsWorkoutsAsync();
+      final tumsWorkouts = await getTumsWorkoutsAsync();
+      final fullBodyWorkouts = await getFullBodyWorkoutsAsync();
+      final quickWorkouts = await getQuickWorkoutsAsync();
+      final cardioWorkouts = await getCardioWorkoutsAsync();
+
+      // Combine all workouts
+      return [
+        ...bumsWorkouts,
+        ...tumsWorkouts,
+        ...fullBodyWorkouts,
+        ...quickWorkouts,
+        ...cardioWorkouts
+      ];
     } catch (e) {
-      // Log error
-      print('Error fetching workouts: $e');
-      // Fall back to mock data in case of error
-      return _mockRepository.getAllWorkouts();
+      _analytics.logError(error: 'Error fetching workouts: $e');
+      rethrow;
     }
   }
 
   // Get featured workouts
   Future<List<Workout>> getFeaturedWorkouts() async {
+    await initialize(); // Make sure to wait for initialization
+
     try {
-      // For development, use mock data
-      if (kDebugMode) {
-        return _mockRepository.getFeaturedWorkouts();
-      }
-
-      final snapshot =
-          await _firestore
-              .collection('workouts')
-              .where('featured', isEqualTo: true)
-              .get();
-
-      return snapshot.docs
-          .map((doc) => Workout.fromMap({'id': doc.id, ...doc.data()}))
-          .toList();
+      final allWorkouts = await getAllWorkouts();
+      return allWorkouts.where((workout) => workout.featured).toList();
     } catch (e) {
-      // Log error
-      print('Error fetching featured workouts: $e');
-      // Fall back to mock data in case of error
-      return _mockRepository.getFeaturedWorkouts();
+      _analytics.logError(error: 'Error fetching featured workouts: $e');
+      rethrow;
     }
   }
 

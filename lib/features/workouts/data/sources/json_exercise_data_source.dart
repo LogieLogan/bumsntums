@@ -11,7 +11,6 @@ class JsonExerciseDataSource implements ExerciseDataSource {
     'assets/data/exercises/tums_exercises.json',
     'assets/data/exercises/full_body_exercises.json',
     'assets/data/exercises/arms_exercises.json',
-    'assets/data/exercises/legs_exercises.json',
     'assets/data/exercises/cardio_exercises.json',
   ];
   

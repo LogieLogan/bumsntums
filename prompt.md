@@ -1,9 +1,7 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-complete my exercise assets. left to do:
-Complete exercises json files with exercises i have videos for
-
+phase 2 - workouts 
 
 project structure: 
 
@@ -109,7 +107,6 @@ project structure:
 │       │   ├── workout_stats.dart
 │       │   └── workout_streak.dart
 │       ├── providers
-│       │   ├── exercise_library_provider.dart
 │       │   ├── exercise_providers.dart
 │       │   ├── exercise_selector_provider.dart
 │       │   ├── workout_calendar_provider.dart
@@ -210,6 +207,7 @@ project structure:
 │   ├── repositories
 │   │   ├── mock_data
 │   │   │   ├── bums_workouts.dart
+│   │   │   ├── cardio_workouts.dart
 │   │   │   ├── full_body_workouts.dart
 │   │   │   ├── index.dart
 │   │   │   ├── quick_workouts.dart
@@ -227,11 +225,13 @@ project structure:
 │   │   ├── gdpr_service.dart
 │   │   ├── legal_document_service.dart
 │   │   ├── resource_loader_service.dart
-│   │   ├── shake_detector_service.dart
-│   └── theme
-│       ├── app_theme.dart
-│       ├── color_palette.dart
-│       └── text_styles.dart
+│   │   └── shake_detector_service.dart
+│   ├── theme
+│   │   ├── app_theme.dart
+│   │   ├── color_palette.dart
+│   │   └── text_styles.dart
+│   └── utils
+│       └── exercise_reference_utils.dart
 └── specs
     ├── 00_project_overview.md
     ├── 01_user_journeys.md
@@ -255,7 +255,8 @@ project structure:
     ├── 12_accessibility.md
     ├── 13_ux_ui_spec.md
     ├── 14a_workouts.md
-    └── 14b_workout_tracking_analytics.md
+    ├── 14b_workout_tracking_analytics.md
+    └── 14c_workout_map.md
 
 Which of these files do you want to review? 
 

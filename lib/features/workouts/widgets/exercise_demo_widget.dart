@@ -155,10 +155,14 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
         widget.exercise.youtubeVideoId != null &&
         widget.exercise.youtubeVideoId!.isNotEmpty;
 
+    // Check if we have an image path as fallback
+    final bool hasImagePath =
+        widget.exercise.imagePath != null &&
+        widget.exercise.imagePath!.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize:
-          MainAxisSize.min, // Make the column take minimum space needed
+      mainAxisSize: MainAxisSize.min,
       children: [
         // Main demo container
         Container(
@@ -180,7 +184,15 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
                     aspectRatio: _videoController!.value.aspectRatio,
                     child: VideoPlayer(_videoController!),
                   )
-                // Fallback: Exercise image based on difficulty level
+                // Image fallback (second priority)
+                else if (hasImagePath)
+                  Image.asset(
+                    widget.exercise.imagePath!,
+                    fit: BoxFit.cover,
+                    height: widget.height,
+                    width: widget.width,
+                  )
+                // Generic fallback based on difficulty (lowest priority)
                 else
                   ExerciseMediaService.workoutImage(
                     difficulty: difficulty,
@@ -246,7 +258,7 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
                   ),
 
                 // Video error overlay
-                if (_hasVideoError)
+                if (_hasVideoError && !hasImagePath)
                   Positioned.fill(
                     child: Container(
                       color: Colors.black.withOpacity(0.5),
