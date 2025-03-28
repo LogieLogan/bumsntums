@@ -806,7 +806,7 @@ class _WorkoutSchedulingScreenState
         )
         .then((_) {
           // Refresh the custom workouts list
-          final _ =  ref.refresh(customWorkoutsStreamProvider(widget.userId));
+          final _ = ref.refresh(customWorkoutsStreamProvider(widget.userId));
         });
   }
 
@@ -826,7 +826,7 @@ class _WorkoutSchedulingScreenState
             _toggleWorkoutSelection(workout);
           }
           // Refresh the custom workouts list either way
-          final _ =  ref.refresh(customWorkoutsStreamProvider(widget.userId));
+          final _ = ref.refresh(customWorkoutsStreamProvider(widget.userId));
         });
   }
 
@@ -989,7 +989,7 @@ class _WorkoutSchedulingScreenState
 
         // Use the calendar provider to schedule the workout
         final success = await ref
-            .read(calendarStateProvider.notifier)
+            .read(workoutActionsProvider.notifier)
             .scheduleWorkout(
               userId: widget.userId,
               planId: widget.planId,

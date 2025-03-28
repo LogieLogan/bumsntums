@@ -1,7 +1,9 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-phase 2 - re structure workout planning feature
+phase 2 - refactor the calander screen, planning and scheduling files 
+make them more manageable and simpler
+Gradual and slow reafctor process with cleanup as we go
 
 project structure: 
 
