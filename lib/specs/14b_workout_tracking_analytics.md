@@ -1,383 +1,415 @@
-Comprehensive Workout Tracking & Analytics System Specification (Aligned)
-1. Overview
-The Workout Tracking & Analytics System enables users to track their workout history, plan future workouts, visualize progress, and receive data-driven workout recommendations. This system integrates with existing workout features while adding new planning and analytics capabilities for Bums & Tums' target audience of beginner women focused on weight loss and toning.
-2. Core Features
-
-### 2.1 Workout Calendar (Updates)
-- Visual date range selection for creating plans from scheduled workouts
-- Time slot organization (AM, lunch, PM) for multiple daily workouts
-- Drag-and-drop interface for workout time management
-- Calendar events distinguish between one-off workouts and plan-based workouts
-- In-context workout personalization options
-
-2.2 Analytics Dashboard
-
-Workout frequency visualization
-Body focus area distribution analysis
-Workout progression tracking (difficulty, durationMinutes, intensity)
-Completion rate statistics
-Streak tracking with celebration milestones
-
-### 2.3 Workout Planning (Updates)
-- Multiple plan creation methods:
-  * Calendar-based: Convert a date range of workouts into a repeatable plan
-  * Template-based: Pre-designed plans for specific goals
-  * Week-view editor: Visual day-by-day workout allocation
-  * AI-generated: Complete plans based on user goals and preferences
-- Plans can contain multiple workouts per day with time slot allocation
-- Plan activation/deactivation with specified start/end dates
-- Plan editing with option to propagate changes to all instances or single occurrences
-
-
-2.4 AI Recommendation Engine
-
-Smart workout suggestions based on user history
-Personalized difficulty progression
-Recovery-aware recommendations
-Adherence pattern analysis to optimize engagement
-
-3. Data Models and Storage
-3.1 Workout Model
-
-/workouts/{workoutId}
-  - id: string
-  - title: string
-  - description: string
-  - imageUrl: string
-  - youtubeVideoId: string (optional)
-  - category: enum (bums, tums, fullBody, cardio, quickWorkout)
-  - difficulty: enum (beginner, intermediate, advanced)
-  - durationMinutes: number
-  - estimatedCaloriesBurn: number
-  - featured: boolean
-  - isAiGenerated: boolean
-  - createdAt: timestamp
-  - createdBy: string (admin, ai, userId)
-  - exercises: array<Exercise>
-  - equipment: array<string>
-  - tags: array<string>
-  - downloadsAvailable: boolean
-  - hasAccessibilityOptions: boolean
-  - intensityModifications: array<string>
-
-  - popularityScore: number (NEW - for recommendation ranking)
-  - effectivenessRating: number (NEW - calculated from user feedback)
-  - recommendedFollowUpWorkouts: array<string> (NEW - for workout planning)
-  - restDaysAfter: number (NEW - recommended recovery time)
-
-  3.2 Exercise Model
-  /exercises/{exerciseId}
-  - id: string
-  - name: string
-  - description: string
-  - imageUrl: string
-  - youtubeVideoId: string (optional)
-  - sets: number
-  - reps: number
-  - durationSeconds: number (optional)
-  - restBetweenSeconds: number
-  - targetArea: string
-  - modifications: array<ExerciseModification>
-
-  - difficultyLevel: number (NEW - 1-5 scale for more granular difficulty)
-  - formTips: array<string> (NEW - additional form guidance)
-  - commonMistakes: array<string> (NEW - for form guidance)
-  - progressionExercises: array<string> (NEW - harder variations)
-  - regressionExercises: array<string> (NEW - easier variations)
-
-  3.3 WorkoutLog Model
-  /workout_logs/{userId}/{logId}
-  - id: string
-  - userId: string
-  - workoutId: string
-  - startedAt: timestamp
-  - completedAt: timestamp
-  - durationMinutes: number
-  - caloriesBurned: number
-  - exercisesCompleted: array<ExerciseLog>
-  - userFeedback: UserFeedback
-  - isShared: boolean
-  - privacy: string ('private', 'followers', 'public')
-  - isOfflineCreated: boolean
-  - syncStatus: string ('synced', 'pending')
-
-  - workoutName: string (NEW - denormalized for easier queries)
-  - completionPercentage: number (NEW - 0-100%)
-  - deviceInfo: { (NEW - for analytics and debugging)
-      platform: string,
-      appVersion: string
-    }
-  - mood: { (NEW - for correlation analysis)
-      before: number (1-5),
-      after: number (1-5)
-    }
-  - energyLevel: { (NEW - for better recommendations)
-      before: number (1-5),
-      after: number (1-5)
-    }
-  - bodyFocusAreas: array<string> (NEW - for analytics)
-
-  3.4 ExerciseLog Model (Sub-document in WorkoutLog)
-  ExerciseLog:
-  - exerciseName: string
-  - setsCompleted: number
-  - repsCompleted: number
-  - difficultyRating: number
-  - notes: string (optional)
-
-  - weightUsed: number (NEW - for strength tracking)
-  - formQuality: number (NEW - self-rating of form, 1-5)
-  - timeToComplete: number (NEW - seconds, for performance tracking)
-
-  3.5 UserFeedback Model (Sub-document in WorkoutLog)
-
-  UserFeedback:
-  - rating: number (1-5)
-  - feltEasy: boolean
-  - feltTooHard: boolean
-  - comments: string (optional)
-
-  - targetAreaEffectiveness: number (NEW - 1-5 rating of how effective for target areas)
-  - enjoymentLevel: number (NEW - 1-5 rating of how enjoyable)
-  - wouldDoAgain: boolean (NEW - intent to repeat workout)
-
-  3.6 WorkoutPlan Model
-
-  /workout_plans/{userId}/{planId}
-  - id: string
-  - userId: string
-  - name: string
-  - description: string (optional)
-  - startDate: timestamp
-  - endDate: timestamp (optional)
-  - isActive: boolean
-  - goal: string
-  - scheduledWorkouts: array<ScheduledWorkout>
-  - createdAt: timestamp
-  - updatedAt: timestamp
-
-  - createdBy: string (NEW - 'user', 'ai', 'system')
-  - focusAreaDistribution: { (NEW - for balanced planning)
-      abs: number,
-      legs: number,
-      glutes: number,
-      arms: number,
-      back: number,
-      chest: number,
-      fullBody: number
-    }
-  - intensityPattern: array<number> (NEW - planned intensity by day)
-  - adaptability: string (NEW - 'strict', 'flexible', 'very-flexible')
-  - isTemplate: boolean (NEW - can be reused as template)
-  - adherenceRate: number (NEW - percentage of plan followed)
-
-  3.7 ScheduledWorkout Model (Sub-document in WorkoutPlan)
-
-  ScheduledWorkout:
-  - workoutId: string
-  - title: string
-  - workoutImageUrl: string (optional)
-  - scheduledDate: timestamp
-  - isCompleted: boolean
-  - completedAt: timestamp (optional)
-  - isRecurring: boolean
-  - recurrencePattern: string (optional)
-  - reminderTime: timestamp (optional)
-  - reminderEnabled: boolean
-
-  - alternativeWorkouts: array<string> (NEW - backup workout options)
-  - skippable: boolean (NEW - indicates if this can be skipped without breaking plan)
-  - intensity: number (NEW - planned intensity level 1-5)
-  - userNotes: string (NEW - notes about this scheduled workout)
-
-  3.8 UserWorkoutStats Model
-
-  /workout_stats/{userId}
-  - userId: string
-  - totalWorkoutsCompleted: number
-  - totalWorkoutMinutes: number
-  - workoutsByCategory: map<string, number>
-  - workoutsByDifficulty: map<string, number>
-  - workoutsByDayOfWeek: array<number> (indexed 0-6)
-  - workoutsByTimeOfDay: map<string, number>
-  - averageWorkoutDuration: number
-  - longestStreak: number
-  - currentStreak: number
-  - caloriesBurned: number
-  - lastWorkoutDate: timestamp
-  - lastUpdated: timestamp
-  - weeklyAverage: number
-  - monthlyTrend: array<number>
-  - completionRate: number
-
-  - favoriteWorkouts: array<string> (NEW - most completed workouts)
-  - improvementAreas: map<string, number> (NEW - areas with potential for growth)
-  - consistencyScore: number (NEW - rating of schedule adherence)
-  - bodyFocusDistribution: map<string, number> (NEW - breakdown of focus areas)
-  - personalBests: { (NEW - for milestone tracking)
-      longestWorkout: number,
-      mostIntenseWeek: number,
-      highestCaloriesBurned: number
-    }
-  - weekOverWeekChange: number (NEW - growth percentage)
-
-
-3.9 WorkoutStreak Model
-
-/workout_streaks/{userId}
-  - userId: string
-  - currentStreak: number
-  - longestStreak: number
-  - lastWorkoutDate: timestamp
-  - streakProtectionsRemaining: number
-  - streakProtectionLastRenewed: timestamp (optional)
-
-  - streakHistory: array<{ (NEW - for historical tracking)
-      startDate: timestamp,
-      endDate: timestamp,
-      length: number
-    }>
-  - milestones: array<{ (NEW - for celebrations)
-      streakCount: number,
-      achieved: boolean,
-      achievedAt: timestamp
-    }>
-  - nextMilestone: number (NEW - next streak goal)
-  - streakProtectionReason: string (NEW - reason for last protection use)
-  
-
-  4. User Interfaces
-
-### 4.1 Workout Calendar Screen (Updates)
-- Contextual tooltips and onboarding guidance for calendar features
-- AM/lunch/PM time slot indicators with drag-and-drop organization
-- Date range selection mode for plan creation
-- Enhanced visual indicators for different workout sources (plan-based vs. one-off)
-
-
-4.2 Analytics Dashboard Screen
-
-Summary cards with key statistics (streak, total workouts, etc.)
-Interactive charts for workout history (line, bar, pie charts)
-Heatmap calendar view of activity
-Body focus area distribution visualization
-Achievement badges display with streak milestones
-Performance trends section
-
-### 4.3 Workout Planning Interface (Updates)
-- Visual week-based workout plan editor
-  * Tabbed view for multi-week plans
-  * Drag-and-drop workout assignment to days
-  * Time slot allocation per workout
-  * Rest day designation
-- Plan visualization showing progression and workout distribution
-- Conversion tool to transform calendar date ranges into plans
-- Settings for plan repetition and duration
-
-4.4 Streak and Achievement Display
-
-Current streak counter with visual emphasis
-Milestone celebration animations
-Achievement badge gallery
-Progress towards next milestone
-Historical streak data visualization
-
-5. Offline Functionality
-5.1 Local Storage Strategy
-
-Store recent workout logs locally
-Cache upcoming planned workouts
-Store analytics summaries for offline viewing
-Queue workout completions for sync
-
-5.2 Synchronization Approach
-
-Background sync when connectivity restored
-Conflict resolution for simultaneous edits
-Timestamp-based merging strategy
-Progress indicator for sync status
-
-6. User Interaction Flows
-6.1 Adding a Workout to Calendar
-
-User taps "+" button on calendar screen or empty day
-User selects from workout library or creates custom workout
-User selects date and time
-User configures recurrence (if applicable)
-User saves workout to calendar
-Optional: Set reminder notification
-
-6.2 Completing a Workout
-
-User starts scheduled workout from calendar or notification
-User completes workout following standard execution flow
-System records workout data and updates calendar
-User receives completion feedback and streak update
-Analytics dashboard updates with new data
-
-6.3 Rescheduling Workouts
-
-User long-presses or drags workout in calendar
-User selects new date/time
-System checks for conflicts
-User confirms change
-If recurring workout, user specifies if change applies to series or single instance
-
-6.4 Viewing Analytics
-
-User navigates to analytics tab
-System loads personalized dashboard
-User can tap on specific metrics for detailed view
-User can adjust date range for analysis
-User can filter by workout type or body focus
-
-7. Integration Points
-7.1 AI Recommendation Engine
-
-Feed workout history data to improve personalization
-Use analytics insights to optimize suggestions
-Enable plan adherence feedback loop
-Pass user profile changes to update recommendations
-
-7.2 User Profile System
-
-Extract user goals and preferences for planning
-Update fitness level based on workout progression
-Sync workout achievements with profile
-Adjust recommendations based on profile changes
-
-7.3 Notification System
-
-Scheduled workout reminders
-Streak protection alerts
-Milestone achievement celebrations
-Smart motivation messages based on adherence patterns
-
-8. User Education & Onboarding
-
-### 8.1 Contextual Help
-- First-time user tooltips highlighting key features
-- Progressive disclosure of advanced planning features
-- Context-sensitive help buttons in complex screens
-- Visual tutorials for drag-and-drop and time slot organization
-
-### 8.2 Guided Workflows
-- Step-by-step guides for first plan creation
-- Interactive tutorials for calendar date range selection
-- "Did you know?" tips showcasing efficient workflows
-- Simplified first-run experience with graduated complexity
-
-### 8.3 Feature Discovery
-- Spotlight highlights for new or underutilized features
-- Periodic reminders about advanced planning capabilities
-- Achievement-based feature unlocking to prevent overwhelm
-- Personalized suggestions based on user behavior patterns
-
-9. Success Metrics
-
-Increase in workout completion rate
-Growth in average weekly workout frequency
-Improvement in user retention (measured by active days)
-Higher engagement with workout recommendations
-Positive user feedback on personalization accuracy
-  
+Workout Planning, Tracking & Analytics - Vision and Implementation
+After reviewing your implementation and understanding the challenges you're facing, I think we need to step back and really focus on the user experience and key problems to solve. Let's develop a comprehensive vision for the workout planning feature.
+Core User Problems in Workout Planning
+
+Overwhelm & Confusion
+
+Users don't know how to structure an effective workout program
+Too many options lead to decision paralysis
+Unclear relationship between plans, workouts, and the calendar
+
+
+Inconsistency & Accountability
+
+Difficulty maintaining a regular workout schedule
+Lack of visibility into progress toward goals
+Easy to skip workouts without consequence
+
+
+Progression & Adaptation
+
+Users don't know when to increase difficulty
+Plateaus in results due to repetitive workouts
+Inability to adjust plans when life gets in the way
+
+
+Discovery & Variety
+
+Boredom from doing the same routines
+Not knowing which workouts complement each other
+Difficulty finding workouts that match their level and equipment
+
+
+Time Management
+
+Fitting workouts into busy schedules
+Planning around recovery needs
+Balancing different workout types throughout the week
+
+
+
+The Vision: Fluid Workout Planning
+The ideal workout planning experience should be intuitive, supportive, and adaptive - almost like having a personal trainer in your pocket. Users should never feel lost or confused about what to do next.
+Key Experience Principles
+
+Contextual Simplicity: Show only what's needed, when it's needed
+Guided Autonomy: Provide structure with freedom to customize
+Progressive Disclosure: Start simple, reveal complexity as users grow
+Meaningful Visualization: Use visual cues to communicate relationships and progress
+Intelligent Assistance: Leverage AI to simplify decisions and optimize plans
+
+Implementation Approach
+1. Calendar-Centric Experience
+The calendar should be the hub of all workout planning, with a clear visual hierarchy:
+
+View Levels:
+
+Month view: See workout distribution and plan colors
+Week view: More detail with time slots visible
+Day view: Full workout details and quick actions
+
+
+Visual Clarity:
+
+Color-coding to distinguish different plans
+Icons to indicate workout types
+Visual patterns to show progression (increasing intensity)
+Clear indicators for completed vs. upcoming workouts
+
+
+Interaction Design:
+
+Natural gestures (pinch to zoom between views)
+Drag-and-drop for rescheduling
+Long-press for contextual actions
+Swipe to mark complete/skip
+
+
+
+2. Plan Creation Reimagined
+Rather than treating plans as separate entities that exist before workouts, plans should emerge naturally from user behavior:
+
+Organic Plan Creation:
+
+Start with scheduling individual workouts
+After scheduling 2-3 workouts, prompt: "Would you like to turn this into a recurring plan?"
+Suggest patterns based on user's selection (e.g., "Looks like you're doing legs on Mondays")
+
+
+Intelligent Templates:
+
+AI-suggested templates based on goals: "Here's a 4-week plan to improve core strength"
+Visual preview showing workout distribution and progression
+One-tap customization options (e.g., "Make it easier", "Add more cardio")
+
+
+Fluid Editing:
+
+Edit plans directly on the calendar
+Simple toggles for applying changes to series vs. single instances
+Visual feedback when changes impact other workouts
+
+
+
+3. Adaptive AI Integration
+AI should feel like a helpful assistant, not a separate feature:
+
+Conversational Planning:
+
+Natural language inputs: "Schedule leg workouts on Mondays and Thursdays"
+Smart suggestions: "You've been doing well with your workouts. Ready to increase the intensity?"
+Recovery awareness: "You've been working your arms a lot. How about focusing on legs tomorrow?"
+
+
+Personalized Insights:
+
+"Your consistency is improving! You've worked out 3 days/week for the last month"
+"Your strongest days are Mondays and Wednesdays"
+"You seem to prefer morning workouts - should I prioritize those in your plan?"
+
+
+AI-Powered Adaptability:
+
+Detect when users miss workouts and suggest plan adjustments
+Recommend workout substitutions based on available time/equipment
+Generate recovery workouts after high-intensity sessions
+
+
+
+4. Progressive Visualization
+Use visualizations to make abstract concepts concrete:
+
+Body Focus Map:
+
+Heat map showing which body parts are being trained and recovery status
+Visual projection of progress over time
+Suggestions to balance training across body parts
+
+
+Progressive Journey:
+
+Visual timeline showing workout progression
+Milestone markers for key achievements
+Projected future progress based on current trajectory
+
+
+Effort Distribution:
+
+Calendar heat map showing workout intensity
+Balance visualization between workout types
+Recovery periods clearly indicated
+
+
+
+5. Intelligent Notifications & Reminders
+
+Context-Aware Reminders:
+
+Time to leave for gym based on current location
+Equipment reminders before specialized workouts
+Pre-workout nutrition suggestions
+
+
+Adaptive Motivation:
+
+Vary messages based on user's response patterns
+Congratulate streak milestones
+Supportive messages after missed workouts
+
+
+
+Implementation Phases
+Phase 1: Calendar Refinement
+
+Fix current issues with plan creation and workout scheduling
+Improve visual clarity of calendar with color-coding and icons
+Simplify the relationship between plans and workouts
+Add basic drag-and-drop functionality
+
+Phase 2: Smart Plan Creation
+
+Implement pattern detection for organic plan creation
+Add AI-suggested templates based on user goals
+Create visual plan builder with focus area visualization
+Improve editing workflow for plans and scheduled workouts
+
+Phase 3: Advanced AI Integration
+
+Implement natural language processing for workout scheduling
+Add conversational planning interface
+Create adaptive plan suggestions based on user behavior
+Develop intelligent workout substitution system
+
+Phase 4: Analytics & Progression
+
+Build comprehensive analytics dashboard
+Implement body focus map with recovery tracking
+Create progression visualization system
+Add milestone tracking and projection features
+
+Premium Features
+For the AI-powered premium tier:
+
+AI Personal Trainer
+
+Conversational workout planning
+Real-time plan adaptation based on progress
+Voice commands for scheduling and tracking
+
+
+Advanced Analytics
+
+Detailed progress metrics with trends and projections
+Performance correlation analysis (sleep, nutrition, etc.)
+Comparative benchmarking with similar users
+
+
+Smart Programming
+
+Auto-generating periodized training plans
+Intelligent rest day scheduling based on biofeedback
+Workout substitution recommendations
+
+
+Recovery Optimization
+
+Recovery tracking by muscle group
+Sleep quality integration
+Nutrition timing recommendations
+
+
+
+UI/UX Design Direction
+The interface should be:
+
+Playful but Focused
+
+Fun animations and celebrations for achievements
+Clean, distraction-free interface for planning
+Progressive color system that feels energetic but not overwhelming
+
+
+Visually Oriented
+
+Minimize text in favor of intuitive icons and colors
+Use shape and size to communicate importance
+Consistent visual language throughout
+
+
+Fluid Transitions
+
+Smooth animations between states
+Contextual expansion of elements when interacting
+Natural gesture-based navigation
+
+
+Adaptive Complexity
+
+Simple interface for beginners
+Progressive disclosure of advanced features
+Contextual help that appears when needed
+
+## 1. Foundation & Architecture
+
+### 1.1 Data Models
+- [x] Basic WorkoutPlan model
+- [x] ScheduledWorkout model
+- [x] WorkoutLog model
+- [ ] Enhanced analytics models
+- [ ] Recovery tracking models
+- [ ] Extended user feedback models
+
+### 1.2 Firebase Structure
+- [x] Basic workout_plans collection
+- [x] User-specific plan organization
+- [ ] Optimized query structure for calendar views
+- [ ] Analytics aggregation collections
+- [ ] Caching strategy for offline support
+
+### 1.3 State Management
+- [x] Basic plan providers
+- [x] Calendar state provider
+- [ ] Unified workout scheduling state
+- [ ] Cross-screen state persistence
+- [ ] Analytics data providers
+
+## 2. Calendar Experience
+
+### 2.1 Visual Calendar
+- [x] Basic workout display on calendar
+- [x] Time slot indicators (morning, lunch, evening)
+- [ ] Color-coding for different plans
+- [ ] Visual distinction between workout types
+- [ ] Progress indicators for completed workouts
+- [ ] Rest day visualization
+
+### 2.2 Calendar Interactions
+- [x] Basic workout scheduling
+- [x] Date selection for workout planning
+- [ ] Drag-and-drop rescheduling
+- [ ] Multi-view calendar (day, week, month)
+- [ ] Gesture-based zoom between views
+- [ ] Swipe actions for quick completion
+
+### 2.3 Calendar Intelligence
+- [ ] Conflict detection for overlapping workouts
+- [ ] Recovery recommendations
+- [ ] Automatic rest day suggestions
+- [ ] Balance alerts for body focus areas
+- [ ] Visual workout density heatmap
+
+## 3. Plan Management
+
+### 3.1 Plan Creation
+- [x] Basic plan creation form
+- [x] Manual workout assignment to plans
+- [ ] Pattern detection for organic plan creation
+- [ ] AI-suggested plan templates
+- [ ] Goal-based plan generation
+- [ ] Visual plan builder
+
+### 3.2 Plan Visualization
+- [x] Simple plan display
+- [ ] Body focus distribution visualization
+- [ ] Intensity progression graphs
+- [ ] Training balance indicators
+- [ ] Recovery status integration
+
+### 3.3 Plan Editing & Adaptation
+- [x] Basic plan updates
+- [ ] Smart workout substitution
+- [ ] Series vs. instance editing options
+- [ ] Intelligent plan adjustment recommendations
+- [ ] Life event adaptation (travel, illness, etc.)
+
+## 4. AI Integration
+
+### 4.1 Natural Language Planning
+- [ ] Basic command parsing
+- [ ] Conversational workout scheduling
+- [ ] Context-aware planning suggestions
+- [ ] Voice command support
+
+### 4.2 Personalized Recommendations
+- [ ] Workout recommendations based on history
+- [ ] Progress-based difficulty adjustments
+- [ ] Recovery-aware scheduling
+- [ ] Engagement optimization suggestions
+
+### 4.3 Intelligent Adaptation
+- [ ] Missed workout detection and plan adjustment
+- [ ] Dynamic plan modification based on feedback
+- [ ] Personalized motivation messaging
+- [ ] Goal-progress alignment adjustments
+
+## 5. Analytics & Insights
+
+### 5.1 Core Metrics
+- [ ] Workout frequency tracking
+- [ ] Completion rate analytics
+- [ ] Body focus area distribution
+- [ ] Progress visualization over time
+
+### 5.2 Performance Tracking
+- [ ] Exercise progression charts
+- [ ] Intensity trends
+- [ ] Volume analysis
+- [ ] Personal records tracking
+
+### 5.3 Behavioral Insights
+- [ ] Consistency patterns
+- [ ] Optimal workout time detection
+- [ ] Adherence factor analysis
+- [ ] Motivation correlation tracking
+
+## 6. User Experience Enhancements
+
+### 6.1 Onboarding & Education
+- [ ] Contextual help system
+- [ ] Progressive feature introduction
+- [ ] Interactive tutorials
+- [ ] Smart tips based on usage patterns
+
+### 6.2 Motivation & Engagement
+- [x] Basic streak tracking
+- [ ] Achievement system
+- [ ] Milestone celebrations
+- [ ] Personalized encouragement messages
+- [ ] Social sharing options
+
+### 6.3 Visual Refinement
+- [ ] Consistent visual language
+- [ ] Micro-animations for feedback
+- [ ] Celebration animations
+- [ ] Intuitive iconography system
+- [ ] Accessible color system
+
+## 7. Integration & Ecosystem
+
+### 7.1 Cross-Feature Integration
+- [ ] Nutrition tracking correlation
+- [ ] Body measurement integration
+- [ ] Sleep quality correlation
+- [ ] Mood tracking integration
+
+### 7.2 External Ecosystem
+- [ ] Calendar export/import
+- [ ] Health app integration
+- [ ] Fitness device connectivity
+- [ ] Cross-platform synchronization
+
+### 7.3 Premium Features
+- [ ] AI personal trainer conversations
+- [ ] Advanced analytics dashboard
+- [ ] Custom plan creation
+- [ ] Recovery optimization tools

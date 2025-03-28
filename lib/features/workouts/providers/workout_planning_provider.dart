@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workout_plan.dart';
 import '../services/workout_planning_service.dart';
 import '../../../shared/providers/analytics_provider.dart';
-import '../../../shared/models/app_user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Provider for the workout planning service

@@ -5,11 +5,7 @@ import '../../../../shared/theme/text_styles.dart';
 import '../../models/workout_log.dart';
 import '../../models/workout_plan.dart';
 
-enum WorkoutEventType {
-  scheduled,
-  completed,
-  missed,
-}
+enum WorkoutEventType { scheduled, completed, missed }
 
 class WorkoutEventCard extends StatefulWidget {
   final dynamic workout; // ScheduledWorkout or WorkoutLog
@@ -18,7 +14,8 @@ class WorkoutEventCard extends StatefulWidget {
   final VoidCallback? onMakeRecurring;
   final Function(DateTime)? onReschedule;
   final bool isDraggable;
-  
+  final WorkoutPlan? plan;
+
   const WorkoutEventCard({
     Key? key,
     required this.workout,
@@ -27,6 +24,7 @@ class WorkoutEventCard extends StatefulWidget {
     this.onMakeRecurring,
     this.onReschedule,
     this.isDraggable = true,
+    this.plan,
   }) : super(key: key);
 
   @override
@@ -38,14 +36,14 @@ class _WorkoutEventCardState extends State<WorkoutEventCard> {
     if (widget.workout is WorkoutLog) {
       return WorkoutEventType.completed;
     }
-    
+
     if (widget.workout is ScheduledWorkout) {
       final scheduled = widget.workout as ScheduledWorkout;
-      
+
       if (scheduled.isCompleted) {
         return WorkoutEventType.completed;
       }
-      
+
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final scheduledDate = DateTime(
@@ -53,14 +51,14 @@ class _WorkoutEventCardState extends State<WorkoutEventCard> {
         scheduled.scheduledDate.month,
         scheduled.scheduledDate.day,
       );
-      
+
       if (scheduledDate.isBefore(today)) {
         return WorkoutEventType.missed;
       }
-      
+
       return WorkoutEventType.scheduled;
     }
-    
+
     return WorkoutEventType.scheduled; // Default
   }
 
@@ -90,11 +88,11 @@ class _WorkoutEventCardState extends State<WorkoutEventCard> {
     if (widget.workout is WorkoutLog) {
       return 'Completed Workout'; // In a real app, fetch workout title
     }
-    
+
     if (widget.workout is ScheduledWorkout) {
       return (widget.workout as ScheduledWorkout).title;
     }
-    
+
     return 'Workout';
   }
 
@@ -103,25 +101,26 @@ class _WorkoutEventCardState extends State<WorkoutEventCard> {
       final log = widget.workout as WorkoutLog;
       return '${log.durationMinutes} mins • ${log.caloriesBurned} calories';
     }
-    
+
     if (widget.workout is ScheduledWorkout) {
       final scheduled = widget.workout as ScheduledWorkout;
       final date = scheduled.scheduledDate;
       return 'Scheduled for ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
     }
-    
+
     return '';
   }
 
   bool _showCompleteButton() {
-    return _getEventType() == WorkoutEventType.scheduled && widget.onComplete != null;
+    return _getEventType() == WorkoutEventType.scheduled &&
+        widget.onComplete != null;
   }
 
   bool _showRecurringButton() {
-    return _getEventType() == WorkoutEventType.scheduled && 
-           widget.onMakeRecurring != null &&
-           widget.workout is ScheduledWorkout &&
-           !(widget.workout as ScheduledWorkout).isRecurring;
+    return _getEventType() == WorkoutEventType.scheduled &&
+        widget.onMakeRecurring != null &&
+        widget.workout is ScheduledWorkout &&
+        !(widget.workout as ScheduledWorkout).isRecurring;
   }
 
   @override
@@ -174,19 +173,48 @@ class _WorkoutEventCardState extends State<WorkoutEventCard> {
                     ),
                 ],
               ),
+            if (widget.plan != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: widget.plan!.color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      widget.plan!.name,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: widget.plan!.color,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
         trailing: const Icon(Icons.chevron_right),
         onTap: widget.onTap,
       ),
     );
-    
+
     // If not draggable, return the card as is
-    if (!widget.isDraggable || widget.onReschedule == null || 
+    if (!widget.isDraggable ||
+        widget.onReschedule == null ||
         _getEventType() != WorkoutEventType.scheduled) {
       return card;
     }
-    
+
     // Otherwise, make it draggable
     return LongPressDraggable<ScheduledWorkout>(
       data: widget.workout as ScheduledWorkout,
@@ -198,16 +226,9 @@ class _WorkoutEventCardState extends State<WorkoutEventCard> {
           child: card,
         ),
       ),
-      childWhenDragging: Opacity(
-        opacity: 0.5,
-        child: card,
-      ),
+      childWhenDragging: Opacity(opacity: 0.5, child: card),
       onDragEnd: (details) {
-        // When user drops the workout, we need to determine the target date
-        // This is a simplified implementation, in a real app you would want to
-        // calculate the actual day based on the position
         if (details.wasAccepted && widget.onReschedule != null) {
-          // For now, let's just reschedule to tomorrow as an example
           final now = DateTime.now();
           final tomorrow = DateTime(now.year, now.month, now.day + 1);
           widget.onReschedule!(tomorrow);

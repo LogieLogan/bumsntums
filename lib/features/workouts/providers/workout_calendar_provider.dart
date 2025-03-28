@@ -1,6 +1,5 @@
 // lib/features/workouts/providers/workout_calendar_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/workout_log.dart';
 import '../models/workout_plan.dart';
 import '../models/workout.dart';

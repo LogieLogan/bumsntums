@@ -1,4 +1,5 @@
 // lib/features/workouts/screens/workout_plan_editor_screen.dart
+import 'package:bums_n_tums/features/workouts/screens/workout_scheduling_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -9,17 +10,15 @@ import '../../../shared/theme/text_styles.dart';
 import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/providers/analytics_provider.dart';
-import 'workout_browse_screen.dart';
+import '../models/plan_color.dart';
+import '../widgets/plan_color_picker.dart';
 
 class WorkoutPlanEditorScreen extends ConsumerStatefulWidget {
   final String userId;
-  final WorkoutPlan? existingPlan; // null for new plan
+  WorkoutPlan? existingPlan; // Changed from final to allow modification
 
-  const WorkoutPlanEditorScreen({
-    Key? key,
-    required this.userId,
-    this.existingPlan,
-  }) : super(key: key);
+  WorkoutPlanEditorScreen({Key? key, required this.userId, this.existingPlan})
+    : super(key: key);
 
   @override
   ConsumerState<WorkoutPlanEditorScreen> createState() =>
@@ -37,6 +36,8 @@ class _WorkoutPlanEditorScreenState
   DateTime? _endDate;
   List<ScheduledWorkout> _scheduledWorkouts = [];
   bool _isActive = true;
+  String? _selectedColorName;
+  bool _isFirstSave = true;
 
   bool _isEditing = false;
 
@@ -58,10 +59,16 @@ class _WorkoutPlanEditorScreenState
       _endDate = plan.endDate;
       _scheduledWorkouts = List.from(plan.scheduledWorkouts);
       _isActive = plan.isActive;
+      _selectedColorName = widget.existingPlan!.colorName;
     } else {
       _nameController = TextEditingController();
       _descriptionController = TextEditingController();
       _goalController = TextEditingController();
+      _selectedColorName =
+          PlanColor
+              .predefinedColors[DateTime.now().millisecondsSinceEpoch %
+                  PlanColor.predefinedColors.length]
+              .name;
     }
 
     // Log screen view for analytics
@@ -312,6 +319,15 @@ class _WorkoutPlanEditorScreenState
             ),
           ),
 
+          const SizedBox(height: 24),
+          PlanColorPicker(
+            initialColorName: _selectedColorName,
+            onColorSelected: (colorName) {
+              setState(() {
+                _selectedColorName = colorName;
+              });
+            },
+          ),
           const SizedBox(height: 32),
 
           // Save button
@@ -381,80 +397,49 @@ class _WorkoutPlanEditorScreenState
   }
 
   void _addScheduledWorkout() async {
-    // First, select a date for the workout
-    final selectedDate = await showDatePicker(
-      context: context,
-      initialDate: _startDate,
-      firstDate: _startDate,
-      lastDate: _endDate ?? _startDate.add(const Duration(days: 365)),
-    );
-
-    if (selectedDate == null) return;
-
-    // Then navigate to workout browse screen to select a workout
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const WorkoutBrowseScreen()),
-    );
-
-    if (result == null) return;
-
-    // Show time picker for reminder (optional)
-    final showReminder = await showDialog<bool>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Add Reminder?'),
-            content: const Text(
-              'Would you like to set a reminder for this workout?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Skip'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Set Reminder'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.pink,
-                ),
-              ),
-            ],
-          ),
-    );
-
-    DateTime? reminderTime;
-    if (showReminder == true) {
-      final selectedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
-
-      if (selectedTime != null) {
-        reminderTime = DateTime(
-          selectedDate.year,
-          selectedDate.month,
-          selectedDate.day,
-          selectedTime.hour,
-          selectedTime.minute,
-        );
-      }
-    }
-
-    // Add the scheduled workout
-    setState(() {
-      _scheduledWorkouts.add(
-        ScheduledWorkout(
-          workoutId: result.id,
-          title: result.title,
-          workoutImageUrl: result.imageUrl,
-          scheduledDate: selectedDate,
-          reminderTime: reminderTime,
-          reminderEnabled: reminderTime != null,
+    // If this is a new plan that hasn't been saved yet
+    if (!_isEditing) {
+      // Use !_isEditing instead of _isNewWorkout
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please save the plan first before adding workouts'),
         ),
       );
-    });
+      return;
+    }
+
+    // Navigate to the scheduling screen with this plan's ID
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => WorkoutSchedulingScreen(
+              selectedDate: DateTime.now(), // Default to today, user can change
+              userId: widget.userId,
+              planId: widget.existingPlan!.id, // Use this plan's ID
+              plan:
+                  widget
+                      .existingPlan, // Pass the plan object for UI customization
+            ),
+      ),
+    );
+
+    // If workouts were scheduled, refresh the plan data
+    if (result == true) {
+      // Refresh plan data from database
+      final updatedPlan = await ref.read(
+        workoutPlanProvider((
+          userId: widget.userId,
+          planId: widget.existingPlan!.id,
+        )).future,
+      );
+
+      if (updatedPlan != null && mounted) {
+        setState(() {
+          _scheduledWorkouts = updatedPlan.scheduledWorkouts;
+        });
+      }
+    }
   }
 
   void _editScheduledWorkout(int index) async {
@@ -511,16 +496,6 @@ class _WorkoutPlanEditorScreenState
       return;
     }
 
-    if (_scheduledWorkouts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please add at least one workout to your plan'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
     try {
       final now = DateTime.now();
       WorkoutPlan plan;
@@ -539,6 +514,7 @@ class _WorkoutPlanEditorScreenState
           isActive: _isActive,
           scheduledWorkouts: _scheduledWorkouts,
           updatedAt: now,
+          colorName: _selectedColorName,
         );
 
         final success = await ref
@@ -553,7 +529,22 @@ class _WorkoutPlanEditorScreenState
                 backgroundColor: Colors.green,
               ),
             );
-            Navigator.pop(context, plan);
+
+            // Instead of popping immediately, stay on screen if we just created the plan
+            if (!_isFirstSave) {
+              Navigator.pop(context, plan);
+            } else {
+              // Update state to reflect that we're now editing an existing plan
+              setState(() {
+                _isFirstSave = false;
+                _isEditing = true;
+                // Update existingPlan reference in widget
+                widget.existingPlan = plan;
+              });
+
+              // Show a prompt to add workouts
+              _showAddWorkoutsPrompt();
+            }
           }
         }
       } else {
@@ -574,6 +565,7 @@ class _WorkoutPlanEditorScreenState
           scheduledWorkouts: _scheduledWorkouts,
           createdAt: now,
           updatedAt: now,
+          colorName: _selectedColorName,
         );
 
         final planId = await ref
@@ -588,7 +580,17 @@ class _WorkoutPlanEditorScreenState
                 backgroundColor: Colors.green,
               ),
             );
-            Navigator.pop(context, plan);
+
+            // Instead of popping immediately, update state to editing mode
+            setState(() {
+              _isFirstSave = false;
+              _isEditing = true;
+              // Set the existing plan reference
+              widget.existingPlan = plan;
+            });
+
+            // Show a prompt to add workouts
+            _showAddWorkoutsPrompt();
           }
         }
       }
@@ -596,6 +598,66 @@ class _WorkoutPlanEditorScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
+    }
+  }
+
+  void _showAddWorkoutsPrompt() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Add Workouts'),
+            content: const Text(
+              'Your plan has been saved! Would you like to add workouts to it now?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Later'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _addWorkoutsToSchedule();
+                },
+                child: const Text('Add Workouts'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _addWorkoutsToSchedule() async {
+    // Navigate to the scheduling screen with this plan
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => WorkoutSchedulingScreen(
+              selectedDate: _startDate, // Use plan start date
+              userId: widget.userId,
+              planId: widget.existingPlan!.id,
+              plan: widget.existingPlan, // Pass plan for UI customization
+            ),
+      ),
+    );
+
+    // If workouts were scheduled, refresh the plan data
+    if (result == true && mounted) {
+      // Fetch the updated plan
+      final updatedPlan = await ref.read(
+        workoutPlanProvider((
+          userId: widget.userId,
+          planId: widget.existingPlan!.id,
+        )).future,
+      );
+
+      // Update state with new workouts
+      if (updatedPlan != null) {
+        setState(() {
+          _scheduledWorkouts = updatedPlan.scheduledWorkouts;
+        });
+      }
     }
   }
 

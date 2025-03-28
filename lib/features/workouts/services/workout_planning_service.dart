@@ -50,27 +50,64 @@ class WorkoutPlanningService {
     }
   }
 
-  // Update an existing workout plan
-  Future<void> updateWorkoutPlan(WorkoutPlan plan) async {
+  Future<bool> updateWorkoutPlan(WorkoutPlan plan) async {
     try {
-      final updatedPlan = plan.copyWith(updatedAt: DateTime.now());
-
-      await _firestore
+      // First check if the document exists
+      final docRef = _firestore
           .collection('workout_plans')
           .doc(plan.userId)
           .collection('plans')
-          .doc(plan.id)
-          .update(updatedPlan.toMap());
+          .doc(plan.id);
 
-      // Log analytics event
-      await _analytics.logEvent(
-        name: 'workout_plan_updated',
-        parameters: {'plan_id': plan.id},
-      );
+      final docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        print('Plan document does not exist: ${docRef.path}');
+        // Instead of failing, create the document
+        await docRef.set(plan.toMap());
+
+        // If this plan is active, deactivate others
+        if (plan.isActive) {
+          await _deactivateOtherPlans(plan.userId, plan.id);
+        }
+
+        return true;
+      }
+
+      // Document exists, perform update
+      await docRef.update(plan.toMap());
+
+      // If this plan is active, deactivate others
+      if (plan.isActive) {
+        await _deactivateOtherPlans(plan.userId, plan.id);
+      }
+
+      return true;
     } catch (e) {
-      debugPrint('Error updating workout plan: $e');
-      rethrow;
+      print('Error updating workout plan: $e');
+      return false;
     }
+  }
+
+  // Add this method to WorkoutPlanningService
+  Future<void> _deactivateOtherPlans(
+    String userId,
+    String currentPlanId,
+  ) async {
+    final snapshot =
+        await _firestore
+            .collection('workout_plans')
+            .doc(userId)
+            .collection('plans')
+            .where('isActive', isEqualTo: true)
+            .where(FieldPath.documentId, isNotEqualTo: currentPlanId)
+            .get();
+
+    final batch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.update(doc.reference, {'isActive': false});
+    }
+    await batch.commit();
   }
 
   // Get all workout plans for a user

@@ -1,5 +1,4 @@
 // lib/features/workouts/providers/workout_provider.dart
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workout.dart';
 import '../models/workout_log.dart';

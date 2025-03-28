@@ -8,7 +8,6 @@ import '../services/workout_service.dart';
 import 'workout_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/voice_guidance_service.dart';
-import '../models/workout_section.dart';
 
 class WorkoutExecutionState {
   final Workout workout;
@@ -103,61 +102,6 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
     : super(null) {
     _initializeVoiceGuidance();
   }
-
-  WorkoutSection? _getCurrentSection() {
-  if (state == null || state!.workout.sections.isEmpty) return null;
-  
-  int exerciseCount = 0;
-  for (final section in state!.workout.sections) {
-    exerciseCount += section.exercises.length;
-    if (state!.currentExerciseIndex < exerciseCount) {
-      return section;
-    }
-  }
-  
-  return null;
-}
-
-// Get exercise from potentially sectioned workout
-Exercise _getExerciseAtIndex(int index) {
-  if (state == null) {
-    throw Exception("Workout execution state is null");
-  }
-  
-  final workout = state!.workout;
-  
-  // If using the legacy exercises list
-  if (workout.sections.isEmpty) {
-    return workout.exercises[index];
-  }
-  
-  // Find the exercise in sections
-  int exerciseCount = 0;
-  for (final section in workout.sections) {
-    if (index < exerciseCount + section.exercises.length) {
-      return section.exercises[index - exerciseCount];
-    }
-    exerciseCount += section.exercises.length;
-  }
-  
-  throw Exception("Exercise index out of bounds");
-}
-
-// Get section index and local exercise index for a global exercise index
-({int sectionIndex, int localExerciseIndex})? _getSectionIndices(int globalIndex) {
-  if (state == null || state!.workout.sections.isEmpty) return null;
-  
-  int exerciseCount = 0;
-  for (int i = 0; i < state!.workout.sections.length; i++) {
-    final section = state!.workout.sections[i];
-    if (globalIndex < exerciseCount + section.exercises.length) {
-      return (sectionIndex: i, localExerciseIndex: globalIndex - exerciseCount);
-    }
-    exerciseCount += section.exercises.length;
-  }
-  
-  return null;
-}
 
   Future<void> _initializeVoiceGuidance() async {
     await _voiceGuidance.initialize();

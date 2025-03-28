@@ -14,6 +14,8 @@ import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/providers/analytics_provider.dart';
 import 'workout_browse_screen.dart';
 import '../../ai/screens/ai_workout_screen.dart';
+import '../models/workout_plan.dart';
+import '../models/plan_color.dart';
 
 // State provider for selected workouts
 final selectedWorkoutsProvider = StateProvider<List<SelectedWorkoutItem>>(
@@ -38,12 +40,14 @@ class WorkoutSchedulingScreen extends ConsumerStatefulWidget {
   final DateTime selectedDate;
   final String userId;
   final String planId;
+  final WorkoutPlan? plan;
 
   const WorkoutSchedulingScreen({
     Key? key,
     required this.selectedDate,
     required this.userId,
     required this.planId,
+    this.plan,
   }) : super(key: key);
 
   @override
@@ -103,6 +107,44 @@ class _WorkoutSchedulingScreenState
                   ],
                 ),
                 const SizedBox(height: 8),
+                if (widget.plan != null) ...[
+                  // Show plan badge
+                  Container(
+                    margin: const EdgeInsets.only(top: 4, bottom: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: widget.plan!.color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: widget.plan!.color.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: widget.plan!.color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Adding to ${widget.plan!.name}',
+                          style: AppTextStyles.small.copyWith(
+                            color: widget.plan!.color,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 Text(
                   'Select workouts to schedule for this day',
                   style: AppTextStyles.small.copyWith(
@@ -684,7 +726,9 @@ class _WorkoutSchedulingScreenState
                 const SizedBox(height: 8),
                 ElevatedButton(
                   onPressed:
-                      () => ref.refresh(customWorkoutsStreamProvider(widget.userId)),
+                      () => ref.refresh(
+                        customWorkoutsStreamProvider(widget.userId),
+                      ),
                   child: const Text('Retry'),
                 ),
               ],

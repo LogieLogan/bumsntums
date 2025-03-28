@@ -8,6 +8,7 @@ import 'package:bums_n_tums/features/workouts/widgets/calendar/workout_event_car
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:uuid/uuid.dart';
 import '../models/workout_log.dart';
 import '../models/workout_plan.dart';
 import '../providers/workout_calendar_provider.dart';
@@ -18,6 +19,8 @@ import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/providers/analytics_provider.dart';
 import 'workout_detail_screen.dart';
 import 'workout_analytics_screen.dart';
+import '../models/plan_color.dart';
+import '../widgets/plan_badge.dart';
 
 class WorkoutCalendarScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -841,7 +844,114 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
     ref.refresh(restDayRecommendationsProvider(widget.userId));
   }
 
-  void _addWorkoutToSelectedDay() {
+  Future<String?> _selectPlanForWorkout() async {
+    // Get all plans
+    final plans = await ref.read(
+      userWorkoutPlansProvider(widget.userId).future,
+    );
+
+    if (plans.isEmpty) {
+      // No plans exist, create a default plan
+      return await _createDefaultPlan();
+    }
+
+    // If only one plan exists, use that
+    if (plans.length == 1) {
+      return plans.first.id;
+    }
+
+    // More than one plan exists, show selection dialog
+    return await showDialog<String>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Select Plan'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: plans.length,
+                itemBuilder: (context, index) {
+                  final plan = plans[index];
+                  return ListTile(
+                    leading: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: plan.color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    title: Text(plan.name),
+                    trailing:
+                        plan.isActive
+                            ? const Icon(Icons.check, color: Colors.green)
+                            : null,
+                    onTap: () => Navigator.pop(context, plan.id),
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  // Method to create a default plan if none exists
+  Future<String?> _createDefaultPlan() async {
+    final now = DateTime.now();
+    final planId = const Uuid().v4();
+
+    // Create a plan with a more descriptive name than "My Workout Plan"
+    final plan = WorkoutPlan(
+      id: planId,
+      userId: widget.userId,
+      name: '${_getMonthName(now.month)} Training Plan',
+      description: 'Automatically created workout plan',
+      startDate: now,
+      goal: 'Stay fit and healthy',
+      scheduledWorkouts: [],
+      createdAt: now,
+      updatedAt: now,
+      colorName:
+          PlanColor
+              .predefinedColors[now.millisecondsSinceEpoch %
+                  PlanColor.predefinedColors.length]
+              .name,
+    );
+
+    final success = await ref
+        .read(workoutPlanActionsProvider.notifier)
+        .createWorkoutPlan(plan);
+
+    return success;
+  }
+
+  // Helper to get month name
+  String _getMonthName(int month) {
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    return months[month - 1];
+  }
+
+  void _addWorkoutToSelectedDay() async {
     // Log analytics
     ref
         .read(analyticsServiceProvider)
@@ -850,138 +960,206 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
           parameters: {'date': _selectedDay.toIso8601String()},
         );
 
-    // Check if there's an active plan or create one
-    final activePlanAsync = ref.read(activeWorkoutPlanProvider(widget.userId));
+    // Get plan ID using selection dialog
+    final planId = await _selectPlanForWorkout();
 
-    activePlanAsync.whenData((plan) async {
-      String planId;
+    if (planId == null) {
+      // User cancelled
+      return;
+    }
 
-      if (plan == null) {
-        // Create a simple plan if none exists
-        final newPlan = WorkoutPlan(
-          id: 'plan_${DateTime.now().millisecondsSinceEpoch}',
-          userId: widget.userId,
-          name: 'My Workout Plan',
-          startDate: DateTime.now(),
-          goal: 'Stay fit and healthy',
-          scheduledWorkouts: [],
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        );
+    // Navigate to scheduling screen with the selected plan
+    final plan = await ref.read(
+      workoutPlanProvider((userId: widget.userId, planId: planId)).future,
+    );
 
-        // Save the new plan
-        final createdPlanId = await ref
-            .read(workoutPlanActionsProvider.notifier)
-            .createWorkoutPlan(newPlan);
-
-        if (createdPlanId == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to create workout plan'),
-              backgroundColor: Colors.red,
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => WorkoutSchedulingScreen(
+              selectedDate: _selectedDay,
+              userId: widget.userId,
+              planId: planId,
+              plan: plan, // Pass the plan object for UI customization
             ),
-          );
-          return;
-        }
+      ),
+    );
 
-        planId = createdPlanId;
-      } else {
-        planId = plan.id;
-      }
-
-      // Navigate to the dedicated scheduling screen
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder:
-              (context) => WorkoutSchedulingScreen(
-                selectedDate: _selectedDay,
-                userId: widget.userId,
-                planId: planId,
-              ),
-        ),
-      );
-
-      // If workouts were scheduled, refresh the calendar
-      if (result == true) {
-        _refreshCalendarData();
-
-        // Force a rebuild of the selected day section
-        setState(() {
-          // Re-select the current day to force a refresh of the events
-          final currentSelectedDay = _selectedDay;
-          _selectedDay = DateTime(1970); // Temporary different value
-          _selectedDay = currentSelectedDay; // Set back to force rebuild
-        });
-      }
-    });
-  }
-
-  void _scheduleWorkout(
-    String userId,
-    String planId,
-    Workout workout,
-    DateTime date,
-  ) {
-    // Use the enhanced calendar provider instead
-    ref
-        .read(calendarStateProvider.notifier)
-        .scheduleWorkout(
-          userId: userId,
-          planId: planId,
-          workout: workout,
-          date: date,
-          reminderEnabled: true,
-        )
-        .then((success) {
-          if (success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  '${workout.title} scheduled for ${date.day}/${date.month}/${date.year}',
-                ),
-                backgroundColor: Colors.green,
-              ),
-            );
-
-            // Refresh the data
-            _refreshCalendarData();
-
-            // Explicitly update the selected day to trigger UI refresh for that day
-            setState(() {
-              // Re-select the current day to force a refresh of the events
-              final currentSelectedDay = _selectedDay;
-              _selectedDay = DateTime(1970); // Temporary different value
-              _selectedDay = currentSelectedDay; // Set back to force rebuild
-            });
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to schedule workout'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        });
+    // If workouts were scheduled, refresh the calendar
+    if (result == true) {
+      _refreshCalendarData();
+    }
   }
 
   Widget _buildCompactPlanView(WorkoutPlan plan) {
-    // Use your existing implementation
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: plan.color.withOpacity(0.3), width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: Text(plan.name, style: AppTextStyles.h2)),
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => _editWorkoutPlan(plan),
+            Row(
+              children: [
+                // Plan badge with color
+                PlanBadge(plan: plan),
+                const Spacer(),
+                // Edit button
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => _editWorkoutPlan(plan),
+                  tooltip: 'Edit Plan',
+                ),
+              ],
+            ),
+
+            if (plan.description != null && plan.description!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                plan.description!,
+                style: AppTextStyles.small.copyWith(
+                  color: AppColors.mediumGrey,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+
+            const SizedBox(height: 12),
+
+            // Plan details
+            Row(
+              children: [
+                _buildPlanStat(
+                  icon: Icons.calendar_today,
+                  label: 'Start Date',
+                  value: '${plan.startDate.day}/${plan.startDate.month}',
+                  color: plan.color,
+                ),
+                const SizedBox(width: 16),
+                _buildPlanStat(
+                  icon: Icons.fitness_center,
+                  label: 'Workouts',
+                  value: plan.scheduledWorkouts.length.toString(),
+                  color: plan.color,
+                ),
+                const SizedBox(width: 16),
+                _buildPlanStat(
+                  icon: Icons.flag,
+                  label: 'Goal',
+                  value: plan.goal.split(' ').first,
+                  color: plan.color,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // View workouts button
+            OutlinedButton.icon(
+              onPressed: () {
+                // Show scheduled workouts in a dialog
+                _showPlanWorkoutsDialog(context, plan);
+              },
+              icon: const Icon(Icons.visibility),
+              label: const Text('View Scheduled Workouts'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: plan.color,
+                side: BorderSide(color: plan.color),
+              ),
             ),
           ],
         ),
-        // Rest of your implementation...
-        // ...
-      ],
+      ),
+    );
+  }
+
+  // Add this helper method for the plan stats
+  Widget _buildPlanStat({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+          ),
+          Text(
+            label,
+            style: AppTextStyles.caption.copyWith(color: AppColors.mediumGrey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Add this method to show the plan's workouts
+  void _showPlanWorkoutsDialog(BuildContext context, WorkoutPlan plan) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('${plan.name} Workouts', style: AppTextStyles.h3),
+            content: SizedBox(
+              width: double.maxFinite,
+              child:
+                  plan.scheduledWorkouts.isEmpty
+                      ? const Center(child: Text('No workouts scheduled yet'))
+                      : ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: plan.scheduledWorkouts.length,
+                        itemBuilder: (context, index) {
+                          final workout = plan.scheduledWorkouts[index];
+                          final date = workout.scheduledDate;
+
+                          return ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: plan.color.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.fitness_center,
+                                color: plan.color,
+                              ),
+                            ),
+                            title: Text(workout.title),
+                            subtitle: Text(
+                              '${date.day}/${date.month} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}',
+                              style: AppTextStyles.small,
+                            ),
+                            trailing:
+                                workout.isCompleted
+                                    ? Icon(
+                                      Icons.check_circle,
+                                      color: AppColors.popGreen,
+                                    )
+                                    : null,
+                          );
+                        },
+                      ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
     );
   }
 

@@ -1,6 +1,8 @@
 // lib/features/workouts/models/workout_plan.dart
 import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'plan_color.dart';
 
 class WorkoutPlan extends Equatable {
   final String id;
@@ -14,6 +16,7 @@ class WorkoutPlan extends Equatable {
   final List<ScheduledWorkout> scheduledWorkouts;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? colorName;
 
   const WorkoutPlan({
     required this.id,
@@ -27,6 +30,7 @@ class WorkoutPlan extends Equatable {
     required this.scheduledWorkouts,
     required this.createdAt,
     required this.updatedAt,
+    this.colorName,
   });
 
   @override
@@ -56,6 +60,7 @@ class WorkoutPlan extends Equatable {
     List<ScheduledWorkout>? scheduledWorkouts,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? colorName,
   }) {
     return WorkoutPlan(
       id: id ?? this.id,
@@ -69,6 +74,7 @@ class WorkoutPlan extends Equatable {
       scheduledWorkouts: scheduledWorkouts ?? this.scheduledWorkouts,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      colorName: colorName ?? this.colorName,
     );
   }
 
@@ -85,6 +91,7 @@ class WorkoutPlan extends Equatable {
       'scheduledWorkouts': scheduledWorkouts.map((w) => w.toMap()).toList(),
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      'colorName': colorName,
     };
   }
 
@@ -95,15 +102,23 @@ class WorkoutPlan extends Equatable {
       name: map['name'] ?? '',
       description: map['description'],
       startDate: (map['startDate'] as Timestamp).toDate(),
-      endDate: map['endDate'] != null ? (map['endDate'] as Timestamp).toDate() : null,
+      endDate:
+          map['endDate'] != null
+              ? (map['endDate'] as Timestamp).toDate()
+              : null,
       isActive: map['isActive'] ?? true,
       goal: map['goal'] ?? '',
-      scheduledWorkouts: map['scheduledWorkouts'] != null
-          ? List<ScheduledWorkout>.from(
-              map['scheduledWorkouts']?.map((x) => ScheduledWorkout.fromMap(x)))
-          : [],
+      scheduledWorkouts:
+          map['scheduledWorkouts'] != null
+              ? List<ScheduledWorkout>.from(
+                map['scheduledWorkouts']?.map(
+                  (x) => ScheduledWorkout.fromMap(x),
+                ),
+              )
+              : [],
       createdAt: (map['createdAt'] as Timestamp).toDate(),
       updatedAt: (map['updatedAt'] as Timestamp).toDate(),
+      colorName: map['colorName'],
     );
   }
 }
@@ -180,10 +195,12 @@ class ScheduledWorkout extends Equatable {
       'workoutImageUrl': workoutImageUrl,
       'scheduledDate': Timestamp.fromDate(scheduledDate),
       'isCompleted': isCompleted,
-      'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
+      'completedAt':
+          completedAt != null ? Timestamp.fromDate(completedAt!) : null,
       'isRecurring': isRecurring,
       'recurrencePattern': recurrencePattern,
-      'reminderTime': reminderTime != null ? Timestamp.fromDate(reminderTime!) : null,
+      'reminderTime':
+          reminderTime != null ? Timestamp.fromDate(reminderTime!) : null,
       'reminderEnabled': reminderEnabled,
     };
   }
@@ -195,11 +212,31 @@ class ScheduledWorkout extends Equatable {
       workoutImageUrl: map['workoutImageUrl'],
       scheduledDate: (map['scheduledDate'] as Timestamp).toDate(),
       isCompleted: map['isCompleted'] ?? false,
-      completedAt: map['completedAt'] != null ? (map['completedAt'] as Timestamp).toDate() : null,
+      completedAt:
+          map['completedAt'] != null
+              ? (map['completedAt'] as Timestamp).toDate()
+              : null,
       isRecurring: map['isRecurring'] ?? false,
       recurrencePattern: map['recurrencePattern'],
-      reminderTime: map['reminderTime'] != null ? (map['reminderTime'] as Timestamp).toDate() : null,
+      reminderTime:
+          map['reminderTime'] != null
+              ? (map['reminderTime'] as Timestamp).toDate()
+              : null,
       reminderEnabled: map['reminderEnabled'] ?? false,
     );
+  }
+}
+
+extension WorkoutPlanColorExtension on WorkoutPlan {
+  Color get color {
+    if (colorName != null) {
+      final customColor = PlanColor.getColorByName(colorName!);
+      if (customColor != null) {
+        return customColor;
+      }
+    }
+
+    // If no color name or invalid, generate one from the plan name
+    return PlanColor.generateFromName(name).color;
   }
 }

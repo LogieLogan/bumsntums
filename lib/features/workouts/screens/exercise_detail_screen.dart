@@ -29,9 +29,6 @@ class ExerciseDetailScreen extends ConsumerWidget {
       ),
       body: exerciseAsync.when(
         data: (exercise) {
-          if (exercise == null) {
-            return const Center(child: Text('Exercise not found'));
-          }
           return _buildExerciseDetail(context, exercise, ref);
         },
         loading: () => const Center(child: LoadingIndicator()),
