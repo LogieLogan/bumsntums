@@ -292,3 +292,4 @@ Community trend insights that highlight popular workouts
 ### Bugs 
 - [ ] Execution screen buggy, sometime demos and ui components move and overlap 
 - [ ] Executions cant be completed and the app gets stuck at the end of a wokout 
+- [ ] Customisizing workouts doest save 
