@@ -20,7 +20,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: exerciseAsync.maybeWhen(
-          data: (exercise) => Text(exercise?.name ?? 'Exercise Details'),
+          data: (exercise) => Text(exercise.name),
           orElse: () => const Text('Exercise Details'),
         ),
         actions: [

@@ -2,7 +2,6 @@
 import 'package:bums_n_tums/features/workouts/models/exercise.dart';
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:developer' as developer;
 import '../theme/color_palette.dart';
 
@@ -117,9 +116,6 @@ class ExerciseMediaService {
         bgColor = AppColors.popCoral.withOpacity(0.3);
         levelText = 'Advanced';
         break;
-      default:
-        bgColor = AppColors.salmon.withOpacity(0.3);
-        levelText = 'Workout';
     }
 
     return Container(

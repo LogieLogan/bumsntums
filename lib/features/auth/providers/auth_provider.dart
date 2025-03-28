@@ -37,9 +37,8 @@ enum AuthState { initial, authenticated, unauthenticated, loading, error }
 // lib/features/auth/providers/auth_provider.dart (continued)
 class AuthStateNotifier extends StateNotifier<AuthState> {
   final FirebaseAuthService _authService;
-  final Ref _ref;
 
-  AuthStateNotifier(this._authService, this._ref) : super(AuthState.initial) {
+  AuthStateNotifier(this._authService, StateNotifierProviderRef<AuthStateNotifier, AuthState> ref) : super(AuthState.initial) {
     // Listen to auth state changes
     _authService.authStateChanges.listen((user) {
       if (user != null) {

@@ -441,7 +441,6 @@ class _ChatMessageWidget extends StatelessWidget {
 
     for (final match in matches) {
       if (match.groupCount >= 2) {
-        final linkText = match.group(1)!;
         final action = match.group(2)!;
         final placeholder = '---ACTION_LINK_${actionLinks.length}---';
 

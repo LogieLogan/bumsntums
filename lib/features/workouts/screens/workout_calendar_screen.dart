@@ -1,9 +1,9 @@
 // lib/features/workouts/screens/workout_calendar_screen.dart
-import 'package:bums_n_tums/features/workouts/models/workout.dart';
+import 'dart:math';
+
 import 'package:bums_n_tums/features/workouts/screens/workout_plan_editor_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_scheduling_screen.dart';
 import 'package:bums_n_tums/features/workouts/widgets/calendar/recurring_workout_dialog.dart';
-import 'package:bums_n_tums/features/workouts/widgets/calendar/rest_day_indicator.dart';
 import 'package:bums_n_tums/features/workouts/widgets/calendar/workout_event_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +21,8 @@ import 'workout_detail_screen.dart';
 import 'workout_analytics_screen.dart';
 import '../models/plan_color.dart';
 import '../widgets/plan_badge.dart';
+import '../services/smart_plan_detector.dart';
+import '../widgets/smart_plan_suggestion_card.dart';
 
 class WorkoutCalendarScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -40,8 +42,25 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
   CalendarFormat _calendarFormat = CalendarFormat.month;
   late TabController _tabController;
   bool _hasLoggedInitialBuild = false;
-  DateTime? _lastLoggedDate;
-  final Set<String> _loggedDays = {};
+  List<PatternSuggestion> _patternSuggestions = [];
+  bool _showPatternSuggestions = true;
+
+  void _checkForPatterns() {
+    final activePlanAsync = ref.read(activeWorkoutPlanProvider(widget.userId));
+
+    activePlanAsync.whenData((plan) {
+      if (plan != null && _showPatternSuggestions) {
+        final detector = SmartPlanDetector();
+        final newSuggestions = detector.detectPatterns(plan.scheduledWorkouts);
+
+        if (newSuggestions.isNotEmpty) {
+          setState(() {
+            _patternSuggestions = newSuggestions;
+          });
+        }
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -57,6 +76,9 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
       // Update calendar state with initial values
       ref.read(calendarStateProvider.notifier).selectDate(_selectedDay);
       ref.read(calendarStateProvider.notifier).changeFocusedMonth(_focusedDay);
+
+      // Check for patterns after loading
+      _checkForPatterns();
     });
   }
 
@@ -68,7 +90,6 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Get the date range for the visible calendar
     final now = DateTime.now();
     final startDate = DateTime(now.year, now.month - 1, 1);
     final endDate = DateTime(now.year, now.month + 2, 0);
@@ -134,6 +155,24 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
               // Store events in provider for drag-and-drop operations
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 ref.read(calendarStateProvider.notifier).updateEvents(events);
+
+                // Check for workout patterns after loading events
+                if (_showPatternSuggestions) {
+                  activePlanAsync.whenData((plan) {
+                    if (plan != null) {
+                      final detector = SmartPlanDetector();
+                      final newSuggestions = detector.detectPatterns(
+                        plan.scheduledWorkouts,
+                      );
+
+                      if (newSuggestions.isNotEmpty && mounted) {
+                        setState(() {
+                          _patternSuggestions = newSuggestions;
+                        });
+                      }
+                    }
+                  });
+                }
               });
 
               return Builder(
@@ -166,7 +205,34 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
                     });
                   });
 
-                  return _buildCalendarTab(combinedEvents, calendarState);
+                  return Stack(
+                    children: [
+                      _buildCalendarTab(combinedEvents, calendarState),
+
+                      // Show pattern suggestion if available
+                      if (_patternSuggestions.isNotEmpty)
+                        Positioned(
+                          bottom: 16,
+                          left: 0,
+                          right: 0,
+                          child: SmartPlanSuggestionCard(
+                            suggestion: _patternSuggestions.first,
+                            onCreatePlan:
+                                () => _createPlanFromSuggestion(
+                                  _patternSuggestions.first,
+                                ),
+                            onDismiss: () {
+                              setState(() {
+                                _patternSuggestions.removeAt(0);
+                                if (_patternSuggestions.isEmpty) {
+                                  _showPatternSuggestions = false;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                    ],
+                  );
                 },
               );
             },
@@ -185,7 +251,7 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
                     ElevatedButton(
                       onPressed: () {
                         // Refresh data
-                        ref.refresh(
+                        final _ =  ref.refresh(
                           combinedCalendarEventsProvider((
                             userId: widget.userId,
                             startDate: DateTime(
@@ -264,6 +330,197 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
         ],
       ),
     );
+  }
+
+  void _createPlanFromSuggestion(PatternSuggestion suggestion) async {
+    // Get relevant data from suggestion
+    final workouts = suggestion.matchedWorkouts;
+    if (workouts.isEmpty) return;
+
+    // Generate a plan name based on pattern type
+    String planName = 'My Workout Plan';
+    String planDescription = '';
+
+    if (suggestion.patternType == 'weekly') {
+      final daysOfWeek = workouts.map((w) => w.scheduledDate.weekday).toSet();
+      final dayNames = daysOfWeek.map((day) => _getDayName(day)).join(', ');
+      planName = '$dayNames Workout Plan';
+      planDescription = 'Workouts on $dayNames';
+    } else if (suggestion.patternType == 'daily') {
+      planName = 'Daily Workout Plan';
+      planDescription = 'Workouts every day';
+    } else if (suggestion.patternType == 'category-based') {
+      // Get the common category if all workouts have the same category
+      final categories =
+          workouts
+              .map((w) => w.workoutCategory)
+              .where((c) => c != null)
+              .toSet();
+
+      if (categories.length == 1 && categories.first != null) {
+        final categoryName = _getCategoryName(categories.first!);
+        planName = '$categoryName Workout Plan';
+        planDescription = 'Focus on $categoryName';
+      }
+    }
+
+    // Show plan creation dialog with pre-filled info
+    final result = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Create Workout Plan'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Create a new plan based on your workout pattern:'),
+                const SizedBox(height: 16),
+                TextFormField(
+                  initialValue: planName,
+                  decoration: const InputDecoration(labelText: 'Plan Name'),
+                  onChanged: (value) {
+                    planName = value;
+                  },
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  initialValue: planDescription,
+                  decoration: const InputDecoration(
+                    labelText: 'Description (Optional)',
+                  ),
+                  onChanged: (value) {
+                    planDescription = value;
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.pink,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Create Plan'),
+              ),
+            ],
+          ),
+    );
+
+    if (result == true) {
+      // Create the new plan
+      _createNewPlanWithWorkouts(planName, planDescription, workouts);
+    }
+
+    // Remove the suggestion
+    setState(() {
+      _patternSuggestions.remove(suggestion);
+    });
+  }
+
+  Future<void> _createNewPlanWithWorkouts(
+    String planName,
+    String description,
+    List<ScheduledWorkout> workouts,
+  ) async {
+    final uuid = const Uuid().v4();
+    final now = DateTime.now();
+
+    // Create start date based on earliest workout
+    final earliestDate = workouts
+        .map((w) => w.scheduledDate)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+
+    // Create the plan
+    final plan = WorkoutPlan(
+      id: uuid,
+      userId: widget.userId,
+      name: planName,
+      description: description,
+      startDate: earliestDate,
+      goal: 'Custom workout plan',
+      scheduledWorkouts: workouts,
+      createdAt: now,
+      updatedAt: now,
+      isActive: true,
+      colorName:
+          PlanColor
+              .predefinedColors[now.millisecondsSinceEpoch %
+                  PlanColor.predefinedColors.length]
+              .name,
+    );
+
+    // Save the plan
+    final success = await ref
+        .read(workoutPlanActionsProvider.notifier)
+        .savePlan(plan);
+
+    if (success) {
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Workout plan created successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Refresh data
+      _refreshCalendarData();
+
+      // Switch to the plan tab
+      _tabController.animateTo(1);
+    } else {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to create workout plan'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case 1:
+        return 'Monday';
+      case 2:
+        return 'Tuesday';
+      case 3:
+        return 'Wednesday';
+      case 4:
+        return 'Thursday';
+      case 5:
+        return 'Friday';
+      case 6:
+        return 'Saturday';
+      case 7:
+        return 'Sunday';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  String _getCategoryName(String category) {
+    switch (category.toLowerCase()) {
+      case 'bums':
+        return 'Bums';
+      case 'tums':
+        return 'Tums';
+      case 'fullbody':
+        return 'Full Body';
+      case 'cardio':
+        return 'Cardio';
+      case 'quickworkout':
+        return 'Quick Workout';
+      default:
+        return category;
+    }
   }
 
   Widget _buildCalendarTab(
@@ -369,9 +626,6 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
     Map<DateTime, List<dynamic>> events,
     CalendarState calendarState,
   ) {
-    // Add a set to track which days we've already logged
-    final Set<String> _loggedDays = {};
-
     return TableCalendar(
       firstDay: DateTime.utc(2020, 1, 1),
       lastDay: DateTime.utc(2030, 12, 31),
@@ -385,14 +639,8 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
       eventLoader: (day) {
         // Normalize the day to remove time component for comparison
         final normalizedDay = DateTime(day.year, day.month, day.day);
-        final dateKey = normalizedDay.toString();
-
-        // Get events
-        final eventsForDay = events[normalizedDay] ?? [];
-
-        return eventsForDay;
+        return events[normalizedDay] ?? [];
       },
-
       selectedDayPredicate: (day) {
         return isSameDay(_selectedDay, day);
       },
@@ -401,19 +649,8 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
           _selectedDay = selectedDay;
           _focusedDay = focusedDay;
         });
-
-        // Clear the day from logged days to allow re-logging
-        final selectedDayKey =
-            DateTime(
-              selectedDay.year,
-              selectedDay.month,
-              selectedDay.day,
-            ).toString();
-        _loggedDays.remove(selectedDayKey);
-
         ref.read(calendarStateProvider.notifier).selectDate(selectedDay);
       },
-      // Rest of the method remains unchanged
       onFormatChanged: (format) {
         setState(() {
           _calendarFormat = format;
@@ -434,37 +671,135 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
         });
         ref.read(calendarStateProvider.notifier).changeFocusedMonth(focusedDay);
       },
+      calendarStyle: const CalendarStyle(
+        markersMaxCount: 3,
+        markersAlignment: Alignment.bottomCenter,
+        markerMargin: EdgeInsets.symmetric(horizontal: 1),
+      ),
       calendarBuilders: CalendarBuilders(
-        markerBuilder: (context, date, events) {
-          if (events.isEmpty) return const SizedBox.shrink();
+        // Enhanced marker builder for better visualization
+        markerBuilder: (context, date, dateEvents) {
+          if (dateEvents.isEmpty) return const SizedBox.shrink();
 
           // Check if this is a rest day
-          final isRestDay = events.any((e) => e == 'REST_DAY');
+          final isRestDay = dateEvents.any((e) => e == 'REST_DAY');
 
-          // Count actual workout events (excluding rest day markers)
-          final workoutCount = events.where((e) => e != 'REST_DAY').length;
+          // Group events by type for better visualization
+          final workouts = dateEvents.where((e) => e != 'REST_DAY').toList();
+
+          // Calculate the overall intensity level for this day
+          int intensityLevel = _calculateDayIntensity(workouts);
+
+          // Get the dominant workout category
+          String? dominantCategory = _getDominantCategory(workouts);
 
           return Positioned(
             bottom: 1,
             child: Column(
               children: [
+                // Rest day indicator
                 if (isRestDay)
                   Container(
-                    margin: const EdgeInsets.only(bottom: 4),
-                    child: RestDayIndicator(
-                      isRecommended: true,
-                      reason: 'Rest day recommended for recovery',
+                    margin: const EdgeInsets.only(bottom: 2),
+                    width: 10,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                if (workoutCount > 0)
-                  Container(
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.pink,
-                    ),
-                    width: 8,
-                    height: 8,
+
+                // Workout indicators
+                if (workouts.isNotEmpty)
+                  _buildWorkoutIndicators(
+                    workouts,
+                    intensityLevel,
+                    dominantCategory,
                   ),
+              ],
+            ),
+          );
+        },
+
+        // Enhanced selected day builder
+        selectedBuilder: (context, date, _) {
+          return Container(
+            margin: const EdgeInsets.all(4.0),
+            decoration: BoxDecoration(
+              color: AppColors.pink.withOpacity(0.2),
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.pink, width: 1.5),
+            ),
+            child: Center(
+              child: Text(
+                '${date.day}',
+                style: const TextStyle(
+                  color: AppColors.pink,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          );
+        },
+
+        // Enhanced today builder
+        todayBuilder: (context, date, _) {
+          return Container(
+            margin: const EdgeInsets.all(4.0),
+            decoration: BoxDecoration(
+              color: AppColors.pink.withOpacity(0.1),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.pink.withOpacity(0.5),
+                width: 1,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                '${date.day}',
+                style: const TextStyle(
+                  color: AppColors.darkGrey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // Helper method to build workout indicators
+  Widget _buildWorkoutIndicators(
+    List<dynamic> workouts,
+    int intensityLevel,
+    String? dominantCategory,
+  ) {
+    // Choose color based on category
+    Color indicatorColor = _getCategoryColor(dominantCategory);
+
+    // Build dots based on workout count and intensity
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        min(workouts.length, 3), // Limit to 3 indicators
+        (index) {
+          // Vary size based on intensity
+          final double size = 6.0 + (intensityLevel * 0.3);
+
+          return Container(
+            width: size,
+            height: size,
+            margin: const EdgeInsets.symmetric(horizontal: 1),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: indicatorColor,
+              boxShadow: [
+                BoxShadow(
+                  color: indicatorColor.withOpacity(0.3),
+                  blurRadius: 1,
+                  spreadRadius: 0.3,
+                ),
               ],
             ),
           );
@@ -473,15 +808,79 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
     );
   }
 
+  // Helper method to calculate day intensity
+  int _calculateDayIntensity(List<dynamic> workouts) {
+    if (workouts.isEmpty) return 0;
+
+    int totalIntensity = 0;
+    int countWithIntensity = 0;
+
+    for (final event in workouts) {
+      if (event is ScheduledWorkout) {
+        totalIntensity += event.intensity;
+        countWithIntensity++;
+      }
+    }
+
+    if (countWithIntensity > 0) {
+      return (totalIntensity / countWithIntensity).round();
+    }
+
+    // Default intensity based on number of workouts
+    return min(workouts.length + 1, 5);
+  }
+
+  // Helper method to get dominant category
+  String? _getDominantCategory(List<dynamic> workouts) {
+    if (workouts.isEmpty) return null;
+
+    Map<String, int> categories = {};
+
+    for (final event in workouts) {
+      if (event is ScheduledWorkout && event.workoutCategory != null) {
+        categories[event.workoutCategory!] =
+            (categories[event.workoutCategory!] ?? 0) + 1;
+      }
+    }
+
+    if (categories.isEmpty) return null;
+
+    // Find category with highest count
+    String? dominant;
+    int maxCount = 0;
+
+    categories.forEach((category, count) {
+      if (count > maxCount) {
+        maxCount = count;
+        dominant = category;
+      }
+    });
+
+    return dominant;
+  }
+
+  // Helper method to get color for category
+  Color _getCategoryColor(String? category) {
+    if (category == null) return AppColors.pink;
+
+    switch (category.toLowerCase()) {
+      case 'bums':
+        return AppColors.salmon;
+      case 'tums':
+        return AppColors.popCoral;
+      case 'fullbody':
+        return AppColors.popBlue;
+      case 'cardio':
+        return AppColors.popGreen;
+      case 'quickworkout':
+        return AppColors.popYellow;
+      default:
+        return AppColors.pink;
+    }
+  }
+
   Widget _buildDayEventsSection(List<dynamic> events) {
     final filteredEvents = events.where((e) => e != 'REST_DAY').toList();
-
-    // Debug log only once per selection to reduce spam
-    if (_lastLoggedDate == null || !isSameDay(_lastLoggedDate!, _selectedDay)) {
-      print('Building day events section for ${_selectedDay.toString()}');
-      print('Events for selected day: ${filteredEvents.length}');
-      _lastLoggedDate = _selectedDay;
-    }
 
     // Check if this day is a recommended rest day
     final isRestDay = events.any((e) => e == 'REST_DAY');
@@ -493,7 +892,7 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section header
+          // Section header with improved styling
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16.0,
@@ -509,111 +908,251 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
                   ),
                 ),
                 if (filteredEvents.isNotEmpty)
-                  Text(
-                    '${filteredEvents.length} workout${filteredEvents.length != 1 ? 's' : ''}',
-                    style: AppTextStyles.small.copyWith(
-                      color: AppColors.mediumGrey,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.pink.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${filteredEvents.length} workout${filteredEvents.length != 1 ? 's' : ''}',
+                      style: AppTextStyles.small.copyWith(
+                        color: AppColors.pink,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
               ],
             ),
           ),
 
-          if (isRestDay)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
-              ),
-              child: RestDayIndicator(
-                isRecommended: true,
-                reason: 'Rest day recommended for recovery',
-              ),
-            ),
+          if (isRestDay) _buildRestDayCard(),
 
-          if (filteredEvents.isEmpty)
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 48,
-                      color: Colors.grey[300],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      isRestDay
-                          ? 'Rest day recommended - no workouts scheduled'
-                          : 'No workouts on this day',
-                      style: AppTextStyles.body.copyWith(
-                        color: Colors.grey[500],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
+          if (filteredEvents.isEmpty && !isRestDay)
+            _buildEmptyDayCard()
           else
             Expanded(
               child: ListView.builder(
                 itemCount: filteredEvents.length,
                 itemBuilder: (context, index) {
                   final event = filteredEvents[index];
-
-                  // Only log the first few items to reduce spam
-                  if (index < 2 &&
-                      (_lastLoggedDate == null ||
-                          !isSameDay(_lastLoggedDate!, _selectedDay))) {
-                    print('Event type: ${event.runtimeType}');
-                  } else if (index == 2 &&
-                      filteredEvents.length > 3 &&
-                      (_lastLoggedDate == null ||
-                          !isSameDay(_lastLoggedDate!, _selectedDay))) {
-                    print('... and ${filteredEvents.length - 2} more events');
-                  }
-
-                  if (event is WorkoutLog) {
-                    // Only log the first few for each type
-                    if (index < 2 &&
-                        (_lastLoggedDate == null ||
-                            !isSameDay(_lastLoggedDate!, _selectedDay))) {
-                      print('Rendering WorkoutLog: ${event.workoutId}');
-                    }
-                    return WorkoutEventCard(
-                      workout: event,
-                      isDraggable: false,
-                      onTap: () => _navigateToWorkoutDetail(event.workoutId),
-                    );
-                  } else if (event is ScheduledWorkout) {
-                    // Only log the first few for each type
-                    if (index < 2 &&
-                        (_lastLoggedDate == null ||
-                            !isSameDay(_lastLoggedDate!, _selectedDay))) {
-                      print('Rendering ScheduledWorkout: ${event.title}');
-                    }
-                    return WorkoutEventCard(
-                      workout: event,
-                      onTap: () => _navigateToWorkoutDetail(event.workoutId),
-                      onComplete:
-                          event.isCompleted
-                              ? null
-                              : () => _markWorkoutAsCompleted(event),
-                      onMakeRecurring:
-                          event.isRecurring
-                              ? null
-                              : () => _makeWorkoutRecurring(event),
-                      onReschedule:
-                          (newDate) => _rescheduleWorkout(event, newDate),
-                    );
-                  }
-
-                  return const SizedBox.shrink();
+                  return _buildEnhancedWorkoutCard(event);
                 },
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEnhancedWorkoutCard(dynamic event) {
+    if (event is WorkoutLog) {
+      // Enhanced completed workout card
+      return WorkoutEventCard(
+        workout: event,
+        isDraggable: false,
+        showIntensity: true,
+        showTargetAreas: true,
+        onTap: () => _navigateToWorkoutDetail(event.workoutId),
+      );
+    } else if (event is ScheduledWorkout) {
+      // Enhanced scheduled workout card
+      return WorkoutEventCard(
+        workout: event,
+        showIntensity: true,
+        showTargetAreas: true,
+        onTap: () => _navigateToWorkoutDetail(event.workoutId),
+        onComplete:
+            event.isCompleted ? null : () => _markWorkoutAsCompleted(event),
+        onMakeRecurring:
+            event.isRecurring ? null : () => _makeWorkoutRecurring(event),
+        onReschedule: (newDate) => _rescheduleWorkout(event, newDate),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildRestDayCard() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: AppColors.paleGrey,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.bedtime_outlined, color: Colors.blue),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Rest Day Recommended',
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Recovery helps improve results and prevent injury',
+                        style: AppTextStyles.small.copyWith(
+                          color: AppColors.mediumGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () {
+                // Show recovery activities dialog
+                _showRecoveryActivitiesDialog();
+              },
+              icon: const Icon(Icons.healing),
+              label: const Text('View Recovery Activities'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.blue,
+                side: const BorderSide(color: Colors.blue),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRecoveryActivitiesDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Recovery Activities', style: AppTextStyles.h3),
+              const SizedBox(height: 8),
+              Text(
+                'Try these activities to enhance your recovery',
+                style: AppTextStyles.small.copyWith(
+                  color: AppColors.mediumGrey,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildRecoveryActivity(
+                'Light stretching',
+                '10-15 minutes of gentle stretches',
+                Icons.self_improvement,
+              ),
+              _buildRecoveryActivity(
+                'Hydration',
+                'Drink plenty of water throughout the day',
+                Icons.water_drop,
+              ),
+              _buildRecoveryActivity(
+                'Sleep',
+                'Aim for 7-9 hours of quality sleep',
+                Icons.bedtime,
+              ),
+              _buildRecoveryActivity(
+                'Walking',
+                '20-30 minutes of easy walking',
+                Icons.directions_walk,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRecoveryActivity(
+    String title,
+    String description,
+    IconData icon,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: Colors.blue),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.body.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(description, style: AppTextStyles.small),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyDayCard() {
+    return Expanded(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.calendar_today, size: 48, color: Colors.grey[300]),
+            const SizedBox(height: 16),
+            Text(
+              'No workouts scheduled',
+              style: AppTextStyles.body.copyWith(color: Colors.grey[500]),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _addWorkoutToSelectedDay,
+              icon: const Icon(Icons.add),
+              label: const Text('Schedule Workout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.pink,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -833,76 +1372,17 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
 
   void _refreshCalendarData() {
     final now = DateTime.now();
-    ref.refresh(
+    final _ =  ref.refresh(
       combinedCalendarEventsProvider((
         userId: widget.userId,
         startDate: DateTime(now.year, now.month - 1, 1),
         endDate: DateTime(now.year, now.month + 2, 0),
       )),
     );
-    ref.refresh(activeWorkoutPlanProvider(widget.userId));
-    ref.refresh(restDayRecommendationsProvider(widget.userId));
+    final _ =  ref.refresh(activeWorkoutPlanProvider(widget.userId));
+    final _ =  ref.refresh(restDayRecommendationsProvider(widget.userId));
   }
 
-  Future<String?> _selectPlanForWorkout() async {
-    // Get all plans
-    final plans = await ref.read(
-      userWorkoutPlansProvider(widget.userId).future,
-    );
-
-    if (plans.isEmpty) {
-      // No plans exist, create a default plan
-      return await _createDefaultPlan();
-    }
-
-    // If only one plan exists, use that
-    if (plans.length == 1) {
-      return plans.first.id;
-    }
-
-    // More than one plan exists, show selection dialog
-    return await showDialog<String>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Select Plan'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: plans.length,
-                itemBuilder: (context, index) {
-                  final plan = plans[index];
-                  return ListTile(
-                    leading: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: plan.color,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    title: Text(plan.name),
-                    trailing:
-                        plan.isActive
-                            ? const Icon(Icons.check, color: Colors.green)
-                            : null,
-                    onTap: () => Navigator.pop(context, plan.id),
-                  );
-                },
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-            ],
-          ),
-    );
-  }
-
-  // Method to create a default plan if none exists
   Future<String?> _createDefaultPlan() async {
     final now = DateTime.now();
     final planId = const Uuid().v4();
@@ -960,19 +1440,54 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
           parameters: {'date': _selectedDay.toIso8601String()},
         );
 
-    // Get plan ID using selection dialog
-    final planId = await _selectPlanForWorkout();
-
-    if (planId == null) {
-      // User cancelled
-      return;
-    }
-
-    // Navigate to scheduling screen with the selected plan
-    final plan = await ref.read(
-      workoutPlanProvider((userId: widget.userId, planId: planId)).future,
+    // Check for active plan
+    final activePlanAsync = await ref.read(
+      activeWorkoutPlanProvider(widget.userId).future,
     );
 
+    if (activePlanAsync == null) {
+      // Create a default plan automatically if none exists
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text('Create Workout Plan'),
+              content: const Text(
+                'You need a workout plan to schedule workouts. Would you like to create one now?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    final planId = await _createDefaultPlan();
+                    if (planId != null) {
+                      // Refresh the data
+                      _refreshCalendarData();
+
+                      // Navigate to workout scheduling
+                      _navigateToWorkoutSelection(planId);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.pink,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Create Plan'),
+                ),
+              ],
+            ),
+      );
+    } else {
+      // Use the existing active plan
+      _navigateToWorkoutSelection(activePlanAsync.id);
+    }
+  }
+
+  void _navigateToWorkoutSelection(String planId) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -981,7 +1496,6 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
               selectedDate: _selectedDay,
               userId: widget.userId,
               planId: planId,
-              plan: plan, // Pass the plan object for UI customization
             ),
       ),
     );
@@ -1061,6 +1575,11 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
 
             const SizedBox(height: 16),
 
+            // Body focus distribution
+            _buildBodyFocusDistribution(plan),
+
+            const SizedBox(height: 16),
+
             // View workouts button
             OutlinedButton.icon(
               onPressed: () {
@@ -1080,7 +1599,132 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
     );
   }
 
-  // Add this helper method for the plan stats
+  Widget _buildBodyFocusDistribution(WorkoutPlan plan) {
+    // Extract distribution from plan or calculate if not available
+    Map<String, int> distribution = Map<String, int>.from(
+      plan.bodyFocusDistribution,
+    );
+
+    if (distribution.isEmpty) {
+      // Calculate distribution if not available in plan
+      distribution = _calculateBodyFocusDistribution(plan);
+    }
+
+    // If still empty, return nothing
+    if (distribution.isEmpty) return const SizedBox.shrink();
+
+    // Calculate total workouts
+    final totalWorkouts = plan.scheduledWorkouts.length;
+    if (totalWorkouts == 0) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Body Focus',
+          style: AppTextStyles.small.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+
+        // Focus areas bars
+        if (distribution.containsKey('bums'))
+          _buildFocusBar(
+            'Bums',
+            distribution['bums']! / totalWorkouts,
+            AppColors.salmon,
+          ),
+        if (distribution.containsKey('tums'))
+          _buildFocusBar(
+            'Tums',
+            distribution['tums']! / totalWorkouts,
+            AppColors.popCoral,
+          ),
+        if (distribution.containsKey('fullBody'))
+          _buildFocusBar(
+            'Full Body',
+            distribution['fullBody']! / totalWorkouts,
+            AppColors.popBlue,
+          ),
+        if (distribution.containsKey('cardio'))
+          _buildFocusBar(
+            'Cardio',
+            distribution['cardio']! / totalWorkouts,
+            AppColors.popGreen,
+          ),
+        if (distribution.containsKey('quickWorkout'))
+          _buildFocusBar(
+            'Quick',
+            distribution['quickWorkout']! / totalWorkouts,
+            AppColors.popYellow,
+          ),
+      ],
+    );
+  }
+
+  Map<String, int> _calculateBodyFocusDistribution(WorkoutPlan plan) {
+    Map<String, int> distribution = {};
+
+    for (final workout in plan.scheduledWorkouts) {
+      final category = workout.workoutCategory;
+      if (category != null) {
+        distribution[category] = (distribution[category] ?? 0) + 1;
+      }
+    }
+
+    return distribution;
+  }
+
+  Widget _buildFocusBar(String label, double percentage, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: AppTextStyles.caption.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${(percentage * 100).round()}%',
+                style: AppTextStyles.caption,
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Container(
+            height: 6,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: FractionallySizedBox(
+              widthFactor: percentage,
+              alignment: Alignment.centerLeft,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPlanStat({
     required IconData icon,
     required String label,
@@ -1105,7 +1749,6 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
     );
   }
 
-  // Add this method to show the plan's workouts
   void _showPlanWorkoutsDialog(BuildContext context, WorkoutPlan plan) {
     showDialog(
       context: context,

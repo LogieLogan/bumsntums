@@ -713,8 +713,7 @@ class _WorkoutEditorScreenState extends ConsumerState<WorkoutEditorScreen> {
         newType = SectionType.superset;
         break;
       case SectionType.superset:
-      default:
-        newType = SectionType.normal;
+      newType = SectionType.normal;
         break;
     }
 
@@ -1043,8 +1042,6 @@ class _WorkoutEditorScreenState extends ConsumerState<WorkoutEditorScreen> {
         return 'Cardio';
       case WorkoutCategory.quickWorkout:
         return 'Quick Workout';
-      default:
-        return 'Unknown';
     }
   }
 
@@ -1056,8 +1053,6 @@ class _WorkoutEditorScreenState extends ConsumerState<WorkoutEditorScreen> {
         return 'Intermediate';
       case WorkoutDifficulty.advanced:
         return 'Advanced';
-      default:
-        return 'Unknown';
     }
   }
 
@@ -1069,8 +1064,6 @@ class _WorkoutEditorScreenState extends ConsumerState<WorkoutEditorScreen> {
         return AppColors.popGreen;
       case SectionType.superset:
         return AppColors.popCoral;
-      default:
-        return AppColors.popBlue;
     }
   }
 
@@ -1082,8 +1075,6 @@ class _WorkoutEditorScreenState extends ConsumerState<WorkoutEditorScreen> {
         return 'Circuit';
       case SectionType.superset:
         return 'Superset';
-      default:
-        return 'Standard';
     }
   }
 
@@ -1095,8 +1086,6 @@ class _WorkoutEditorScreenState extends ConsumerState<WorkoutEditorScreen> {
         return Icons.loop;
       case SectionType.superset:
         return Icons.swap_horiz;
-      default:
-        return Icons.list;
     }
   }
 

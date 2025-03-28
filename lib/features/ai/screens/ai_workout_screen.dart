@@ -9,9 +9,7 @@ import '../../../features/auth/providers/user_provider.dart';
 import '../../../features/workouts/models/workout.dart';
 import '../../../features/workouts/models/exercise.dart';
 import '../providers/workout_recommendation_provider.dart';
-import '../../../features/workouts/screens/workout_execution_screen.dart';
 import '../../../features/workouts/screens/pre_workout_setup_screen.dart';
-import '../../workouts/providers/workout_execution_provider.dart';
 
 class AIWorkoutScreen extends ConsumerStatefulWidget {
   const AIWorkoutScreen({Key? key}) : super(key: key);

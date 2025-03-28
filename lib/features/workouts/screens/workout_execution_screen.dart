@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../models/workout_log.dart';
-import '../models/workout_section.dart';
 import '../providers/workout_execution_provider.dart';
 import '../providers/workout_calendar_provider.dart';
 import '../widgets/execution/exercise_completion_animation.dart';
@@ -34,7 +32,6 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
   Timer? _timer;
   int _secondsElapsed = 0;
   bool _showCompletionAnimation = false;
-  bool _isMusicPlaying = false;
 
   // Countdown timer for reps-based exercises
   Timer? _repCountdownTimer;
@@ -123,23 +120,6 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
         }
       });
     }
-  }
-
-  void _toggleBackgroundMusic() {
-    setState(() {
-      _isMusicPlaying = !_isMusicPlaying;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _isMusicPlaying
-              ? 'Background music turned on'
-              : 'Background music turned off',
-        ),
-        duration: const Duration(seconds: 1),
-      ),
-    );
   }
 
   @override
@@ -845,7 +825,7 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
       durationSeconds: _secondsElapsed,
     );
 
-    ref.refresh(
+    final _ =  ref.refresh(
       combinedCalendarEventsProvider((
         userId: userId,
         startDate: DateTime.now().subtract(const Duration(days: 365)),

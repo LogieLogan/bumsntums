@@ -15,7 +15,6 @@ import '../../../shared/providers/analytics_provider.dart';
 import 'workout_browse_screen.dart';
 import '../../ai/screens/ai_workout_screen.dart';
 import '../models/workout_plan.dart';
-import '../models/plan_color.dart';
 
 // State provider for selected workouts
 final selectedWorkoutsProvider = StateProvider<List<SelectedWorkoutItem>>(
@@ -381,157 +380,6 @@ class _WorkoutSchedulingScreenState
                   ),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSelectedWorkoutItem(SelectedWorkoutItem item, int index) {
-    return Container(
-      width: 140,
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.paleGrey),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Workout image
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-            ),
-            child: Stack(
-              children: [
-                Image.network(
-                  item.workout.imageUrl.isNotEmpty
-                      ? item.workout.imageUrl
-                      : 'https://placehold.co/140x70?text=Workout',
-                  height: 70,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 70,
-                      width: double.infinity,
-                      color: AppColors.lightGrey,
-                      child: const Icon(
-                        Icons.fitness_center,
-                        color: Colors.white,
-                      ),
-                    );
-                  },
-                ),
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: InkWell(
-                    onTap: () {
-                      final currentItems = List<SelectedWorkoutItem>.from(
-                        ref.read(selectedWorkoutsProvider),
-                      );
-                      currentItems.removeAt(index);
-                      ref.read(selectedWorkoutsProvider.notifier).state =
-                          currentItems;
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.close,
-                        size: 12,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Workout title
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
-            child: Text(
-              item.workout.title,
-              style: AppTextStyles.small.copyWith(fontWeight: FontWeight.bold),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-
-          // Time slot dropdown
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-            child: DropdownButton<TimeSlot>(
-              value: item.timeSlot,
-              isDense: true,
-              isExpanded: true,
-              underline: Container(height: 1, color: AppColors.lightGrey),
-              onChanged: (newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    final currentItems = List<SelectedWorkoutItem>.from(
-                      ref.read(selectedWorkoutsProvider),
-                    );
-                    currentItems[index].timeSlot = newValue;
-                    ref.read(selectedWorkoutsProvider.notifier).state =
-                        currentItems;
-                  });
-                }
-              },
-              items: [
-                DropdownMenuItem(
-                  value: TimeSlot.morning,
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.wb_sunny,
-                        size: 12,
-                        color: AppColors.popYellow,
-                      ),
-                      const SizedBox(width: 4),
-                      Text('Morning', style: AppTextStyles.small),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: TimeSlot.lunch,
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.restaurant,
-                        size: 12,
-                        color: AppColors.popBlue,
-                      ),
-                      const SizedBox(width: 4),
-                      Text('Lunch', style: AppTextStyles.small),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: TimeSlot.evening,
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.nightlight_round,
-                        size: 12,
-                        color: AppColors.darkGrey,
-                      ),
-                      const SizedBox(width: 4),
-                      Text('Evening', style: AppTextStyles.small),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ),
         ],
@@ -958,7 +806,7 @@ class _WorkoutSchedulingScreenState
         )
         .then((_) {
           // Refresh the custom workouts list
-          ref.refresh(customWorkoutsStreamProvider(widget.userId));
+          final _ =  ref.refresh(customWorkoutsStreamProvider(widget.userId));
         });
   }
 
@@ -978,7 +826,7 @@ class _WorkoutSchedulingScreenState
             _toggleWorkoutSelection(workout);
           }
           // Refresh the custom workouts list either way
-          ref.refresh(customWorkoutsStreamProvider(widget.userId));
+          final _ =  ref.refresh(customWorkoutsStreamProvider(widget.userId));
         });
   }
 

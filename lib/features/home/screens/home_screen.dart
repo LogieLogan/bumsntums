@@ -5,11 +5,8 @@ import 'package:bums_n_tums/features/workouts/screens/workout_browse_screen.dart
 import 'package:bums_n_tums/features/workouts/screens/workout_calendar_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:bums_n_tums/features/auth/providers/auth_provider.dart';
 import 'package:bums_n_tums/features/auth/providers/user_provider.dart';
 import 'package:bums_n_tums/shared/analytics/firebase_analytics_service.dart';
-import 'package:bums_n_tums/shared/constants/app_constants.dart';
 import 'package:bums_n_tums/shared/components/indicators/loading_indicator.dart';
 import 'package:bums_n_tums/shared/theme/color_palette.dart';
 import 'home_tab.dart';
@@ -41,26 +38,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (index == 3) {
       // Profile tab index
       try {
-        await ref.refresh(userProfileProvider.future);
+        final _ =  ref.refresh(userProfileProvider.future);
       } catch (e) {
         print("Error refreshing profile data: $e");
       }
-    }
-  }
-
-  Future<void> _signOut() async {
-    try {
-      await ref.read(authStateNotifierProvider.notifier).signOut();
-      if (mounted) {
-        GoRouter.of(context).go(AppConstants.loginRoute);
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error signing out: ${e.toString()}'),
-          backgroundColor: AppColors.error,
-        ),
-      );
     }
   }
 

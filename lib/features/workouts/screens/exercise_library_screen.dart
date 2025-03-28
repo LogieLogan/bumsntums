@@ -296,9 +296,9 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                 return RefreshIndicator(
                   onRefresh: () async {
                     // Refresh all providers
-                    ref.refresh(allExercisesProvider);
-                    ref.refresh(targetAreasProvider);
-                    ref.refresh(equipmentTypesProvider);
+                    final _ =  ref.refresh(allExercisesProvider);
+                    final _ =  ref.refresh(targetAreasProvider);
+                    final _ =  ref.refresh(equipmentTypesProvider);
                   },
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
@@ -333,9 +333,9 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                         ElevatedButton(
                           onPressed: () {
                             // Refresh all providers
-                            ref.refresh(allExercisesProvider);
-                            ref.refresh(targetAreasProvider);
-                            ref.refresh(equipmentTypesProvider);
+                            final _ =  ref.refresh(allExercisesProvider);
+                            final _ =  ref.refresh(targetAreasProvider);
+                            final _ =  ref.refresh(equipmentTypesProvider);
                           },
                           child: const Text('Try Again'),
                         ),

@@ -528,8 +528,6 @@ class _HomeTabState extends ConsumerState<HomeTab>
         return "Intermediate";
       case WorkoutDifficulty.advanced:
         return "Advanced";
-      default:
-        return "Beginner friendly";
     }
   }
 

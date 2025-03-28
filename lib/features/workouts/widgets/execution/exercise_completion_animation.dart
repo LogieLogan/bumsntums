@@ -1,6 +1,5 @@
 // lib/features/workouts/widgets/execution/exercise_completion_animation.dart
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import '../../../../shared/theme/color_palette.dart';
 
 class ExerciseCompletionAnimation extends StatelessWidget {

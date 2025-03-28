@@ -1,5 +1,4 @@
 // lib/shared/repositories/mock_workout_repository.dart
-import 'package:uuid/uuid.dart';
 import 'mock_data/index.dart';
 import '../../features/workouts/models/workout.dart';
 

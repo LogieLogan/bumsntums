@@ -212,7 +212,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       // Refresh the user profile provider to make sure the UI updates
       print("Refreshing user profile provider");
-      await ref.refresh(userProfileProvider);
+      final _ =  ref.refresh(userProfileProvider);
 
       // Show success message and navigate back
       if (mounted) {
@@ -912,7 +912,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
             const SizedBox(height: 8),
             ...question.options.map((option) {
-              final isSelected = question.selectedOption == option;
               return RadioListTile<String>(
                 title: Text(option),
                 value: option,

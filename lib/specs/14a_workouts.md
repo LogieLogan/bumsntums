@@ -288,3 +288,7 @@ Community trend insights that highlight popular workouts
 - [ ] Personalized motivation messages
 - [ ] Habit formation assistance
 - [ ] Recovery optimization
+
+### Bugs 
+- [ ] Execution screen buggy, sometime demos and ui components move and overlap 
+- [ ] Executions cant be completed and the app gets stuck at the end of a wokout 

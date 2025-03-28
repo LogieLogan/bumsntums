@@ -320,93 +320,6 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
       ],
     );
   }
-
-  Widget _buildProgressTrendChart(UserWorkoutStats stats) {
-    if (stats.monthlyTrend.isEmpty) {
-      return _buildEmptyDataWidget('No progress trend data available');
-    }
-
-    // Create month labels
-    final now = DateTime.now();
-    final labels = List.generate(6, (index) {
-      final month = now.month - (5 - index);
-      final adjustedMonth = month <= 0 ? month + 12 : month;
-      return _getMonthAbbreviation(adjustedMonth);
-    });
-
-    return SizedBox(
-      height: 200,
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          maxY:
-              stats.monthlyTrend.reduce((a, b) => a > b ? a : b).toDouble() + 1,
-          barTouchData: BarTouchData(enabled: false),
-          titlesData: FlTitlesData(
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: true, reservedSize: 30),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  if (value.toInt() >= 0 && value.toInt() < labels.length) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        labels[value.toInt()],
-                        style: AppTextStyles.caption,
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-            ),
-            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          ),
-          borderData: FlBorderData(show: false),
-          barGroups: List.generate(
-            6,
-            (index) => BarChartGroupData(
-              x: index,
-              barRods: [
-                BarChartRodData(
-                  toY: stats.monthlyTrend[index].toDouble(),
-                  color: AppColors.popBlue,
-                  width: 25,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    topRight: Radius.circular(4),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getMonthAbbreviation(int month) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month - 1];
-  }
-
   Widget _buildFrequencyChart(List<Map<String, dynamic>> frequencyData) {
     if (frequencyData.isEmpty) {
       return _buildEmptyDataWidget('No workout frequency data available');
@@ -640,7 +553,7 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
       );
 
       // Refresh the streak data
-      ref.refresh(userWorkoutStreakProvider(userId));
+      final _ =  ref.refresh(userWorkoutStreakProvider(userId));
     } else if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

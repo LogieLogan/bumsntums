@@ -397,9 +397,7 @@ class _PreWorkoutSetupScreenState extends ConsumerState<PreWorkoutSetupScreen> {
         return 'Intermediate';
       case WorkoutDifficulty.advanced:
         return 'Advanced';
-      default:
-        return 'Unknown';
-    }
+      }
   }
 
   Color _getSectionColor(SectionType type) {
@@ -410,9 +408,7 @@ class _PreWorkoutSetupScreenState extends ConsumerState<PreWorkoutSetupScreen> {
         return AppColors.popGreen;
       case SectionType.superset:
         return AppColors.popCoral;
-      default:
-        return AppColors.popBlue;
-    }
+      }
   }
 
   String _getSectionTypeName(SectionType type) {
@@ -423,9 +419,7 @@ class _PreWorkoutSetupScreenState extends ConsumerState<PreWorkoutSetupScreen> {
         return 'Circuit';
       case SectionType.superset:
         return 'Superset';
-      default:
-        return 'Standard';
-    }
+      }
   }
 
   IconData _getSectionTypeIcon(SectionType type) {
@@ -436,8 +430,6 @@ class _PreWorkoutSetupScreenState extends ConsumerState<PreWorkoutSetupScreen> {
         return Icons.loop;
       case SectionType.superset:
         return Icons.swap_horiz;
-      default:
-        return Icons.list;
-    }
+      }
   }
 }

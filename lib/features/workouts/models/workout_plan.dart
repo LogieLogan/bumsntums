@@ -17,6 +17,8 @@ class WorkoutPlan extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? colorName;
+  final Map<String, int> bodyFocusDistribution;
+  final double completionRate;
 
   const WorkoutPlan({
     required this.id,
@@ -31,6 +33,8 @@ class WorkoutPlan extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     this.colorName,
+    this.bodyFocusDistribution = const {},
+    this.completionRate = 0.0,
   });
 
   @override
@@ -61,6 +65,8 @@ class WorkoutPlan extends Equatable {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? colorName,
+    Map<String, int>? bodyFocusDistribution,
+    double? completionRate,
   }) {
     return WorkoutPlan(
       id: id ?? this.id,
@@ -75,6 +81,9 @@ class WorkoutPlan extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       colorName: colorName ?? this.colorName,
+      bodyFocusDistribution:
+          bodyFocusDistribution ?? this.bodyFocusDistribution,
+      completionRate: completionRate ?? this.completionRate,
     );
   }
 
@@ -121,6 +130,37 @@ class WorkoutPlan extends Equatable {
       colorName: map['colorName'],
     );
   }
+
+  List<ScheduledWorkout> getWorkoutsForDate(DateTime date) {
+    final normalizedDate = DateTime(date.year, date.month, date.day);
+    return scheduledWorkouts
+        .where(
+          (w) =>
+              w.scheduledDate.year == normalizedDate.year &&
+              w.scheduledDate.month == normalizedDate.month &&
+              w.scheduledDate.day == normalizedDate.day,
+        )
+        .toList();
+  }
+
+  // Calculate weekly distribution
+  Map<int, int> get weeklyDistribution {
+    Map<int, int> distribution = {};
+    for (final workout in scheduledWorkouts) {
+      final weekday = workout.scheduledDate.weekday;
+      distribution[weekday] = (distribution[weekday] ?? 0) + 1;
+    }
+    return distribution;
+  }
+
+  // Calculate completion metrics
+  int get completedWorkoutsCount =>
+      scheduledWorkouts.where((w) => w.isCompleted).length;
+
+  double calculateCompletionRate() {
+    if (scheduledWorkouts.isEmpty) return 0.0;
+    return completedWorkoutsCount / scheduledWorkouts.length;
+  }
 }
 
 class ScheduledWorkout extends Equatable {
@@ -134,6 +174,13 @@ class ScheduledWorkout extends Equatable {
   final String? recurrencePattern;
   final DateTime? reminderTime;
   final bool reminderEnabled;
+  final String? workoutCategory;
+  final String? workoutDifficulty;
+  final int? durationMinutes;
+  final int intensity;
+  final List<String> targetAreas;
+  final DateTime? lastCompletedDate;
+  final bool needsRecovery;
 
   const ScheduledWorkout({
     required this.workoutId,
@@ -146,6 +193,13 @@ class ScheduledWorkout extends Equatable {
     this.recurrencePattern,
     this.reminderTime,
     this.reminderEnabled = false,
+    this.workoutCategory,
+    this.workoutDifficulty,
+    this.durationMinutes,
+    this.intensity = 3, // Default medium intensity (1-5 scale)
+    this.targetAreas = const [],
+    this.lastCompletedDate,
+    this.needsRecovery = false,
   });
 
   @override
@@ -173,6 +227,13 @@ class ScheduledWorkout extends Equatable {
     String? recurrencePattern,
     DateTime? reminderTime,
     bool? reminderEnabled,
+    String? workoutCategory,
+    String? workoutDifficulty,
+    int? durationMinutes,
+    int? intensity,
+    List<String>? targetAreas,
+    DateTime? lastCompletedDate,
+    bool? needsRecovery,
   }) {
     return ScheduledWorkout(
       workoutId: workoutId ?? this.workoutId,
@@ -185,6 +246,13 @@ class ScheduledWorkout extends Equatable {
       recurrencePattern: recurrencePattern ?? this.recurrencePattern,
       reminderTime: reminderTime ?? this.reminderTime,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+      workoutCategory: workoutCategory ?? this.workoutCategory,
+      workoutDifficulty: workoutDifficulty ?? this.workoutDifficulty,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      intensity: intensity ?? this.intensity,
+      targetAreas: targetAreas ?? this.targetAreas,
+      lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
+      needsRecovery: needsRecovery ?? this.needsRecovery,
     );
   }
 

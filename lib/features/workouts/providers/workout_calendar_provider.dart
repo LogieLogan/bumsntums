@@ -49,7 +49,9 @@ final combinedCalendarEventsProvider = FutureProvider.family<
     // Log only once per unique date range
     final rangeKey = '${params.startDate}-${params.endDate}';
     if (!_loggedRanges.contains(rangeKey)) {
-      print('📆 Fetching calendar events for date range: ${params.startDate} to ${params.endDate}');
+      print(
+        '📆 Fetching calendar events for date range: ${params.startDate} to ${params.endDate}',
+      );
       print('📆 Found ${workoutsByDate.length} dates with completed workouts');
       _loggedRanges.add(rangeKey);
     }
@@ -64,9 +66,10 @@ final combinedCalendarEventsProvider = FutureProvider.family<
         ...logs,
       ]; // Create a new list to avoid type issues
     });
-    
-        print('📆 Attempting to get active workout plan for user: ${params.userId}');
-    
+
+    print(
+      '📆 Attempting to get active workout plan for user: ${params.userId}',
+    );
 
     // Get active workout plan
     final activePlan = await ref.watch(
@@ -212,10 +215,13 @@ final restDayRecommendationsProvider = FutureProvider.family<
 class CalendarState {
   final DateTime selectedDate;
   final DateTime focusedMonth;
-  final String viewMode; // 'month', 'week', 'day'
+  final String viewMode;
   final bool isEditing;
   final Map<DateTime, List<dynamic>> cachedEvents;
-  final List<DateTime> highlightedDates; // For rest day recommendations, etc.
+  final List<DateTime> highlightedDates;
+  final Map<DateTime, int> intensityHeatmap;
+  final Map<String, bool> muscleRecoveryStatus;
+  final bool showHeatmap;
 
   CalendarState({
     DateTime? selectedDate,
@@ -224,6 +230,9 @@ class CalendarState {
     this.isEditing = false,
     this.cachedEvents = const {},
     this.highlightedDates = const [],
+    this.intensityHeatmap = const {},
+    this.muscleRecoveryStatus = const {},
+    this.showHeatmap = false,
   }) : selectedDate = selectedDate ?? DateTime.now(),
        focusedMonth = focusedMonth ?? DateTime.now();
 
@@ -665,3 +674,110 @@ final scheduleConflictsProvider = FutureProvider.family<
 
   return conflicts;
 });
+
+final workoutBalanceProvider =
+    FutureProvider.family<Map<String, double>, String>((ref, userId) async {
+      final activePlanAsync = await ref.watch(
+        activeWorkoutPlanProvider(userId).future,
+      );
+
+      if (activePlanAsync == null) return {};
+
+      final total = activePlanAsync.scheduledWorkouts.length;
+      if (total == 0) return {};
+
+      final Map<String, double> balance = {};
+
+      activePlanAsync.bodyFocusDistribution.forEach((key, value) {
+        balance[key] = value / total;
+      });
+
+      return balance;
+    });
+
+final muscleRecoveryProvider = FutureProvider.family<Map<String, bool>, String>((ref, userId) async {
+  final now = DateTime.now();
+  final threeDaysAgo = now.subtract(const Duration(days: 3));
+  
+  // Get completed workouts in the last 3 days
+  final recentCompletedWorkouts = await ref.watch(
+    workoutCalendarDataProvider((
+      userId: userId,
+      startDate: threeDaysAgo,
+      endDate: now,
+    )).future
+  );
+  
+  // Track which muscle groups need recovery
+  Map<String, bool> recoveryStatus = {
+    'bums': false,
+    'tums': false,
+    'arms': false,
+    'legs': false,
+    'back': false,
+    'cardio': false,
+  };
+  
+  // Analyze logs to determine which muscle groups need recovery
+  recentCompletedWorkouts.forEach((date, logs) {
+    for (final log in logs) {
+      // Safe access to targetAreas
+      final areas = log.targetAreas;
+      
+      // Check each area
+      if (areas.contains('bums')) {
+        recoveryStatus['bums'] = true;
+      }
+      if (areas.contains('tums')) {
+        recoveryStatus['tums'] = true;
+      }
+      
+      // If no specific areas are tracked, try to use workout category from workoutId
+      if (areas.isEmpty) {
+        // We need to fetch workout details using the workoutId
+        // For now, use a simplified approach based on workout names or categories stored in the log
+        final workoutType = _inferWorkoutTypeFromLog(log);
+        if (workoutType == 'bums') {
+          recoveryStatus['bums'] = true;
+        } else if (workoutType == 'tums') {
+          recoveryStatus['tums'] = true;
+        } else if (workoutType == 'fullBody') {
+          // If it's a full body workout, mark multiple groups for recovery
+          recoveryStatus['bums'] = true;
+          recoveryStatus['tums'] = true;
+          recoveryStatus['arms'] = true;
+          recoveryStatus['legs'] = true;
+          recoveryStatus['back'] = true;
+        }
+      }
+    }
+  });
+  
+  return recoveryStatus;
+});
+
+// Helper function to infer workout type from log
+String _inferWorkoutTypeFromLog(WorkoutLog log) {
+  // First check if we have a category field
+  if (log.workoutCategory != null) {
+    return log.workoutCategory!;
+  }
+  
+  // If not, try to infer from workout name
+  final name = log.workoutName?.toLowerCase() ?? '';
+  
+  if (name.contains('bum') || name.contains('glute') || name.contains('leg')) {
+    return 'bums';
+  } else if (name.contains('tum') || name.contains('ab') || name.contains('core')) {
+    return 'tums';
+  } else if (name.contains('full') || name.contains('total')) {
+    return 'fullBody';
+  } else if (name.contains('arm') || name.contains('upper')) {
+    return 'arms';
+  } else if (name.contains('cardio') || name.contains('hiit')) {
+    return 'cardio';
+  }
+  
+  // Default to full body if we can't determine
+  return 'fullBody';
+}

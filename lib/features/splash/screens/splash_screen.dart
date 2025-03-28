@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/auth/providers/user_provider.dart';
 import '../../../shared/constants/app_constants.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

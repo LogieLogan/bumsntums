@@ -31,8 +31,6 @@ class MockWorkoutData {
         return getQuickWorkouts();
       case WorkoutCategory.cardio:
         return getCardioWorkouts();
-      default:
-        return [];
     }
   }
   

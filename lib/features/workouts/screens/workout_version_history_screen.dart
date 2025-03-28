@@ -279,8 +279,6 @@ class WorkoutVersionHistoryScreen extends ConsumerWidget {
         return 'Intermediate';
       case WorkoutDifficulty.advanced:
         return 'Advanced';
-      default:
-        return 'Unknown';
     }
   }
 }

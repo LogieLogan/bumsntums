@@ -1,7 +1,7 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-phase 2 - workout planning feature
+phase 2 - re structure workout planning feature
 
 project structure: 
 
@@ -145,6 +145,7 @@ project structure:
 │       ├── services
 │       │   ├── exercise_db_service.dart
 │       │   ├── exercise_service.dart
+│       │   ├── smart_plan_detector.dart
 │       │   ├── voice_guidance_service.dart
 │       │   ├── workout_planning_service.dart
 │       │   ├── workout_service.dart
@@ -152,7 +153,6 @@ project structure:
 │       └── widgets
 │           ├── calendar
 │           │   ├── recurring_workout_dialog.dart
-│           │   ├── rest_day_indicator.dart
 │           │   └── workout_event_card.dart
 │           ├── category_card.dart
 │           ├── execution
@@ -169,6 +169,7 @@ project structure:
 │           ├── exercise_type_tag.dart
 │           ├── plan_badge.dart
 │           ├── plan_color_picker.dart
+│           ├── smart_plan_suggestion_card.dart
 │           ├── workout_card.dart
 │           └── workout_progress_chart.dart
 ├── firebase_options_dev.dart

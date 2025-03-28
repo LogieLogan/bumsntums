@@ -1,6 +1,5 @@
 // lib/features/auth/services/fitness_profile_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/user_profile.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 
 class FitnessProfileService {

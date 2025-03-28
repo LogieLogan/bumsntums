@@ -552,40 +552,4 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _socialButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onPressed,
-    required String tooltip,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Container(
-        width: 55,
-        height: 55,
-        decoration: BoxDecoration(
-          color: AppColors.offWhite,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(27.5),
-            onTap: onPressed,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(icon, size: 26, color: color),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

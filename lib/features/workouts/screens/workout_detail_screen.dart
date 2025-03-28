@@ -478,8 +478,6 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
         return AppColors.popGreen;
       case SectionType.superset:
         return AppColors.popCoral;
-      default:
-        return AppColors.popBlue;
     }
   }
 
@@ -491,8 +489,6 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
         return 'Circuit';
       case SectionType.superset:
         return 'Superset';
-      default:
-        return 'Standard';
     }
   }
 
@@ -504,8 +500,6 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
         return Icons.loop;
       case SectionType.superset:
         return Icons.swap_horiz;
-      default:
-        return Icons.list;
     }
   }
 
@@ -563,7 +557,7 @@ class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
         // Handle refreshing the UI with the customized workout
         setState(() {
           // If you're using a provider, you'd refresh the provider state here
-          ref.refresh(workoutDetailsProvider(workout.id));
+          final _ =  ref.refresh(workoutDetailsProvider(workout.id));
         });
 
         ScaffoldMessenger.of(context).showSnackBar(

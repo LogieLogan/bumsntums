@@ -78,7 +78,6 @@ class BasicInfoStep extends ConsumerStatefulWidget {
 }
 
 class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
-  bool _isLoading = false;
   final LegalDocumentService _legalService = LegalDocumentService();
 
   @override
@@ -90,7 +89,6 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
 
   Future<void> _loadInitialData() async {
     setState(() {
-      _isLoading = true;
     });
     
     try {
@@ -107,7 +105,6 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
     } finally {
       if (mounted) {
         setState(() {
-          _isLoading = false;
           _validateInput();
         });
       }

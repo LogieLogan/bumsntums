@@ -15,6 +15,8 @@ class WorkoutEventCard extends StatefulWidget {
   final Function(DateTime)? onReschedule;
   final bool isDraggable;
   final WorkoutPlan? plan;
+  final bool showIntensity;
+  final bool showTargetAreas;
 
   const WorkoutEventCard({
     Key? key,
@@ -25,6 +27,8 @@ class WorkoutEventCard extends StatefulWidget {
     this.onReschedule,
     this.isDraggable = true,
     this.plan,
+    this.showIntensity = false,
+    this.showTargetAreas = false,
   }) : super(key: key);
 
   @override
@@ -129,21 +133,121 @@ class _WorkoutEventCardState extends State<WorkoutEventCard> {
     final card = Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       elevation: 2,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getEventColor(),
-          child: _getEventIcon(),
-        ),
-        title: Text(
-          _getEventTitle(),
-          style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(_getEventSubtitle()),
-            if (_showCompleteButton() || _showRecurringButton())
-              Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: CircleAvatar(
+              backgroundColor: _getEventColor(),
+              child: _getEventIcon(),
+            ),
+            title: Text(
+              _getEventTitle(),
+              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_getEventSubtitle()),
+
+                // Plan indicator if available
+                if (widget.plan != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: widget.plan!.color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          widget.plan!.name,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: widget.plan!.color,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: widget.onTap,
+          ),
+
+          // Show intensity if enabled
+          if (widget.showIntensity && _getEventIntensity() > 0)
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                bottom: 4.0,
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    'Intensity:',
+                    style: AppTextStyles.small.copyWith(
+                      color: AppColors.mediumGrey,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildIntensityIndicator(_getEventIntensity()),
+                ],
+              ),
+            ),
+
+          // Show target areas if enabled
+          if (widget.showTargetAreas && _getEventTargetAreas().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                bottom: 8.0,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Targets:',
+                    style: AppTextStyles.small.copyWith(
+                      color: AppColors.mediumGrey,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children:
+                          _getEventTargetAreas()
+                              .map((area) => _buildTargetAreaChip(area))
+                              .toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // Action buttons
+          if (_showCompleteButton() || _showRecurringButton())
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                bottom: 8.0,
+              ),
+              child: Row(
                 children: [
                   if (_showCompleteButton())
                     TextButton.icon(
@@ -173,38 +277,8 @@ class _WorkoutEventCardState extends State<WorkoutEventCard> {
                     ),
                 ],
               ),
-            if (widget.plan != null) ...[
-              const SizedBox(height: 4),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: widget.plan!.color,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      widget.plan!.name,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: widget.plan!.color,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ],
-        ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: widget.onTap,
+            ),
+        ],
       ),
     );
 
@@ -236,5 +310,76 @@ class _WorkoutEventCardState extends State<WorkoutEventCard> {
       },
       child: card,
     );
+  }
+
+  // Helper method to build intensity indicator
+  Widget _buildIntensityIndicator(int intensity) {
+    return Row(
+      children: List.generate(5, (index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 1),
+          child: Icon(
+            index < intensity ? Icons.circle : Icons.circle_outlined,
+            size: 10,
+            color: index < intensity ? AppColors.pink : Colors.grey[300],
+          ),
+        );
+      }),
+    );
+  }
+
+  // Helper method to build target area chip
+  Widget _buildTargetAreaChip(String area) {
+    Color chipColor;
+    switch (area.toLowerCase()) {
+      case 'bums':
+        chipColor = AppColors.salmon;
+        break;
+      case 'tums':
+        chipColor = AppColors.popCoral;
+        break;
+      case 'arms':
+        chipColor = AppColors.popBlue;
+        break;
+      case 'legs':
+        chipColor = AppColors.popGreen;
+        break;
+      case 'back':
+        chipColor = AppColors.popYellow;
+        break;
+      default:
+        chipColor = AppColors.mediumGrey;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: chipColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: chipColor, width: 0.5),
+      ),
+      child: Text(
+        area,
+        style: AppTextStyles.caption.copyWith(color: chipColor),
+      ),
+    );
+  }
+
+  // Helper methods to get workout properties
+  int _getEventIntensity() {
+    if (widget.workout is ScheduledWorkout) {
+      return (widget.workout as ScheduledWorkout).intensity;
+    }
+    // Default medium intensity
+    return 3;
+  }
+
+  List<String> _getEventTargetAreas() {
+    if (widget.workout is ScheduledWorkout) {
+      return (widget.workout as ScheduledWorkout).targetAreas;
+    } else if (widget.workout is WorkoutLog) {
+      return (widget.workout as WorkoutLog).targetAreas;
+    }
+    return [];
   }
 }

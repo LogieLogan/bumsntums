@@ -7,7 +7,6 @@ import 'package:bums_n_tums/shared/repositories/mock_data/tums_workouts.dart';
 import 'package:bums_n_tums/shared/utils/exercise_reference_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../models/workout.dart';
 import '../models/workout_log.dart';
@@ -18,7 +17,6 @@ class WorkoutService {
   final AnalyticsService _analytics;
   final MockWorkoutRepository _mockRepository = MockWorkoutRepository();
   bool _isInitialized = false;
-  ProviderContainer? _container;
 
   WorkoutService(this._analytics);
 

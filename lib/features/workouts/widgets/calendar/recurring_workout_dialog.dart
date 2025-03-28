@@ -241,27 +241,28 @@ class _RecurringWorkoutDialogState extends State<RecurringWorkoutDialog> {
             borderRadius: BorderRadius.circular(8),
           ),
           child: dates.isNotEmpty
-              ? ListView.builder(
-                  itemCount: dates.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 4.0,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.event,
-                            size: 16,
-                            color: Colors.grey[600],
-                          ),
-                          const SizedBox(width: 8),
-                          Text(_formatDate(dates[index])),
-                        ],
-                      ),
-                    );
-                  },
+              ? SingleChildScrollView(
+                  child: Column(
+                    children: dates.map((date) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 4.0,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.event,
+                              size: 16,
+                              color: Colors.grey[600],
+                            ),
+                            const SizedBox(width: 8),
+                            Text(_formatDate(date)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 )
               : Center(
                   child: Text(
@@ -276,52 +277,75 @@ class _RecurringWorkoutDialogState extends State<RecurringWorkoutDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Make "${widget.workoutTitle}" Recurring'),
-      content: SingleChildScrollView(
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
+              'Make "${widget.workoutTitle}" Recurring',
+              style: AppTextStyles.h3,
+            ),
+            const SizedBox(height: 8),
+            Text(
               'Starting from ${_formatDate(widget.initialDate)}',
               style: AppTextStyles.small.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
-            _buildPatternSelector(),
-            const SizedBox(height: 24),
-            _buildOccurrencesSelector(),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildPatternSelector(),
+                    const SizedBox(height: 24),
+                    _buildOccurrencesSelector(),
+                    const SizedBox(height: 16),
+                    _buildDaysOfWeekSelector(),
+                    const SizedBox(height: 24),
+                    _buildDatePreview(),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
-            _buildDaysOfWeekSelector(),
-            const SizedBox(height: 24),
-            _buildDatePreview(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(
+                      RecurringWorkoutSettings(
+                        pattern: _selectedPattern,
+                        occurrences: _occurrences,
+                        daysOfWeek: _selectedPattern == RecurrencePattern.weekly 
+                            ? _selectedDaysOfWeek 
+                            : null,
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.pink,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Save'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.of(context).pop(
-              RecurringWorkoutSettings(
-                pattern: _selectedPattern,
-                occurrences: _occurrences,
-                daysOfWeek: _selectedPattern == RecurrencePattern.weekly 
-                    ? _selectedDaysOfWeek 
-                    : null,
-              ),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.pink,
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('Save'),
-        ),
-      ],
     );
   }
 }

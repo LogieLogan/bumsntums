@@ -12,9 +12,12 @@ class WorkoutLog extends Equatable {
   final List<ExerciseLog> exercisesCompleted;
   final UserFeedback userFeedback;
   final bool isShared;
-  final String privacy; // 'private', 'followers', 'public'
+  final String privacy;
   final bool isOfflineCreated;
-  final String syncStatus; // 'synced', 'pending'
+  final String syncStatus;
+  final String? workoutCategory;
+  final String? workoutName;
+  final List<String> targetAreas;
 
   const WorkoutLog({
     required this.id,
@@ -30,6 +33,9 @@ class WorkoutLog extends Equatable {
     this.privacy = 'private',
     this.isOfflineCreated = false,
     this.syncStatus = 'synced',
+    this.workoutCategory,
+    this.workoutName,
+    this.targetAreas = const [],
   });
 
   @override
@@ -63,6 +69,9 @@ class WorkoutLog extends Equatable {
     String? privacy,
     bool? isOfflineCreated,
     String? syncStatus,
+    String? workoutCategory,
+    String? workoutName,
+    List<String>? targetAreas,
   }) {
     return WorkoutLog(
       id: id ?? this.id,
@@ -78,6 +87,9 @@ class WorkoutLog extends Equatable {
       privacy: privacy ?? this.privacy,
       isOfflineCreated: isOfflineCreated ?? this.isOfflineCreated,
       syncStatus: syncStatus ?? this.syncStatus,
+      workoutCategory: workoutCategory ?? this.workoutCategory,
+      workoutName: workoutName ?? this.workoutName,
+      targetAreas: targetAreas ?? this.targetAreas,
     );
   }
 
@@ -96,6 +108,9 @@ class WorkoutLog extends Equatable {
       'privacy': privacy,
       'isOfflineCreated': isOfflineCreated,
       'syncStatus': syncStatus,
+      'workoutCategory': workoutCategory,
+      'workoutName': workoutName,
+      'targetAreas': targetAreas,
     };
   }
 
@@ -108,15 +123,23 @@ class WorkoutLog extends Equatable {
       completedAt: DateTime.fromMillisecondsSinceEpoch(map['completedAt']),
       durationMinutes: map['durationMinutes']?.toInt() ?? 0,
       caloriesBurned: map['caloriesBurned']?.toInt() ?? 0,
-      exercisesCompleted: map['exercisesCompleted'] != null
-          ? List<ExerciseLog>.from(
-              map['exercisesCompleted']?.map((x) => ExerciseLog.fromMap(x)))
-          : [],
+      exercisesCompleted:
+          map['exercisesCompleted'] != null
+              ? List<ExerciseLog>.from(
+                map['exercisesCompleted']?.map((x) => ExerciseLog.fromMap(x)),
+              )
+              : [],
       userFeedback: UserFeedback.fromMap(map['userFeedback'] ?? {}),
       isShared: map['isShared'] ?? false,
       privacy: map['privacy'] ?? 'private',
       isOfflineCreated: map['isOfflineCreated'] ?? false,
       syncStatus: map['syncStatus'] ?? 'synced',
+      workoutCategory: map['workoutCategory'] ?? 'synced',
+      workoutName: map['workoutName'] ?? 'synced',
+      targetAreas:
+          map['targetAreas'] != null
+              ? List<String>.from(map['targetAreas'])
+              : [],
     );
   }
 }
@@ -126,7 +149,7 @@ class ExerciseLog extends Equatable {
   final int setsCompleted;
   final int repsCompleted;
   final int difficultyRating;
-  final String? notes; 
+  final String? notes;
 
   const ExerciseLog({
     required this.exerciseName,
@@ -177,12 +200,7 @@ class UserFeedback extends Equatable {
   });
 
   @override
-  List<Object?> get props => [
-    rating,
-    feltEasy,
-    feltTooHard,
-    comments,
-  ];
+  List<Object?> get props => [rating, feltEasy, feltTooHard, comments];
 
   Map<String, dynamic> toMap() {
     return {

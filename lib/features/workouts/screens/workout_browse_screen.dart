@@ -99,8 +99,8 @@ class _WorkoutBrowseScreenState extends ConsumerState<WorkoutBrowseScreen> {
       body: RefreshIndicator(
         onRefresh: () async {
           // Refresh workout data
-          ref.refresh(featuredWorkoutsProvider);
-          ref.refresh(allWorkoutsProvider);
+          final _ =  ref.refresh(featuredWorkoutsProvider);
+          final _ =  ref.refresh(allWorkoutsProvider);
         },
         child: ListView(
           children: [

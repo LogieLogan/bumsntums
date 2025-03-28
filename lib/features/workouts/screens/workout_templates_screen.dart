@@ -404,8 +404,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
         return AppColors.popGreen;
       case WorkoutCategory.quickWorkout:
         return AppColors.popTurquoise;
-      default:
-        return AppColors.mediumGrey;
     }
   }
 
@@ -421,8 +419,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
         return 'Cardio';
       case WorkoutCategory.quickWorkout:
         return 'Quick';
-      default:
-        return 'Other';
     }
   }
 
@@ -434,8 +430,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
         return 'Intermediate';
       case WorkoutDifficulty.advanced:
         return 'Advanced';
-      default:
-        return 'Unknown';
     }
   }
 

@@ -413,3 +413,9 @@ Contextual help that appears when needed
 - [ ] Advanced analytics dashboard
 - [ ] Custom plan creation
 - [ ] Recovery optimization tools
+
+### 7.3 Bugs
+- [ ] When making AI workout in the scheduling user journey the aorkout isnt saved to workouts
+- [ ] When selecting a stock workout in scheduling user journey there is no way to search/filter. When selecting browse categories button taken to main workout browse screen which cant schedule. 
+- [ ] Making new plans overrites old plans. Deactivated plans are deleted
+- [ ] Smart plans should appear on plans page. They should be smarter as they currently do repetative workouts i.e. monday same workout plan. whereas it should be more detect a three day workout block, or a week or two week block. Popup is annoying on calndar page. Doesnt work well with the schedule feature since as soon as you make a scedule of the same workout suddenly a plan is detected which isnt very insightful since the user made that schedule. 

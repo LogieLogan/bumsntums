@@ -32,7 +32,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     try {
       // Force a refresh of the userProfileProvider
-      await ref.refresh(userProfileProvider.future);
+      final _ = ref.refresh(userProfileProvider.future);
 
       // Explicitly fetch the profile to ensure data is updated
       final userService = ref.read(userProfileServiceProvider);
