@@ -58,11 +58,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/exercise-detail/:id',
         builder:
-            (context, state) => ExerciseDetailScreen(
-              exerciseId:
-                  state
-                      .pathParameters['id']!,
-            ),
+            (context, state) =>
+                ExerciseDetailScreen(exerciseId: state.pathParameters['id']!),
       ),
     ],
     errorBuilder:

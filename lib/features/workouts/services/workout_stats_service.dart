@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/workout_log.dart';
 import '../models/workout_stats.dart';
-import '../../workout_planning/models/workout_streak.dart';
+import '../models/workout_streak.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 
 class WorkoutStatsService {

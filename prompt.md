@@ -1,9 +1,26 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-phase 2 - workout schduling and planning 
-I want to refine the workout 
+workout planning screen built out as per spec and intergrates seamless ly with the rest of the application up to now.
 
+only part done is the tab is updated in the home screen (case 3)
+
+  Widget _buildContent(profile) {
+    switch (_currentIndex) {
+      case 0:
+        return HomeTab(profile: profile, onTabChange: _onTabTapped);
+      case 1:
+        return const WorkoutBrowseScreen();
+      case 2:
+        return const ScannerScreen();
+      case 3:
+        return WeeklyPlanningScreen(userId: profile.userId);
+      case 4:
+        return ProfileTab(profile: profile);
+      default:
+        return HomeTab(profile: profile, onTabChange: _onTabTapped);
+    }
+  }
 
 project structure: 
 
@@ -94,43 +111,7 @@ project structure:
 │   │   └── screens
 │   │       └── splash_screen.dart
 │   ├── workout_planning
-│   │   ├── models
-│   │   │   ├── plan_color.dart
-│   │   │   ├── workout_plan.dart
-│   │   │   └── workout_streak.dart
-│   │   ├── providers
-│   │   │   ├── calendar_events_provider.dart
-│   │   │   ├── calendar_state_provider.dart
-│   │   │   ├── workout_calendar_provider.dart
-│   │   │   ├── workout_planning_provider.dart
-│   │   │   └── workout_scheduling_provider.dart
-│   │   ├── repositories
-│   │   ├── screens
-│   │   │   ├── workout_calendar_screen.dart
-│   │   │   ├── workout_plan_editor_screen.dart
-│   │   │   └── workout_scheduling_screen.dart
-│   │   ├── services
-│   │   │   └── workout_planning_service.dart
-│   │   └── widgets
-│   │       ├── calendar
-│   │       │   ├── calendar_tab_view.dart
-│   │       │   ├── calendar_view.dart
-│   │       │   ├── day_events_section.dart
-│   │       │   ├── plan_creation_dialog.dart
-│   │       │   ├── plan_view.dart
-│   │       │   ├── plans_tab_view.dart
-│   │       │   ├── recurring_workout_dialog.dart
-│   │       │   └── workout_event_card.dart
-│   │       ├── feedback
-│   │       ├── interaction
-│   │       ├── planning
-│   │       │   └── plan_color_picker.dart
-│   │       └── scheduling
-│   │           ├── browse_workouts_tab.dart
-│   │           ├── my_workouts_tab.dart
-│   │           ├── schedule_footer.dart
-│   │           ├── scheduled_workout_item.dart
-│   │           └── selectable_workout_card.dart
+│   │   └── models
 │   └── workouts
 │       ├── data
 │       │   ├── exercise_repository.dart
@@ -143,11 +124,11 @@ project structure:
 │       │   ├── workout.dart
 │       │   ├── workout_log.dart
 │       │   ├── workout_section.dart
-│       │   └── workout_stats.dart
+│       │   ├── workout_stats.dart
+│       │   └── workout_streak.dart
 │       ├── providers
 │       │   ├── exercise_providers.dart
 │       │   ├── exercise_selector_provider.dart
-│       │   ├── workout_actions_provider.dart
 │       │   ├── workout_editor_provider.dart
 │       │   ├── workout_execution_provider.dart
 │       │   ├── workout_provider.dart
@@ -199,9 +180,7 @@ project structure:
 │           ├── exercise_image_widget.dart
 │           ├── exercise_list_item.dart
 │           ├── exercise_type_tag.dart
-│           ├── plan_badge.dart
-│           ├── workout_card.dart
-│           └── workout_progress_chart.dart
+│           └── workout_card.dart
 ├── firebase_options_dev.dart
 ├── flavors.dart
 ├── main.dart

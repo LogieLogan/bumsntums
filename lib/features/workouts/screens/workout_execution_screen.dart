@@ -8,7 +8,6 @@ import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../models/workout_log.dart';
 import '../providers/workout_execution_provider.dart';
-import '../../workout_planning/providers/workout_calendar_provider.dart';
 import '../widgets/execution/exercise_completion_animation.dart';
 import '../widgets/execution/exercise_timer.dart';
 import '../widgets/execution/rest_timer.dart';
@@ -823,14 +822,6 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
       workoutId: ref.read(workoutExecutionProvider)!.workout.id,
       workoutName: ref.read(workoutExecutionProvider)!.workout.title,
       durationSeconds: _secondsElapsed,
-    );
-
-    final _ =  ref.refresh(
-      combinedCalendarEventsProvider((
-        userId: userId,
-        startDate: DateTime.now().subtract(const Duration(days: 365)),
-        endDate: DateTime.now().add(const Duration(days: 30)),
-      )),
     );
   }
 

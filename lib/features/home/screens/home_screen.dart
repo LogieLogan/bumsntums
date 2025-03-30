@@ -1,6 +1,7 @@
 // lib/features/home/screens/home_screen.dart
 import 'package:bums_n_tums/features/ai/screens/ai_chat_screen.dart';
 import 'package:bums_n_tums/features/nutrition/screens/scanner_screen.dart';
+import 'package:bums_n_tums/features/workout_planning/screens/weekly_planning_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_browse_screen.dart';
 import 'package:bums_n_tums/features/workout_planning/screens/workout_calendar_screen.dart';
 import 'package:flutter/material.dart';
@@ -113,8 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 2:
         return const ScannerScreen();
       case 3:
-        // Show workout calendar by default, with a tab to switch to analytics
-        return WorkoutCalendarScreen(userId: profile.userId);
+        return WeeklyPlanningScreen(userId: profile.userId);
       case 4:
         return ProfileTab(profile: profile);
       default:
