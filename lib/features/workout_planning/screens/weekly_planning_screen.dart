@@ -1,8 +1,11 @@
 // lib/features/workout_planning/screens/weekly_planning_screen.dart
 import 'package:bums_n_tums/features/workout_planning/models/workout_plan.dart';
 import 'package:bums_n_tums/features/workout_planning/providers/workout_planning_provider.dart';
+import 'package:bums_n_tums/features/workout_planning/screens/ai_plan_creation_screen.dart';
+import 'package:bums_n_tums/features/workout_planning/widgets/plan_analytics_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../widgets/day_schedule_card.dart';
 import '../widgets/workout_day_header.dart';
@@ -113,6 +116,14 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
         controller: _tabController,
         children: [
           _buildWeeklyView(planState),
+          if (planState.value != null) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: PlanAnalyticsCard(plan: planState.value!),
+            ),
+            const SizedBox(height: 16),
+          ],
+
           CalendarView(
             userId: widget.userId,
             onDaySelected: (selectedDay) {
@@ -121,24 +132,54 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to workout selection for scheduling
-          _analyticsService.logEvent(name: 'add_scheduled_workout_tapped');
-          Navigator.pushNamed(
-            context,
-            '/workout-scheduling',
-            arguments: {
-              'scheduledDate': DateTime.now(),
-              'userId': widget.userId,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: 'add_workout',
+            onPressed: () {
+              _analyticsService.logEvent(name: 'add_scheduled_workout_tapped');
+              context
+                  .push(
+                    '/workout-scheduling',
+                    extra: {
+                      'scheduledDate': DateTime.now(),
+                      'userId': widget.userId,
+                    },
+                  )
+                  .then((_) {
+                    // Refresh data when returning from workout selection
+                    final _ = ref.refresh(
+                      workoutPlanningNotifierProvider(widget.userId),
+                    );
+                  });
             },
-          ).then((_) {
-            // Refresh data when returning from workout selection
-            final _ = ref.refresh(workoutPlanningNotifierProvider(widget.userId));
-          });
-        },
-        child: const Icon(Icons.add),
-        backgroundColor: AppColors.pink,
+            child: const Icon(Icons.add),
+            backgroundColor: AppColors.pink,
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton.extended(
+            heroTag: 'ai_plan',
+            onPressed: () {
+              _analyticsService.logEvent(name: 'create_ai_plan_tapped');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => AIPlanCreationScreen(userId: widget.userId),
+                ),
+              ).then((_) {
+                // Refresh data when returning from AI plan creation
+                final _ = ref.refresh(
+                  workoutPlanningNotifierProvider(widget.userId),
+                );
+              });
+            },
+            label: const Text('AI Plan'),
+            icon: const Icon(Icons.auto_awesome),
+            backgroundColor: AppColors.popBlue,
+          ),
+        ],
       ),
     );
   }
@@ -234,13 +275,11 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
                     parameters: {'day': DateFormat('yyyy-MM-dd').format(day)},
                   );
 
-                  Navigator.pushNamed(
-                    context,
-                    '/workout-scheduling',
-                    arguments: {'scheduledDate': day, 'userId': widget.userId},
-                  ).then((_) {
+                  context.push('/workout-scheduling').then((_) {
                     // Refresh data when returning from workout selection
-                    final _ = ref.refresh(workoutPlanningNotifierProvider(widget.userId));
+                    final _ = ref.refresh(
+                      workoutPlanningNotifierProvider(widget.userId),
+                    );
                   });
                 },
               )
@@ -251,11 +290,7 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
                 userId: widget.userId,
                 onWorkoutTap: (workout) {
                   // Navigate to workout detail
-                  Navigator.pushNamed(
-                    context,
-                    '/workout-detail',
-                    arguments: {'id': workout.workoutId},
-                  );
+                  context.push('/workout-detail/${workout.workoutId}');
                 },
                 onAddWorkout: () {
                   // Navigate to workout selection screen for this specific day
@@ -264,14 +299,14 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
                     parameters: {'day': DateFormat('yyyy-MM-dd').format(day)},
                   );
 
-                  Navigator.pushNamed(
-                    context,
-                    '/workout-browse',
-                    arguments: {'scheduledDate': day},
-                  ).then((_) {
-                    // Refresh data when returning from workout selection
-                    final _ = ref.refresh(workoutPlanningNotifierProvider(widget.userId));
-                  });
+                  context
+                      .push('/workout-browse', extra: {'scheduledDate': day})
+                      .then((_) {
+                        // Refresh data when returning from workout selection
+                        final _ = ref.refresh(
+                          workoutPlanningNotifierProvider(widget.userId),
+                        );
+                      });
                 },
               ),
 

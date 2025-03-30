@@ -233,7 +233,6 @@ The ideal workout planning experience should be intuitive, supportive, and adapt
   - Time constraints
   - Workout history
 - Pattern recognition from successful workouts
-- Recovery optimization algorithms
 - Progressive overload principles
 - Variety and engagement optimization
 
@@ -283,7 +282,6 @@ The ideal workout planning experience should be intuitive, supportive, and adapt
 
 ### Phase 4: Advanced Intelligence and Personalization
 - Implement learning from user preferences
-- Develop the advanced recovery optimization
 - Create the progression tracking system
 - Build the adaptive difficulty adjustment
 
@@ -316,7 +314,6 @@ The ideal workout planning experience should be intuitive, supportive, and adapt
 ### Data Structures:
 - Enhanced WorkoutPlan model with new metadata
 - Flexible scheduling primitives
-- Recovery tracking data points
 - User preference storage
 - Conversation history management
 
@@ -369,7 +366,6 @@ Copylib/
         workout_template.dart
         calendar_state.dart
         training_pattern.dart
-        recovery_tracker.dart
         planning_streak.dart
         
       # Main Screens
@@ -388,7 +384,6 @@ Copylib/
           workout_indicator.dart
           ghost_preview.dart
           optimal_day_indicator.dart
-          recovery_visualizer.dart
           energy_level_indicator.dart
           pattern_overlay.dart
           zoom_controller.dart
@@ -429,7 +424,6 @@ Copylib/
         workout_planning_service.dart
         calendar_service.dart
         workout_scheduling_service.dart
-        recovery_calculation_service.dart
         energy_prediction_service.dart
         pattern_detection_service.dart
         planning_streak_service.dart
@@ -442,7 +436,6 @@ Copylib/
         scheduled_workout_provider.dart
         workout_plan_provider.dart
         training_pattern_provider.dart
-        recovery_status_provider.dart
         planning_streak_provider.dart
         energy_prediction_provider.dart
         

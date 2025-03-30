@@ -1,26 +1,10 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-workout planning screen built out as per spec and intergrates seamless ly with the rest of the application up to now.
+Workout planning and analytics
+REview spec for guidance
+Review project files for current progress
 
-only part done is the tab is updated in the home screen (case 3)
-
-  Widget _buildContent(profile) {
-    switch (_currentIndex) {
-      case 0:
-        return HomeTab(profile: profile, onTabChange: _onTabTapped);
-      case 1:
-        return const WorkoutBrowseScreen();
-      case 2:
-        return const ScannerScreen();
-      case 3:
-        return WeeklyPlanningScreen(userId: profile.userId);
-      case 4:
-        return ProfileTab(profile: profile);
-      default:
-        return HomeTab(profile: profile, onTabChange: _onTabTapped);
-    }
-  }
 
 project structure: 
 
@@ -110,6 +94,28 @@ project structure:
 │   ├── splash
 │   │   └── screens
 │   │       └── splash_screen.dart
+│   ├── workout_planning
+│   │   ├── index.dart
+│   │   ├── models
+│   │   │   ├── scheduled_workout.dart
+│   │   │   └── workout_plan.dart
+│   │   ├── providers
+│   │   │   ├── ai_planning_provider.dart
+│   │   │   └── workout_planning_provider.dart
+│   │   ├── repositories
+│   │   │   └── workout_planning_repository.dart
+│   │   ├── screens
+│   │   │   ├── ai_plan_creation_screen.dart
+│   │   │   ├── weekly_planning_screen.dart
+│   │   │   └── workout_scheduling_screen.dart
+│   │   ├── services
+│   │   │   └── ai_planning_service.dart
+│   │   └── widgets
+│   │       ├── calendar_view.dart
+│   │       ├── day_schedule_card.dart
+│   │       ├── plan_analytics_card.dart
+│   │       ├── scheduled_workout_item.dart
+│   │       └── workout_day_header.dart
 │   └── workouts
 │       ├── data
 │       │   ├── exercise_repository.dart

@@ -621,6 +621,32 @@ Keep responses concise, positive, and reference their goals when relevant. Never
     // Default to general advice
     return 'general';
   }
+
+  Future<String> sendPrompt(String prompt) async {
+    if (!isReady) {
+      throw Exception("AI service is not ready yet");
+    }
+
+    try {
+      // Simple prompt without user context
+      final messages = [
+        {'role': 'user', 'content': prompt},
+      ];
+
+      // Make API request with retry logic
+      final response = await _makeRequestWithRetry(
+        messages: messages,
+        maxTokens: 1000,
+        temperature: 0.7,
+      );
+
+      final data = jsonDecode(response.body);
+      return data['choices'][0]['message']['content'];
+    } catch (e) {
+      debugPrint('Error sending prompt: $e');
+      throw Exception('Failed to get response: ${e.toString()}');
+    }
+  }
 }
 
 // Rate limit information class
