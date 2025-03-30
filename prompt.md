@@ -2,7 +2,7 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 
 MAIN FOCUS AREA:
 phase 2 - workout schduling and planning 
-I have redesigned the planning screen UI and vision of how I want it to 
+I want to refine the workout 
 
 
 project structure: 

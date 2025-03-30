@@ -1,6 +1,4 @@
-# Workout Planning, Tracking & Analytics - Enhanced Vision and Implementation
 
-After reviewing the current implementation and understanding the challenges, we need to reimagine the workout planning experience to create an intuitive, AI-driven system that feels natural and effortless. This document outlines the comprehensive vision for a transformative workout planning feature.
 
 ## Core User Problems in Workout Planning
 
@@ -31,7 +29,7 @@ After reviewing the current implementation and understanding the challenges, we 
 
 ## The Enhanced Vision: AI-Driven Workout Planning Journey
 
-The ideal workout planning experience should be intuitive, supportive, and adaptive - almost like having a personal trainer in your pocket, but more accessible and friendly. Users should never feel lost or confused about what to do next. The system should feel conversational, intelligent, and responsive to their needs.
+The ideal workout planning experience should be intuitive, supportive, and adaptive - almost like having a personal trainer in your pocket, but more accessible and friendly. Users should never feel lost or confused about what to do next. The system should feel conversational, intelligent, and responsive to their needs. Since the calendar UI element is limited in fucntionality and design this should only be a supportive screen and another way to interact. The main planning funtionality should be a customized syetem built from the ground up. 
 
 ### Key Experience Principles
 
@@ -51,7 +49,7 @@ The ideal workout planning experience should be intuitive, supportive, and adapt
 **Visual Design:**
 - Prominent, inviting card on the home screen with engaging imagery
 - Clear call-to-action: "Plan Your Fitness Journey" or "Create Your Perfect Workout Plan"
-- Subtle animation drawing attention to the planning feature
+- Subtle animations
 - Visual indication of AI assistance (subtle assistant icon)
 
 **Technical Implementation:**
@@ -72,14 +70,14 @@ The ideal workout planning experience should be intuitive, supportive, and adapt
   - Time Preference: Optional selector for preferred workout times
 
 **Visual Planning Board:**
-- Weekly grid/calendar showing the selected planning horizon
+- Main page is a lsit view of upcoming workouts broken down into weeks. Monday - Sunday.
 - Empty slots for workouts with subtle "+" indicators
 - Pre-suggested rest days with calming visuals
 - Time-of-day indicators (morning, afternoon, evening bands)
 - Micro-animations for interaction feedback
+- Optional calander view (already implemeted)
 
 **Implementation Details:**
-- Custom calendar grid widget optimized for planning
 - Responsive layout adapting to different screen sizes
 - Gesture recognition for intuitive interactions
 - Intelligent default suggestions based on user profile
@@ -90,7 +88,7 @@ The ideal workout planning experience should be intuitive, supportive, and adapt
 **Conversational Interface:**
 - Embedded chat interface with the AI assistant
 - Personalized introduction based on user's profile
-- Clear visualization of the suggested plan in the calendar grid
+- Clear visualization in the calendar grid
 - Contextual explanations of workout choices and sequencing
 - Natural language understanding for user modifications
 
@@ -288,7 +286,6 @@ The ideal workout planning experience should be intuitive, supportive, and adapt
 - Develop the advanced recovery optimization
 - Create the progression tracking system
 - Build the adaptive difficulty adjustment
-- Implement the plan effectiveness analytics
 
 ## Technical Implementation Considerations
 
@@ -352,7 +349,8 @@ The ideal workout planning experience should be intuitive, supportive, and adapt
 - Progress sharing between workout buddies
 
 NEW STRUCTURE AND IMPLEMENTATION BELOW
-Calendar-centric design with plans integrated directly into the calendar view
+Simple list view of days of the week brpken up into weeks sections (date range at the top of each week section) scrollable, simple and clean. This is where all of the main planning, scheduling and core components should live.
+Calendar screen is an additionl view displaying information simply and effectively.
 Spatial consistency for intuitive navigation and interaction
 Progressive disclosure of complexity based on user expertise
 Micro-commitments to encourage consistent planning behavior
