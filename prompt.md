@@ -110,8 +110,6 @@ project structure:
 │   ├── splash
 │   │   └── screens
 │   │       └── splash_screen.dart
-│   ├── workout_planning
-│   │   └── models
 │   └── workouts
 │       ├── data
 │       │   ├── exercise_repository.dart

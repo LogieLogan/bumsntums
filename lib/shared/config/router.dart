@@ -1,4 +1,6 @@
 // lib/shared/config/router.dart
+import 'package:bums_n_tums/features/workout_planning/screens/weekly_planning_screen.dart';
+import 'package:bums_n_tums/features/workout_planning/screens/workout_scheduling_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/exercise_detail_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/exercise_library_screen.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +62,26 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder:
             (context, state) =>
                 ExerciseDetailScreen(exerciseId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/workout-planning',
+        builder:
+            (context, state) => WeeklyPlanningScreen(
+              userId: state.uri.queryParameters['userId'] ?? '',
+            ),
+      ),
+      GoRoute(
+        path: '/workout-scheduling',
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>?;
+          final scheduledDate = args?['scheduledDate'] as DateTime?;
+          final userId = args?['userId'] as String? ?? '';
+
+          return WorkoutSchedulingScreen(
+            userId: userId,
+            scheduledDate: scheduledDate ?? DateTime.now(),
+          );
+        },
       ),
     ],
     errorBuilder:
