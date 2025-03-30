@@ -35,7 +35,6 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
   CalendarFormat _calendarFormat = CalendarFormat.month;
   late TabController _tabController;
   bool _hasLoggedInitialBuild = false;
-  bool _showPatternSuggestions = true;
 
   @override
   void initState() {
@@ -148,64 +147,6 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
     );
   }
 
-  // Other helper methods
-  Future<void> _createNewPlanWithWorkouts(
-    String planName,
-    String description,
-    List<ScheduledWorkout> workouts,
-  ) async {
-    final uuid = const Uuid().v4();
-    final now = DateTime.now();
-
-    // Create start date based on earliest workout
-    final earliestDate = workouts
-        .map((w) => w.scheduledDate)
-        .reduce((a, b) => a.isBefore(b) ? a : b);
-
-    // Create the plan
-    final plan = WorkoutPlan(
-      id: uuid,
-      userId: widget.userId,
-      name: planName,
-      description: description,
-      startDate: earliestDate,
-      goal: 'Custom workout plan',
-      scheduledWorkouts: workouts,
-      createdAt: now,
-      updatedAt: now,
-      isActive: true,
-      colorName: null, // This will use the default color selection logic
-    );
-
-    // Save the plan using the plan actions provider
-    final planActionsNotifier = ref.read(workoutPlanActionsProvider.notifier);
-    final success = await planActionsNotifier.savePlan(plan);
-
-    if (success) {
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Workout plan created successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Refresh data
-      _refreshCalendarData();
-
-      // Switch to the plan tab
-      _tabController.animateTo(1);
-    } else {
-      // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to create workout plan'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-  
   void _refreshCalendarData() {
     final now = DateTime.now();
     final _ = ref.refresh(
