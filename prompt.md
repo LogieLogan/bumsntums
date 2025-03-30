@@ -2,11 +2,7 @@ Using the Project Knowledge and the specs provided as your core instructions ple
 
 MAIN FOCUS AREA:
 phase 2 - workout schduling and planning 
-I want to reimaging the entire page. 
-I want the focus to be on 1,2,3,4 week workout plans 
-I want focus on beuatifucl design, exceptional UI/UX, delightful interations and simplicity. I want it to be like jotting down a note. I want AI to be the core of the planning experinece.
-
-Help me redesign the planning page. We can retian the calnedar screen as this is good but i need something better as the core planning experience. 
+I have redesigned the planning screen UI and vision of how I want it to 
 
 
 project structure: 
@@ -97,6 +93,44 @@ project structure:
 │   ├── splash
 │   │   └── screens
 │   │       └── splash_screen.dart
+│   ├── workout_planning
+│   │   ├── models
+│   │   │   ├── plan_color.dart
+│   │   │   ├── workout_plan.dart
+│   │   │   └── workout_streak.dart
+│   │   ├── providers
+│   │   │   ├── calendar_events_provider.dart
+│   │   │   ├── calendar_state_provider.dart
+│   │   │   ├── workout_calendar_provider.dart
+│   │   │   ├── workout_planning_provider.dart
+│   │   │   └── workout_scheduling_provider.dart
+│   │   ├── repositories
+│   │   ├── screens
+│   │   │   ├── workout_calendar_screen.dart
+│   │   │   ├── workout_plan_editor_screen.dart
+│   │   │   └── workout_scheduling_screen.dart
+│   │   ├── services
+│   │   │   └── workout_planning_service.dart
+│   │   └── widgets
+│   │       ├── calendar
+│   │       │   ├── calendar_tab_view.dart
+│   │       │   ├── calendar_view.dart
+│   │       │   ├── day_events_section.dart
+│   │       │   ├── plan_creation_dialog.dart
+│   │       │   ├── plan_view.dart
+│   │       │   ├── plans_tab_view.dart
+│   │       │   ├── recurring_workout_dialog.dart
+│   │       │   └── workout_event_card.dart
+│   │       ├── feedback
+│   │       ├── interaction
+│   │       ├── planning
+│   │       │   └── plan_color_picker.dart
+│   │       └── scheduling
+│   │           ├── browse_workouts_tab.dart
+│   │           ├── my_workouts_tab.dart
+│   │           ├── schedule_footer.dart
+│   │           ├── scheduled_workout_item.dart
+│   │           └── selectable_workout_card.dart
 │   └── workouts
 │       ├── data
 │       │   ├── exercise_repository.dart
@@ -106,25 +140,17 @@ project structure:
 │       │       └── json_exercise_data_source.dart
 │       ├── models
 │       │   ├── exercise.dart
-│       │   ├── plan_color.dart
 │       │   ├── workout.dart
 │       │   ├── workout_log.dart
-│       │   ├── workout_plan.dart
 │       │   ├── workout_section.dart
-│       │   ├── workout_stats.dart
-│       │   └── workout_streak.dart
+│       │   └── workout_stats.dart
 │       ├── providers
-│       │   ├── calendar_events_provider.dart
-│       │   ├── calendar_state_provider.dart
 │       │   ├── exercise_providers.dart
 │       │   ├── exercise_selector_provider.dart
 │       │   ├── workout_actions_provider.dart
-│       │   ├── workout_calendar_provider.dart
 │       │   ├── workout_editor_provider.dart
 │       │   ├── workout_execution_provider.dart
-│       │   ├── workout_planning_provider.dart
 │       │   ├── workout_provider.dart
-│       │   ├── workout_scheduling_provider.dart
 │       │   └── workout_stats_provider.dart
 │       ├── repositories
 │       │   └── custom_workout_repository.dart
@@ -141,38 +167,21 @@ project structure:
 │       │   ├── pre_workout_setup_screen.dart
 │       │   ├── workout_analytics_screen.dart
 │       │   ├── workout_browse_screen.dart
-│       │   ├── workout_calendar_screen.dart
 │       │   ├── workout_completion_screen.dart
 │       │   ├── workout_detail_screen.dart
 │       │   ├── workout_editor_screen.dart
 │       │   ├── workout_execution_screen.dart
 │       │   ├── workout_history_screen.dart
-│       │   ├── workout_plan_editor_screen.dart
-│       │   ├── workout_scheduling_screen.dart
 │       │   ├── workout_search_screen.dart
 │       │   ├── workout_templates_screen.dart
 │       │   └── workout_version_history_screen.dart
 │       ├── services
 │       │   ├── exercise_db_service.dart
 │       │   ├── exercise_service.dart
-│       │   ├── plan
-│       │   ├── smart_plan_detector.dart
 │       │   ├── voice_guidance_service.dart
-│       │   ├── workout_planning_service.dart
 │       │   ├── workout_service.dart
 │       │   └── workout_stats_service.dart
-│       ├── utils
-│       │   └── plan_suggestion_utils.dart
 │       └── widgets
-│           ├── calendar
-│           │   ├── calendar_tab_view.dart
-│           │   ├── calendar_view.dart
-│           │   ├── day_events_section.dart
-│           │   ├── plan_creation_dialog.dart
-│           │   ├── plan_view.dart
-│           │   ├── plans_tab_view.dart
-│           │   ├── recurring_workout_dialog.dart
-│           │   └── workout_event_card.dart
 │           ├── category_card.dart
 │           ├── editor
 │           │   ├── equipment_and_tags_section.dart
@@ -191,14 +200,6 @@ project structure:
 │           ├── exercise_list_item.dart
 │           ├── exercise_type_tag.dart
 │           ├── plan_badge.dart
-│           ├── plan_color_picker.dart
-│           ├── scheduling
-│           │   ├── browse_workouts_tab.dart
-│           │   ├── my_workouts_tab.dart
-│           │   ├── schedule_footer.dart
-│           │   ├── scheduled_workout_item.dart
-│           │   └── selectable_workout_card.dart
-│           ├── smart_plan_suggestion_card.dart
 │           ├── workout_card.dart
 │           └── workout_progress_chart.dart
 ├── firebase_options_dev.dart

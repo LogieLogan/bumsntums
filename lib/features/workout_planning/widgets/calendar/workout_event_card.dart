@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/theme/color_palette.dart';
 import '../../../../shared/theme/text_styles.dart';
-import '../../models/workout_log.dart';
+import '../../../workouts/models/workout_log.dart';
 import '../../models/workout_plan.dart';
 
 enum WorkoutEventType { scheduled, completed, missed }

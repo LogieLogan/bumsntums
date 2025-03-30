@@ -8,7 +8,7 @@ import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../models/workout_log.dart';
 import '../providers/workout_execution_provider.dart';
-import '../providers/workout_calendar_provider.dart';
+import '../../workout_planning/providers/workout_calendar_provider.dart';
 import '../widgets/execution/exercise_completion_animation.dart';
 import '../widgets/execution/exercise_timer.dart';
 import '../widgets/execution/rest_timer.dart';

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workout_plan.dart';
 import '../providers/workout_scheduling_provider.dart';
-import '../providers/workout_actions_provider.dart';
+import '../../workouts/providers/workout_actions_provider.dart';
 import '../widgets/scheduling/browse_workouts_tab.dart';
 import '../widgets/scheduling/my_workouts_tab.dart';
 import '../widgets/scheduling/schedule_footer.dart';

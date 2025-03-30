@@ -1,5 +1,5 @@
 // lib/features/workouts/screens/workout_calendar_screen.dart
-import 'package:bums_n_tums/features/workouts/providers/workout_planning_provider.dart';
+import 'package:bums_n_tums/features/workout_planning/providers/workout_planning_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -8,15 +8,12 @@ import '../models/workout_plan.dart';
 import '../providers/workout_calendar_provider.dart';
 import '../widgets/calendar/calendar_tab_view.dart';
 import '../widgets/calendar/plans_tab_view.dart';
-import '../widgets/calendar/plan_creation_dialog.dart';
-import '../utils/plan_suggestion_utils.dart';
 import '../widgets/calendar/recurring_workout_dialog.dart';
-import '../services/smart_plan_detector.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
 import '../../../shared/providers/analytics_provider.dart';
-import 'workout_detail_screen.dart';
-import 'workout_analytics_screen.dart';
+import '../../workouts/screens/workout_detail_screen.dart';
+import '../../workouts/screens/workout_analytics_screen.dart';
 import 'workout_plan_editor_screen.dart';
 import 'workout_scheduling_screen.dart';
 
@@ -38,7 +35,6 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
   CalendarFormat _calendarFormat = CalendarFormat.month;
   late TabController _tabController;
   bool _hasLoggedInitialBuild = false;
-  List<PatternSuggestion> _patternSuggestions = [];
   bool _showPatternSuggestions = true;
 
   @override
@@ -56,8 +52,6 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
       ref.read(calendarStateProvider.notifier).selectDate(_selectedDay);
       ref.read(calendarStateProvider.notifier).changeFocusedMonth(_focusedDay);
 
-      // Check for patterns after loading
-      _checkForPatterns();
     });
   }
 
@@ -65,23 +59,6 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  void _checkForPatterns() {
-    final activePlanAsync = ref.read(activeWorkoutPlanProvider(widget.userId));
-
-    activePlanAsync.whenData((plan) {
-      if (plan != null && _showPatternSuggestions) {
-        final detector = SmartPlanDetector();
-        final newSuggestions = detector.detectPatterns(plan.scheduledWorkouts);
-
-        if (newSuggestions.isNotEmpty) {
-          setState(() {
-            _patternSuggestions = newSuggestions;
-          });
-        }
-      }
-    });
   }
 
   @override
@@ -158,16 +135,6 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
             onNavigateToWorkoutDetail: _navigateToWorkoutDetail,
             onMarkWorkoutAsCompleted: _markWorkoutAsCompleted,
             onMakeWorkoutRecurring: _makeWorkoutRecurring,
-            patternSuggestions: _patternSuggestions,
-            onCreatePlanFromSuggestion: _createPlanFromSuggestion,
-            onDismissSuggestion: (suggestion) {
-              setState(() {
-                _patternSuggestions.remove(suggestion);
-                if (_patternSuggestions.isEmpty) {
-                  _showPatternSuggestions = false;
-                }
-              });
-            },
           ),
 
           // Plans Tab
@@ -179,37 +146,6 @@ class _WorkoutCalendarScreenState extends ConsumerState<WorkoutCalendarScreen>
         ],
       ),
     );
-  }
-
-  // The pattern-related functions simplified with utility methods
-  void _createPlanFromSuggestion(PatternSuggestion suggestion) async {
-    // Get relevant data from suggestion
-    final workouts = suggestion.matchedWorkouts;
-    if (workouts.isEmpty) return;
-
-    // Generate plan name and description
-    final planInfo = PlanSuggestionUtils.generatePlanNameFromSuggestion(suggestion);
-    String planName = planInfo.name;
-    String planDescription = planInfo.description;
-
-    // Show plan creation dialog with pre-filled info
-    final result = await showDialog<(String, String)?>(
-      context: context,
-      builder: (context) => PlanCreationDialog(
-        initialName: planName,
-        initialDescription: planDescription,
-      ),
-    );
-
-    if (result != null) {
-      // Create the new plan
-      _createNewPlanWithWorkouts(result.$1, result.$2, workouts);
-    }
-
-    // Remove the suggestion
-    setState(() {
-      _patternSuggestions.remove(suggestion);
-    });
   }
 
   // Other helper methods

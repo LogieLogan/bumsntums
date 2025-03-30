@@ -1,16 +1,14 @@
 // lib/features/workouts/widgets/calendar/calendar_tab_view.dart
-import 'package:bums_n_tums/features/workouts/widgets/calendar/calendar_view.dart';
-import 'package:bums_n_tums/features/workouts/widgets/calendar/day_events_section.dart';
+import 'package:bums_n_tums/features/workout_planning/widgets/calendar/calendar_view.dart';
+import 'package:bums_n_tums/features/workout_planning/widgets/calendar/day_events_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../models/workout_plan.dart';
 import '../../providers/workout_calendar_provider.dart';
-import '../../services/smart_plan_detector.dart';
 import '../../../../shared/components/indicators/loading_indicator.dart';
 import '../../../../shared/theme/color_palette.dart';
 import '../../../../shared/theme/text_styles.dart';
-import '../smart_plan_suggestion_card.dart';
 
 class CalendarTabView extends ConsumerWidget {
   final String userId;
@@ -25,9 +23,6 @@ class CalendarTabView extends ConsumerWidget {
   final Function(String) onNavigateToWorkoutDetail;
   final Function(ScheduledWorkout) onMarkWorkoutAsCompleted;
   final Function(ScheduledWorkout) onMakeWorkoutRecurring;
-  final List<PatternSuggestion> patternSuggestions;
-  final Function(PatternSuggestion) onCreatePlanFromSuggestion;
-  final Function(PatternSuggestion) onDismissSuggestion;
 
   const CalendarTabView({
     Key? key,
@@ -43,9 +38,6 @@ class CalendarTabView extends ConsumerWidget {
     required this.onNavigateToWorkoutDetail,
     required this.onMarkWorkoutAsCompleted,
     required this.onMakeWorkoutRecurring,
-    required this.patternSuggestions,
-    required this.onCreatePlanFromSuggestion,
-    required this.onDismissSuggestion,
   }) : super(key: key);
 
   @override
@@ -210,19 +202,6 @@ class CalendarTabView extends ConsumerWidget {
             ],
           ),
         ),
-
-        // Show pattern suggestion if available
-        if (patternSuggestions.isNotEmpty)
-          Positioned(
-            bottom: 16,
-            left: 0,
-            right: 0,
-            child: SmartPlanSuggestionCard(
-              suggestion: patternSuggestions.first,
-              onCreatePlan: () => onCreatePlanFromSuggestion(patternSuggestions.first),
-              onDismiss: () => onDismissSuggestion(patternSuggestions.first),
-            ),
-          ),
 
         // Drag Target Overlay (only visible when dragging)
         DragTarget<ScheduledWorkout>(

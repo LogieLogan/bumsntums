@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/workout_plan.dart';
 import '../../../../shared/theme/color_palette.dart';
 import '../../../../shared/theme/text_styles.dart';
-import '../plan_badge.dart';
+import '../../../workouts/widgets/plan_badge.dart';
 
 class PlanView extends StatelessWidget {
   final WorkoutPlan? plan;

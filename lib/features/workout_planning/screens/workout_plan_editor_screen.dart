@@ -1,5 +1,5 @@
 // lib/features/workouts/screens/workout_plan_editor_screen.dart
-import 'package:bums_n_tums/features/workouts/screens/workout_scheduling_screen.dart';
+import 'package:bums_n_tums/features/workout_planning/screens/workout_scheduling_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -11,7 +11,7 @@ import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/providers/analytics_provider.dart';
 import '../models/plan_color.dart';
-import '../widgets/plan_color_picker.dart';
+import '../widgets/planning/plan_color_picker.dart';
 
 class WorkoutPlanEditorScreen extends ConsumerStatefulWidget {
   final String userId;

@@ -3,7 +3,7 @@ import 'package:bums_n_tums/features/workouts/models/exercise.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/workout_plan.dart';
-import '../models/workout.dart';
+import '../../workouts/models/workout.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 
 class WorkoutPlanningService {

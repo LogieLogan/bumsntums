@@ -1,7 +1,7 @@
 // lib/features/workouts/providers/calendar_events_provider.dart
-import 'package:bums_n_tums/features/workouts/providers/workout_calendar_provider.dart';
+import 'package:bums_n_tums/features/workout_planning/providers/workout_calendar_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/workout_log.dart';
+import '../../workouts/models/workout_log.dart';
 import '../models/workout_plan.dart';
 
 final Set<String> _loggedRanges = {};

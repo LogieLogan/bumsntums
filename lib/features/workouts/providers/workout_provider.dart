@@ -8,14 +8,7 @@ import '../../../shared/providers/analytics_provider.dart';
 // Core providers
 final workoutServiceProvider = Provider<WorkoutService>((ref) {
   final analytics = ref.watch(analyticsServiceProvider);
-  final service = WorkoutService(analytics);
-
-  // Initialize the service when the provider is first read
-  service.initialize().catchError((e) {
-    print('Error initializing workout service: $e');
-  });
-
-  return service;
+  return WorkoutService(analytics);
 });
 
 // Workout data providers
@@ -29,58 +22,37 @@ final featuredWorkoutsProvider = FutureProvider<List<Workout>>((ref) async {
   return workoutService.getFeaturedWorkouts();
 });
 
-final workoutsByCategoryProvider =
-    FutureProvider.family<List<Workout>, WorkoutCategory>((
-      ref,
-      category,
-    ) async {
-      final workoutService = ref.watch(workoutServiceProvider);
-      return workoutService.getWorkoutsByCategory(category);
-    });
+final workoutsByCategoryProvider = FutureProvider.family<List<Workout>, WorkoutCategory>((ref, category) async {
+  final workoutService = ref.watch(workoutServiceProvider);
+  return workoutService.getWorkoutsByCategory(category);
+});
 
-final workoutsByDifficultyProvider =
-    FutureProvider.family<List<Workout>, WorkoutDifficulty>((
-      ref,
-      difficulty,
-    ) async {
-      final workoutService = ref.watch(workoutServiceProvider);
-      return workoutService.getWorkoutsByDifficulty(difficulty);
-    });
+final workoutsByDifficultyProvider = FutureProvider.family<List<Workout>, WorkoutDifficulty>((ref, difficulty) async {
+  final workoutService = ref.watch(workoutServiceProvider);
+  return workoutService.getWorkoutsByDifficulty(difficulty);
+});
 
-final workoutsByDurationProvider =
-    FutureProvider.family<List<Workout>, ({int min, int max})>((
-      ref,
-      range,
-    ) async {
-      final workoutService = ref.watch(workoutServiceProvider);
-      return workoutService.getWorkoutsByDuration(range.min, range.max);
-    });
+final workoutsByDurationProvider = FutureProvider.family<List<Workout>, ({int min, int max})>((ref, range) async {
+  final workoutService = ref.watch(workoutServiceProvider);
+  return workoutService.getWorkoutsByDuration(range.min, range.max);
+});
 
-final workoutDetailsProvider = FutureProvider.family<Workout?, String>((
-  ref,
-  workoutId,
-) async {
+final workoutDetailsProvider = FutureProvider.family<Workout?, String>((ref, workoutId) async {
   final workoutService = ref.watch(workoutServiceProvider);
   return workoutService.getWorkoutById(workoutId);
 });
 
-final userWorkoutHistoryProvider =
-    FutureProvider.family<List<WorkoutLog>, String>((ref, userId) async {
-      final workoutService = ref.watch(workoutServiceProvider);
-      return workoutService.getUserWorkoutHistory(userId);
-    });
+final userWorkoutHistoryProvider = FutureProvider.family<List<WorkoutLog>, String>((ref, userId) async {
+  final workoutService = ref.watch(workoutServiceProvider);
+  return workoutService.getUserWorkoutHistory(userId);
+});
 
-final userFavoriteWorkoutsProvider =
-    FutureProvider.family<List<Workout>, String>((ref, userId) async {
-      final workoutService = ref.watch(workoutServiceProvider);
-      return workoutService.getUserFavoriteWorkouts(userId);
-    });
+final userFavoriteWorkoutsProvider = FutureProvider.family<List<Workout>, String>((ref, userId) async {
+  final workoutService = ref.watch(workoutServiceProvider);
+  return workoutService.getUserFavoriteWorkouts(userId);
+});
 
-final isWorkoutFavoritedProvider =
-    FutureProvider.family<bool, ({String userId, String workoutId})>((
-      ref,
-      params,
-    ) async {
-      final workoutService = ref.watch(workoutServiceProvider);
-      return workoutService.isWorkoutFavorited(params.userId, params.workoutId);
-    });
+final isWorkoutFavoritedProvider = FutureProvider.family<bool, ({String userId, String workoutId})>((ref, params) async {
+  final workoutService = ref.watch(workoutServiceProvider);
+  return workoutService.isWorkoutFavorited(params.userId, params.workoutId);
+});

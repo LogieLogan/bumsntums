@@ -4,7 +4,7 @@ import 'package:bums_n_tums/features/workouts/screens/custom_workouts_screen.dar
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/workout_scheduling_provider.dart';
-import '../../screens/workout_editor_screen.dart';
+import '../../../workouts/screens/workout_editor_screen.dart';
 import '../../../ai/screens/ai_workout_screen.dart';
 import '../../../../shared/theme/color_palette.dart';
 import '../../../../shared/theme/text_styles.dart';

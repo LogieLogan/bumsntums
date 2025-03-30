@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/workout_stats.dart';
-import '../models/workout_streak.dart';
+import '../../workout_planning/models/workout_streak.dart';
 import '../providers/workout_stats_provider.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';

@@ -1,9 +1,9 @@
 // lib/features/workouts/widgets/scheduling/selectable_workout_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/workout.dart';
+import '../../../workouts/models/workout.dart';
 import '../../providers/workout_scheduling_provider.dart';
-import '../workout_card.dart';
+import '../../../workouts/widgets/workout_card.dart';
 import '../../../../shared/theme/color_palette.dart';
 
 class SelectableWorkoutCard extends ConsumerWidget {

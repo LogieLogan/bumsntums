@@ -1,7 +1,7 @@
 // lib/features/workouts/widgets/plan_color_picker.dart
 import 'package:flutter/material.dart';
-import '../models/plan_color.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../models/plan_color.dart';
+import '../../../../shared/theme/text_styles.dart';
 
 class PlanColorPicker extends StatefulWidget {
   final String? initialColorName;

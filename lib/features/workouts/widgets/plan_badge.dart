@@ -1,7 +1,7 @@
 // lib/features/workouts/widgets/plan_badge.dart
 import 'package:flutter/material.dart';
-import '../models/workout_plan.dart';
-import '../models/plan_color.dart';
+import '../../workout_planning/models/workout_plan.dart';
+import '../../workout_planning/models/plan_color.dart';
 import '../../../shared/theme/text_styles.dart';
 
 class PlanBadge extends StatelessWidget {

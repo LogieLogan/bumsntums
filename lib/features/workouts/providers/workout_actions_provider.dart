@@ -1,11 +1,11 @@
 // lib/features/workouts/providers/workout_actions_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workout.dart';
-import '../models/workout_plan.dart';
-import '../services/workout_planning_service.dart';
+import '../../workout_planning/models/workout_plan.dart';
+import '../../workout_planning/services/workout_planning_service.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../../shared/providers/analytics_provider.dart';
-import 'workout_planning_provider.dart';
+import '../../workout_planning/providers/workout_planning_provider.dart';
 
 class WorkoutActionsNotifier extends StateNotifier<AsyncValue<void>> {
   final WorkoutPlanningService _planningService;

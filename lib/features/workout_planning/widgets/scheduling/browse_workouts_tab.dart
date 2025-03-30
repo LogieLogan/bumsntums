@@ -2,12 +2,12 @@
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/workout_provider.dart';
+import '../../../workouts/providers/workout_provider.dart';
 import 'selectable_workout_card.dart';
 import '../../../../shared/theme/text_styles.dart';
 import '../../../../shared/theme/color_palette.dart';
 import '../../../../shared/components/indicators/loading_indicator.dart';
-import '../../screens/workout_browse_screen.dart';
+import '../../../workouts/screens/workout_browse_screen.dart';
 
 class BrowseWorkoutsTab extends ConsumerWidget {
   const BrowseWorkoutsTab({Key? key}) : super(key: key);

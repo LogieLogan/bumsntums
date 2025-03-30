@@ -1,5 +1,5 @@
 // lib/features/workouts/widgets/calendar/plans_tab_view.dart
-import 'package:bums_n_tums/features/workouts/widgets/calendar/plan_view.dart';
+import 'package:bums_n_tums/features/workout_planning/widgets/calendar/plan_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/workout_plan.dart';

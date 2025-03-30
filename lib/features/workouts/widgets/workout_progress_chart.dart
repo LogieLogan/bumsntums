@@ -1,6 +1,6 @@
 // lib/features/workouts/widgets/workout_progress_chart.dart
 import 'package:flutter/material.dart';
-import '../models/workout_plan.dart';
+import '../../workout_planning/models/workout_plan.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
 

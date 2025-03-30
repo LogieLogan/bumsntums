@@ -1,6 +1,6 @@
 // lib/shared/navigation/navigation.dart
 import 'package:bums_n_tums/features/workouts/screens/workout_analytics_screen.dart';
-import 'package:bums_n_tums/features/workouts/screens/workout_calendar_screen.dart';
+import 'package:bums_n_tums/features/workout_planning/screens/workout_calendar_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_history_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

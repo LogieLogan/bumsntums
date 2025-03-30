@@ -1,13 +1,13 @@
 // lib/features/workouts/providers/workout_calendar_provider.dart
 export 'calendar_events_provider.dart';
 export 'calendar_state_provider.dart';
-export 'workout_actions_provider.dart';
+export '../../workouts/providers/workout_actions_provider.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workout_plan.dart';
 import '../services/workout_planning_service.dart';
-import '../services/workout_stats_service.dart';
+import '../../workouts/services/workout_stats_service.dart';
 import '../../../shared/providers/analytics_provider.dart';
 
 // Provider for workout planning service

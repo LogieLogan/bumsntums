@@ -1,7 +1,7 @@
 // lib/features/workouts/providers/workout_scheduling_provider.dart
 import 'package:bums_n_tums/shared/analytics/firebase_analytics_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/workout.dart';
+import '../../workouts/models/workout.dart';
 import '../../../shared/providers/analytics_provider.dart';
 
 // Enum for time slots

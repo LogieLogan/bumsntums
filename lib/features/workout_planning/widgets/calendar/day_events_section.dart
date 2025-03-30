@@ -1,10 +1,10 @@
 // lib/features/workouts/widgets/calendar/day_events_section.dart
 import 'package:flutter/material.dart';
-import '../../models/workout_log.dart';
+import '../../../workouts/models/workout_log.dart';
 import '../../models/workout_plan.dart';
 import '../../../../shared/theme/color_palette.dart';
 import '../../../../shared/theme/text_styles.dart';
-import '../calendar/workout_event_card.dart';
+import 'workout_event_card.dart';
 
 class DayEventsSection extends StatelessWidget {
   final List<dynamic> events;
