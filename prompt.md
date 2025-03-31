@@ -1,36 +1,8 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-I have an ai spec and workouts spec and the beginnings of an ai workout creator implementation. 
-I need a new spec related to this that maps out the prompting strategy. 
-I need to make a simple yet effective and clear prompting engineering strategy
-the goals are 
-- make an ai workout based details supplied / confirmed in the workflow generator wizard.
-- generated workouts are accurate, useful and rich with detail
-- generated workouts use exercises from exewrcise db (workout_map) where possible
-- generated workouts accurately resemble users requirements
-- generated workouts can be edited manuaally to delete workouts
-- refine the workout using AI 
-- refined workouts are extentions of the orignal workout taking into consideration the deleted workouts if any are deleted
-- refined wrokouts do not add back deleted workouts
-- refined workouts use user feedback to determine how much the new workout should resembe the old workout (feedback 1-5 star score) 1 -start again 5 only make minor changes
--  refined workouts can be longer and shorter than the original workout and this should update in the UI
-- refined wrokouts screen should havea  clear exaplnation of what has chnaged and why
-- refined workouts can be reverted back to the original workout or previously amde refined workout
-
-how to achive these goals:
-workout generator needs ot be simple yet powerful to get structured and specific information about what it is they are want ing to create. The generated workout is only as good as the inputdata. 
-inout data is a combination of prefilled profile data that can be removed or edited or left and is there fore accepted; and new infomrtion about the specific workout. aspects include; body focus area, equipment, length and special requests (chat box for custom inputs)
-
-refinement should take into account the current workout as a guide on how to make the next workout. The newly refined workout is then the main new workout (unless reverted). 
-refinement can heppen over and over until the workout is created.
-
-transparency is key of what ifnromation is being used, what has chngaed,m. use typography and colours itelligently to infer thesr things subtly.
-
-what we need to do
-use this as a guide to start the thought process of making a ai_prompting spec for ai workout generation.
-consider the current specs in the spec to ensure consistenct with the rest of the app. 
-Use you prompt engineering skillset to make an efficient poowerful process that can make perfect personlaied wokrouts for everyone in seconds with extremely little effot.
+I need to refactor ai_workout_screen
+If we need to make a new folder to handle this part of the project then we should think about that that looks like first
 
 project structure: 
 
@@ -312,6 +284,7 @@ project structure:
     ├── 14b_workout_tracking_analytics.md
     └── 14c_workout_map.md
 
+review the relevant spec files
 Which of these files do you want to review? 
 
 

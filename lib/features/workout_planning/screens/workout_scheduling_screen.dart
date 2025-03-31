@@ -2,7 +2,7 @@
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:bums_n_tums/features/workouts/repositories/custom_workout_repository.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_editor_screen.dart';
-import 'package:bums_n_tums/features/ai/screens/ai_workout_screen.dart';
+import 'package:bums_n_tums/features/ai/screens/workout_creation/ai_workout_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_templates_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

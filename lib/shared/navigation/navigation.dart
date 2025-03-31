@@ -10,7 +10,7 @@ import '../../features/workouts/models/workout.dart';
 import '../../features/nutrition/screens/food_details_screen.dart';
 import '../../features/nutrition/models/food_item.dart';
 import '../../features/ai/screens/ai_chat_screen.dart';
-import '../../features/ai/screens/ai_workout_screen.dart';
+import '../../features/ai/screens/workout_creation/ai_workout_screen.dart';
 import '../constants/app_constants.dart';
 import '../config/router.dart';
 

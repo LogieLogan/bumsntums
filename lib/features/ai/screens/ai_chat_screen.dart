@@ -1,5 +1,5 @@
 // lib/features/ai/screens/ai_chat_screen.dart
-import 'package:bums_n_tums/features/ai/screens/ai_workout_screen.dart';
+import 'package:bums_n_tums/features/ai/screens/workout_creation/ai_workout_screen.dart';
 import 'package:bums_n_tums/shared/providers/environment_provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';

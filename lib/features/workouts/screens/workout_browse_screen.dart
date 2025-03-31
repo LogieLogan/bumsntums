@@ -1,5 +1,5 @@
 // lib/features/workouts/screens/workout_browse_screen.dart
-import 'package:bums_n_tums/features/ai/screens/ai_workout_screen.dart';
+import 'package:bums_n_tums/features/ai/screens/workout_creation/ai_workout_screen.dart';
 import 'package:bums_n_tums/features/auth/providers/auth_provider.dart';
 import 'package:bums_n_tums/features/workouts/screens/all_featured_workouts_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/beginner_workouts_screen.dart';
