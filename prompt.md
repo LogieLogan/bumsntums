@@ -1,25 +1,64 @@
 Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-Workout planning and analytics
-REview spec for guidance
-Review project files for current progress
+Next Implementation Priorities
 
+Workout Refinement Feature
+
+This would enable users to refine generated workouts through conversation
+We could implement the backend logic that's currently marked as "coming soon"
+This would complete the conversational workout creation experience
+
+
+Enhanced AI Plan Creation
+
+Apply the same conversational UI approach to the plan creation process
+Create a step-by-step flow similar to the workout creator
+Implement visualization of the plan schedule
+
+
+Improved AI Chat Experience
+
+Update the chat interface to be more conversational and engaging
+Add suggestion chips based on user history and profile
+Implement visual elements for different types of responses
+
+
+Seamless Transitions
+
+Create natural flows between features (e.g., "Create a plan from this workout")
+Implement contextual awareness between different AI interactions
 
 project structure: 
 
 ├── app.dart
 ├── features
 │   ├── ai
+│   │   ├── models
+│   │   │   ├── ai_context.dart
+│   │   │   ├── conversation.dart
+│   │   │   ├── message.dart
+│   │   │   ├── personality_settings.dart
+│   │   │   └── prompt_template.dart
 │   │   ├── providers
 │   │   │   ├── ai_chat_provider.dart
+│   │   │   ├── ai_planning_provider.dart
+│   │   │   ├── ai_service_provider.dart
 │   │   │   ├── openai_provider.dart
+│   │   │   ├── plan_creation_provider.dart
+│   │   │   ├── workout_generation_provider.dart
 │   │   │   └── workout_recommendation_provider.dart
 │   │   ├── screens
 │   │   │   ├── ai_chat_screen.dart
+│   │   │   ├── ai_plan_creation_screen.dart
 │   │   │   └── ai_workout_screen.dart
 │   │   └── services
-│   │       └── openai_service.dart
+│   │       ├── ai_planning_service.dart
+│   │       ├── context_service.dart
+│   │       ├── conversation_manager.dart
+│   │       ├── openai_service.dart
+│   │       ├── personality_engine.dart
+│   │       └── prompt_engine.dart
 │   ├── auth
 │   │   ├── models
 │   │   │   └── user_profile.dart
@@ -100,20 +139,15 @@ project structure:
 │   │   │   ├── scheduled_workout.dart
 │   │   │   └── workout_plan.dart
 │   │   ├── providers
-│   │   │   ├── ai_planning_provider.dart
 │   │   │   └── workout_planning_provider.dart
 │   │   ├── repositories
 │   │   │   └── workout_planning_repository.dart
 │   │   ├── screens
-│   │   │   ├── ai_plan_creation_screen.dart
 │   │   │   ├── weekly_planning_screen.dart
 │   │   │   └── workout_scheduling_screen.dart
-│   │   ├── services
-│   │   │   └── ai_planning_service.dart
 │   │   └── widgets
 │   │       ├── calendar_view.dart
 │   │       ├── day_schedule_card.dart
-│   │       ├── plan_analytics_card.dart
 │   │       ├── scheduled_workout_item.dart
 │   │       └── workout_day_header.dart
 │   └── workouts

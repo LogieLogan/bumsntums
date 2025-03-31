@@ -1,8 +1,8 @@
 // lib/features/workout_planning/screens/weekly_planning_screen.dart
 import 'package:bums_n_tums/features/workout_planning/models/workout_plan.dart';
 import 'package:bums_n_tums/features/workout_planning/providers/workout_planning_provider.dart';
-import 'package:bums_n_tums/features/workout_planning/screens/ai_plan_creation_screen.dart';
-import 'package:bums_n_tums/features/workout_planning/widgets/plan_analytics_card.dart';
+import 'package:bums_n_tums/features/ai/screens/ai_plan_creation_screen.dart';
+import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -101,86 +101,39 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
   Widget build(BuildContext context) {
     final planState = ref.watch(workoutPlanningNotifierProvider(widget.userId));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_showCalendarView ? 'Workout Calendar' : 'Workout Plan'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Weekly Plan', icon: Icon(Icons.view_week)),
-            Tab(text: 'Calendar', icon: Icon(Icons.calendar_today)),
-          ],
+    return Column(
+      children: [
+        // TabBar without AppBar dependency
+        Container(
+          color: AppColors.pink, // Match the app's primary color
+          child: TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(icon: Icon(Icons.view_week), text: 'Weekly Plan'),
+              Tab(icon: Icon(Icons.calendar_today), text: 'Calendar'),
+            ],
+            indicatorColor: Colors.white,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white.withOpacity(0.7),
+          ),
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildWeeklyView(planState),
-          if (planState.value != null) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: PlanAnalyticsCard(plan: planState.value!),
-            ),
-            const SizedBox(height: 16),
-          ],
 
-          CalendarView(
-            userId: widget.userId,
-            onDaySelected: (selectedDay) {
-              // Navigate to day detail or handle selection
-            },
+        // TabBarView
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildWeeklyView(planState),
+              CalendarView(
+                userId: widget.userId,
+                onDaySelected: (selectedDay) {
+                  // Handle day selection
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            heroTag: 'add_workout',
-            onPressed: () {
-              _analyticsService.logEvent(name: 'add_scheduled_workout_tapped');
-              context
-                  .push(
-                    '/workout-scheduling',
-                    extra: {
-                      'scheduledDate': DateTime.now(),
-                      'userId': widget.userId,
-                    },
-                  )
-                  .then((_) {
-                    // Refresh data when returning from workout selection
-                    final _ = ref.refresh(
-                      workoutPlanningNotifierProvider(widget.userId),
-                    );
-                  });
-            },
-            child: const Icon(Icons.add),
-            backgroundColor: AppColors.pink,
-          ),
-          const SizedBox(height: 16),
-          FloatingActionButton.extended(
-            heroTag: 'ai_plan',
-            onPressed: () {
-              _analyticsService.logEvent(name: 'create_ai_plan_tapped');
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) => AIPlanCreationScreen(userId: widget.userId),
-                ),
-              ).then((_) {
-                // Refresh data when returning from AI plan creation
-                final _ = ref.refresh(
-                  workoutPlanningNotifierProvider(widget.userId),
-                );
-              });
-            },
-            label: const Text('AI Plan'),
-            icon: const Icon(Icons.auto_awesome),
-            backgroundColor: AppColors.popBlue,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -189,28 +142,105 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
       children: [
         // Week navigation header
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: const EdgeInsets.all(16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left),
                 onPressed: _previousWeek,
+                iconSize: 28,
               ),
               TextButton(
                 onPressed: _goToCurrentWeek,
                 child: Text(
                   _formatWeekRange(),
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
                 onPressed: _nextWeek,
+                iconSize: 28,
               ),
             ],
           ),
         ),
+
+        // AI Plan Card
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+          child: Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: InkWell(
+              onTap: () {
+                _analyticsService.logEvent(name: 'create_ai_plan_tapped');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) =>
+                            AIPlanCreationScreen(userId: widget.userId),
+                  ),
+                ).then((_) {
+                  final _ = ref.refresh(
+                    workoutPlanningNotifierProvider(widget.userId),
+                  );
+                });
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10.0),
+                      decoration: BoxDecoration(
+                        color: AppColors.popBlue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.auto_awesome,
+                        color: AppColors.popBlue,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'AI Workout Plan',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Let AI create a personalized workout schedule for you',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.mediumGrey),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: AppColors.mediumGrey,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12),
 
         // Main content
         Expanded(
@@ -269,18 +299,22 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
                   // Navigate to workout detail
                 },
                 onAddWorkout: () {
-                  // Navigate to workout selection screen for this specific day
                   _analyticsService.logEvent(
                     name: 'add_workout_for_day_tapped',
                     parameters: {'day': DateFormat('yyyy-MM-dd').format(day)},
                   );
 
-                  context.push('/workout-scheduling').then((_) {
-                    // Refresh data when returning from workout selection
-                    final _ = ref.refresh(
-                      workoutPlanningNotifierProvider(widget.userId),
-                    );
-                  });
+                  context
+                      .push(
+                        '/workout-scheduling',
+                        extra: {'scheduledDate': day, 'userId': widget.userId},
+                      )
+                      .then((_) {
+                        // Refresh data when returning from workout selection
+                        final _ = ref.refresh(
+                          workoutPlanningNotifierProvider(widget.userId),
+                        );
+                      });
                 },
               )
             else
@@ -290,17 +324,25 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
                 userId: widget.userId,
                 onWorkoutTap: (workout) {
                   // Navigate to workout detail
-                  context.push('/workout-detail/${workout.workoutId}');
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder:
+                          (context) =>
+                              WorkoutDetailScreen(workoutId: workout.workoutId),
+                    ),
+                  );
                 },
                 onAddWorkout: () {
-                  // Navigate to workout selection screen for this specific day
                   _analyticsService.logEvent(
                     name: 'add_workout_for_day_tapped',
                     parameters: {'day': DateFormat('yyyy-MM-dd').format(day)},
                   );
 
                   context
-                      .push('/workout-browse', extra: {'scheduledDate': day})
+                      .push(
+                        '/workout-scheduling',
+                        extra: {'scheduledDate': day, 'userId': widget.userId},
+                      )
                       .then((_) {
                         // Refresh data when returning from workout selection
                         final _ = ref.refresh(

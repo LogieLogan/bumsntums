@@ -8,6 +8,7 @@ import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
 import '../../../features/auth/providers/user_provider.dart';
 import '../providers/ai_chat_provider.dart';
+import '../models/message.dart';
 
 class AIChatScreen extends ConsumerStatefulWidget {
   const AIChatScreen({Key? key}) : super(key: key);
@@ -243,18 +244,12 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
                     onFeedback:
                         !message.isUserMessage
                             ? (isPositive) async {
-                              final userProfile = await ref.read(
-                                userProfileProvider.future,
-                              );
-                              if (userProfile != null) {
-                                await ref
-                                    .read(aiChatProvider.notifier)
-                                    .provideMessageFeedback(
-                                      userId: userProfile.userId,
-                                      messageId: message.id,
-                                      isPositive: isPositive,
-                                    );
-                              }
+                              await ref
+                                  .read(aiChatProvider.notifier)
+                                  .provideMessageFeedback(
+                                    messageId: message.id,
+                                    isPositive: isPositive,
+                                  );
                             }
                             : null,
                     onActionLink: (action) {
@@ -419,7 +414,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
 }
 
 class _ChatMessageWidget extends StatelessWidget {
-  final ChatMessage message;
+  final Message message;
   final Function(bool isPositive)? onFeedback;
   final Function(String action)? onActionLink;
 

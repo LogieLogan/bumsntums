@@ -320,6 +320,7 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
       ],
     );
   }
+
   Widget _buildFrequencyChart(List<Map<String, dynamic>> frequencyData) {
     if (frequencyData.isEmpty) {
       return _buildEmptyDataWidget('No workout frequency data available');
@@ -392,27 +393,65 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
     final sections =
         stats.workoutsByCategory.entries.map((entry) {
           final color = _getCategoryColor(entry.key);
+          final percentage =
+              stats.totalWorkoutsCompleted > 0
+                  ? (entry.value / stats.totalWorkoutsCompleted * 100)
+                      .toStringAsFixed(0)
+                  : '0';
+
           return PieChartSectionData(
             value: entry.value.toDouble(),
-            title: '${entry.key}\n${entry.value}',
-            color: color,
-            radius: 100,
+            title: '$percentage%',
             titleStyle: AppTextStyles.caption.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
+            radius: 80,
+            color: color,
           );
         }).toList();
 
-    return SizedBox(
-      height: 200,
-      child: PieChart(
-        PieChartData(
-          sections: sections,
-          centerSpaceRadius: 40,
-          sectionsSpace: 2,
+    return Column(
+      children: [
+        SizedBox(
+          height: 200,
+          child: PieChart(
+            PieChartData(
+              sections: sections,
+              centerSpaceRadius: 40,
+              sectionsSpace: 2,
+              borderData: FlBorderData(show: false),
+            ),
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 16,
+          runSpacing: 8,
+          children:
+              stats.workoutsByCategory.entries.map((entry) {
+                final color = _getCategoryColor(entry.key);
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${entry.key} (${entry.value})',
+                      style: AppTextStyles.caption,
+                    ),
+                  ],
+                );
+              }).toList(),
+        ),
+      ],
     );
   }
 
@@ -553,7 +592,7 @@ class WorkoutAnalyticsScreen extends ConsumerWidget {
       );
 
       // Refresh the streak data
-      final _ =  ref.refresh(userWorkoutStreakProvider(userId));
+      final _ = ref.refresh(userWorkoutStreakProvider(userId));
     } else if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

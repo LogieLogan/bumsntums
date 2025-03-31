@@ -24,15 +24,16 @@ class ScheduledWorkoutItem extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final workout = scheduledWorkout.workout;
     final timeFormat = DateFormat('h:mm a');
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: scheduledWorkout.isCompleted 
-            ? BorderSide(color: AppColors.success, width: 1.5) 
-            : BorderSide.none,
+        side:
+            scheduledWorkout.isCompleted
+                ? BorderSide(color: AppColors.success, width: 1.5)
+                : BorderSide.none,
       ),
       child: InkWell(
         onTap: onTap,
@@ -51,11 +52,7 @@ class ScheduledWorkoutItem extends StatelessWidget {
                     children: [
                       if (scheduledWorkout.preferredTime != null)
                         Text(
-                          timeFormat.format(DateTime(
-                            2022, 1, 1, 
-                            scheduledWorkout.preferredTime!.hour, 
-                            scheduledWorkout.preferredTime!.minute,
-                          )),
+                          _getTimeLabel(scheduledWorkout.preferredTime!),
                           style: textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -69,9 +66,9 @@ class ScheduledWorkoutItem extends StatelessWidget {
                         ),
                     ],
                   ),
-                  
+
                   const SizedBox(width: 16),
-                  
+
                   // Right column with workout details
                   Expanded(
                     child: Column(
@@ -88,9 +85,14 @@ class ScheduledWorkoutItem extends StatelessWidget {
                         if (workout != null)
                           Container(
                             margin: const EdgeInsets.only(top: 4),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: _getCategoryColor(workout.category).withOpacity(0.2),
+                              color: _getCategoryColor(
+                                workout.category,
+                              ).withOpacity(0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -114,7 +116,7 @@ class ScheduledWorkoutItem extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
+
                   // Status indicator and actions
                   Column(
                     children: [
@@ -137,9 +139,9 @@ class ScheduledWorkoutItem extends StatelessWidget {
                             ),
                           ),
                         ),
-                      
+
                       const SizedBox(height: 8),
-                      
+
                       InkWell(
                         onTap: onDelete,
                         borderRadius: BorderRadius.circular(12),
@@ -162,7 +164,13 @@ class ScheduledWorkoutItem extends StatelessWidget {
       ),
     );
   }
-  
+
+  String _getTimeLabel(TimeOfDay time) {
+    if (time.hour < 10) return 'Morning';
+    if (time.hour < 15) return 'Lunch';
+    return 'Evening';
+  }
+
   Color _getCategoryColor(WorkoutCategory category) {
     switch (category) {
       case WorkoutCategory.bums:
@@ -177,7 +185,7 @@ class ScheduledWorkoutItem extends StatelessWidget {
         return AppColors.popYellow;
     }
   }
-  
+
   String _getCategoryName(WorkoutCategory category) {
     switch (category) {
       case WorkoutCategory.bums:
@@ -192,7 +200,7 @@ class ScheduledWorkoutItem extends StatelessWidget {
         return 'Quick';
     }
   }
-  
+
   String _getDifficultyName(WorkoutDifficulty difficulty) {
     switch (difficulty) {
       case WorkoutDifficulty.beginner:

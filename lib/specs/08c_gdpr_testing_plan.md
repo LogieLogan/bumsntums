@@ -81,3 +81,14 @@
   3. Change consent options
   4. Verify changes are saved
 - **Expected Result**: Updated consent options are saved correctly
+
+
+
+bugs
+whe deleting accoutn 
+
+11.8.1 - [FirebaseFirestore][I-FST000001] WriteStream (313235396437616438) Stream error: 'Permission denied: Missing or insufficient permissions.'
+11.8.1 - [FirebaseFirestore][I-FST000001] Write at user_document_acceptances/i2JgmCfQTqTP9IPXrfv0 failed: Missing or insufficient permissions.
+flutter: ERROR: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
+GTMSessionFetcher 0x1313a1e00 (https://firebasestorage.googleapis.com:443/v0/b/bumsntums-dev.firebasestorage.app/o?prefix=user_assets/HLaaCQwCqnWkc6xQiqK0geKkmbv2/&delimiter=/) was already running
+flutter: ERROR: [firebase_storage/unauthorized] User is not authorized to perform the desired action.

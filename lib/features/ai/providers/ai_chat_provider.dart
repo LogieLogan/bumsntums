@@ -1,75 +1,26 @@
 // lib/features/ai/providers/ai_chat_provider.dart
-import 'package:bums_n_tums/shared/analytics/firebase_analytics_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'openai_provider.dart';
+import 'package:uuid/uuid.dart';
+import '../models/message.dart';
 import '../services/openai_service.dart';
+import 'openai_provider.dart';
+import '../../../shared/analytics/firebase_analytics_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-// Chat message model
-class ChatMessage {
-  final String id;
-  final String content;
-  final bool isUserMessage;
-  final DateTime timestamp;
-  final String? category; // Add category for tracking
-  final Map<String, dynamic>? metadata; // For additional info like token usage
-  bool isPositiveFeedback; // User feedback on AI messages
-  bool isNegativeFeedback;
-
-  ChatMessage({
-    required this.id,
-    required this.content,
-    required this.isUserMessage,
-    required this.timestamp,
-    this.category,
-    this.metadata,
-    this.isPositiveFeedback = false,
-    this.isNegativeFeedback = false,
-  });
-
-  Map<String, String> toAPIFormat() {
-    return {'role': isUserMessage ? 'user' : 'assistant', 'content': content};
-  }
-
-  // For Firestore serialization
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'content': content,
-      'isUserMessage': isUserMessage,
-      'timestamp': timestamp.toIso8601String(),
-      'category': category,
-      'metadata': metadata,
-      'isPositiveFeedback': isPositiveFeedback,
-      'isNegativeFeedback': isNegativeFeedback,
-    };
-  }
-
-  // Factory constructor from Firestore data
-  factory ChatMessage.fromMap(Map<String, dynamic> map) {
-    return ChatMessage(
-      id: map['id'],
-      content: map['content'],
-      isUserMessage: map['isUserMessage'],
-      timestamp: DateTime.parse(map['timestamp']),
-      category: map['category'],
-      metadata: map['metadata'],
-      isPositiveFeedback: map['isPositiveFeedback'] ?? false,
-      isNegativeFeedback: map['isNegativeFeedback'] ?? false,
-    );
-  }
-}
-
-// Chat state
+// State for chat UI
 class AIChatState {
-  final List<ChatMessage> messages;
+  final List<Message> messages;
   final bool isLoading;
   final String? error;
 
-  AIChatState({this.messages = const [], this.isLoading = false, this.error});
+  AIChatState({
+    this.messages = const [],
+    this.isLoading = false,
+    this.error,
+  });
 
   AIChatState copyWith({
-    List<ChatMessage>? messages,
+    List<Message>? messages,
     bool? isLoading,
     String? error,
   }) {
@@ -81,12 +32,11 @@ class AIChatState {
   }
 }
 
-// AI Chat Notifier
-// AI Chat Notifier
 class AIChatNotifier extends StateNotifier<AIChatState> {
   final OpenAIService _openAIService;
   final FirebaseFirestore _firestore;
   final AnalyticsService _analytics;
+  final Uuid _uuid = const Uuid();
 
   // Track disposal state
   bool _isDisposed = false;
@@ -122,7 +72,7 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
       if (snapshot.docs.isNotEmpty) {
         final messages =
             snapshot.docs
-                .map((doc) => ChatMessage.fromMap(doc.data()))
+                .map((doc) => Message.fromMap(doc.data()))
                 .toList();
 
         state = state.copyWith(messages: messages, isLoading: false);
@@ -143,7 +93,7 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
   }
 
   // Save message to Firestore
-  Future<void> _saveMessage(String userId, ChatMessage message) async {
+  Future<void> _saveMessage(String userId, Message message) async {
     try {
       await _firestore
           .collection('conversations')
@@ -162,7 +112,6 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
 
   // Provide feedback on AI responses
   Future<void> provideMessageFeedback({
-    required String userId,
     required String messageId,
     required bool isPositive,
   }) async {
@@ -175,28 +124,23 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
       if (index == -1) return;
 
       // Create an updated copy of the message
-      final updatedMessage = ChatMessage(
-        id: state.messages[index].id,
-        content: state.messages[index].content,
-        isUserMessage: state.messages[index].isUserMessage,
-        timestamp: state.messages[index].timestamp,
-        category: state.messages[index].category,
-        metadata: state.messages[index].metadata,
+      final message = state.messages[index];
+      final updatedMessage = message.copyWith(
         isPositiveFeedback: isPositive,
         isNegativeFeedback: !isPositive,
       );
 
       // Update state if not disposed
       if (!_isDisposed) {
-        final updatedMessages = List<ChatMessage>.from(state.messages);
+        final updatedMessages = List<Message>.from(state.messages);
         updatedMessages[index] = updatedMessage;
         state = state.copyWith(messages: updatedMessages);
       }
 
-      // Update in Firestore
+      // Update in Firestore (assuming the structure from your existing implementation)
       await _firestore
           .collection('conversations')
-          .doc(userId)
+          .doc('current')
           .collection('messages')
           .doc(messageId)
           .update({
@@ -208,7 +152,6 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
       _analytics.logEvent(
         name: 'ai_message_feedback',
         parameters: {
-          'user_id': userId,
           'message_id': messageId,
           'is_positive': isPositive.toString(),
         },
@@ -218,7 +161,6 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
         error: e.toString(),
         parameters: {
           'context': 'provideMessageFeedback',
-          'userId': userId,
           'messageId': messageId,
         },
       );
@@ -233,12 +175,7 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
 
     try {
       // Add user message to state
-      final userMessage = ChatMessage(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        content: message,
-        isUserMessage: true,
-        timestamp: DateTime.now(),
-      );
+      final userMessage = Message.user(content: message);
 
       if (!_isDisposed) {
         state = state.copyWith(
@@ -255,7 +192,7 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
       final previousMessages =
           state.messages
               .take(state.messages.length > 10 ? 10 : state.messages.length)
-              .map((msg) => msg.toAPIFormat())
+              .map((m) => m.toOpenAIFormat())
               .toList();
 
       // Track user message for analytics
@@ -277,11 +214,8 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
       final category = _openAIService.detectMessageCategory(message);
 
       // Add AI response to state
-      final aiMessage = ChatMessage(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+      final aiMessage = Message.assistant(
         content: response,
-        isUserMessage: false,
-        timestamp: DateTime.now(),
         category: category,
       );
 
@@ -325,9 +259,7 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
 }
 
 // Provider for AI Chat
-final aiChatProvider = StateNotifierProvider<AIChatNotifier, AIChatState>((
-  ref,
-) {
+final aiChatProvider = StateNotifierProvider<AIChatNotifier, AIChatState>((ref) {
   final openAIService = ref.watch(openAIServiceProvider);
   final firestore = FirebaseFirestore.instance;
   final analytics = AnalyticsService();
