@@ -6,7 +6,7 @@ import '../../../shared/analytics/firebase_analytics_service.dart';
 class PromptEngine {
   final Map<String, PromptTemplate> _templates = {};
   final AnalyticsService _analytics = AnalyticsService();
-  
+
   PromptEngine() {
     _initializeTemplates();
   }
@@ -35,35 +35,40 @@ Use this format: "[Use AI Workout Generator](workout_generator)" when suggesting
 Keep responses concise, positive, and reference their goals when relevant. Never refer to personal information like name or age.
 ''',
         requiredUserAttributes: ['fitnessLevel', 'goals', 'bodyFocusAreas'],
-        variables: {'personalityModifier': 'Use a friendly, supportive tone with occasional humor.'},
-      )
+        variables: {
+          'personalityModifier':
+              'Use a friendly, supportive tone with occasional humor.',
+        },
+      ),
     );
 
     _addTemplate(
       PromptTemplate(
         id: 'workout_creation',
         name: 'Workout Creation',
-        version: '1.0.0',
+        version: '2.2.0',
         category: PromptCategory.workoutCreation,
         systemPrompt: '''
-You are a fitness trainer creating personalized workouts. Use this profile:
-- Level: {fitnessLevel}
-- Goals: {goals}
-- Focus: {bodyFocusAreas}
-- Equipment: {availableEquipment}
-- Location: {preferredLocation}
-- Duration: {workoutDurationMinutes} minutes
-- Health: {healthConditions}
+You are a fitness trainer creating a personalized workout.
 
-{personalityModifier}
-
-Create a {workoutCategory} workout focusing on {focusAreas} with these parameters:
-- Duration: {duration} minutes
+CREATE A WORKOUT WITH THESE SPECIFICATIONS:
+- Category: {workoutCategory}
+- Duration: {duration} minutes (must be exactly this duration)
 - Equipment: {equipment}
-- Difficulty: appropriate for {fitnessLevel} level
-- Special request: {specialRequest}
+- Fitness level: {fitnessLevel}
+- Focus areas: {focusAreas}
+- Special requests: {specialRequest}
 
-IMPORTANT: Respond ONLY with valid JSON in this exact format:
+IMPORTANT RULES:
+1. STRICTLY maintain {duration} minutes total workout time
+2. Use SPECIFIC exercise names (e.g., "Squats", "Push-ups", not generic "Exercise 1")
+3. Include appropriate sets, reps, and rest periods
+4. Design the workout to match the specified fitness level
+5. Ensure exercises target the specified focus areas
+6. For cardio exercises, use durationSeconds instead of reps
+7. Ensure the workout is appropriate for the equipment specified
+
+Respond ONLY with valid JSON in this exact format:
 {
   "title": "Workout title",
   "description": "Brief workout description",
@@ -74,9 +79,9 @@ IMPORTANT: Respond ONLY with valid JSON in this exact format:
   "equipment": ["item1", "item2"],
   "exercises": [
     {
-      "name": "Exercise Name",
-      "description": "Instructions for the exercise",
-      "targetArea": "Muscle group",
+      "name": "Specific Exercise Name",
+      "description": "Clear instructions for the exercise",
+      "targetArea": "Specific muscle group",
       "sets": integer,
       "reps": integer,
       "durationSeconds": integer or null,
@@ -84,27 +89,17 @@ IMPORTANT: Respond ONLY with valid JSON in this exact format:
     }
   ]
 }
-
-RULES: Match fitness level, respect health conditions, use available equipment, include warm-up/cool-down, respect time limit, respond ONLY with valid JSON.
 ''',
-        requiredUserAttributes: [
-          'fitnessLevel', 
-          'goals', 
-          'bodyFocusAreas', 
-          'availableEquipment', 
-          'preferredLocation', 
-          'workoutDurationMinutes', 
-          'healthConditions'
-        ],
+        requiredUserAttributes: [],
         variables: {
-          'personalityModifier': 'Use a friendly, supportive tone with occasional humor.',
           'workoutCategory': 'fullBody',
-          'focusAreas': 'overall fitness',
           'duration': '30',
-          'equipment': 'available equipment',
+          'equipment': 'bodyweight',
+          'fitnessLevel': 'beginner',
+          'focusAreas': 'overall fitness',
           'specialRequest': '',
         },
-      )
+      ),
     );
 
     _addTemplate(
@@ -146,79 +141,75 @@ For each workout day, provide:
 Explain the plan structure and how it supports their goals. Offer guidance on progression and adapting the plan as needed.
 ''',
         requiredUserAttributes: [
-          'fitnessLevel', 
-          'goals', 
-          'bodyFocusAreas', 
-          'availableEquipment', 
-          'weeklyWorkoutDays', 
-          'workoutDurationMinutes', 
-          'healthConditions'
+          'fitnessLevel',
+          'goals',
+          'bodyFocusAreas',
+          'availableEquipment',
+          'weeklyWorkoutDays',
+          'workoutDurationMinutes',
+          'healthConditions',
         ],
         variables: {
-          'personalityModifier': 'Use a friendly, supportive tone with occasional humor.',
+          'personalityModifier':
+              'Use a friendly, supportive tone with occasional humor.',
           'duration': '7',
           'focusAreas': 'overall fitness with emphasis on user\'s goals',
         },
-      )
+      ),
     );
 
     _addTemplate(
       PromptTemplate(
         id: 'workout_refinement',
         name: 'Workout Refinement',
-        version: '1.0.0',
+        version: '2.0.0',
         category: PromptCategory.workoutRefinement,
         systemPrompt: '''
-You're helping refine a workout that's already been created. The user has provided feedback and wants adjustments.
+WORKOUT REFINEMENT TASK
 
-Original workout:
+Current workout to modify:
 {workoutDetails}
 
-User feedback:
-{userFeedback}
+User wants to change: {userFeedback}
 
-{personalityModifier}
+ESSENTIAL INSTRUCTIONS:
+1. You MUST update the actual exercises based on the refinement request
+2. Duration should be a multiple of 15 minutes (15, 30, 45, 60)
+3. Use SPECIFIC exercise names (like "Squats", "Lunges", NOT "Exercise 1")
+4. When adding exercises, provide full details (name, description, sets, reps, rest)
+5. When modifying existing exercises, change the actual exercise data
 
-Modify the workout based on the user's feedback while maintaining the overall structure. Keep these guidelines in mind:
-- Preserve the fitness level appropriateness
-- Maintain similar duration
-- Keep the same general focus area
-- Address all specific concerns mentioned by the user
-- Explain your changes briefly
+IMPORTANT: If the refinement affects exercise selection, you MUST change the exercises array.
 
-Respond with the modified workout in JSON format, identical to the original structure but with your refinements.
+Respond with the complete modified workout in JSON format, plus a "changesSummary" field that explains exactly what you changed.
 ''',
         requiredUserAttributes: [],
-        variables: {
-          'personalityModifier': 'Use a friendly, supportive tone with occasional humor.',
-          'workoutDetails': '{}',
-          'userFeedback': '',
-        },
-      )
+        variables: {'workoutDetails': '{}', 'userFeedback': ''},
+      ),
     );
   }
-  
+
   void _addTemplate(PromptTemplate template) {
     _templates[template.id] = template;
   }
-  
+
   PromptTemplate? getTemplate(String templateId) {
     return _templates[templateId];
   }
-  
+
   List<PromptTemplate> getTemplatesByCategory(PromptCategory category) {
     return _templates.values.where((t) => t.category == category).toList();
   }
-  
+
   List<PromptTemplate> getAllTemplates() {
     return _templates.values.toList();
   }
-  
+
   Future<void> loadTemplatesFromFirestore() async {
     // Implement loading templates from Firestore if needed
     // This would allow updating templates without app updates
   }
-  
+
   String buildPrompt({
     required String templateId,
     required Map<String, dynamic> context,
@@ -229,12 +220,15 @@ Respond with the modified workout in JSON format, identical to the original stru
       if (template == null) {
         throw Exception('Template not found: $templateId');
       }
-      
+
       // Add personality modifier if provided
-      final allVars = customVars != null ? Map<String, String>.from(customVars) : <String, String>{};
-      
+      final allVars =
+          customVars != null
+              ? Map<String, String>.from(customVars)
+              : <String, String>{};
+
       final result = template.build(context, customVars: allVars);
-      
+
       // Log template usage
       _analytics.logEvent(
         name: 'ai_prompt_template_used',
@@ -243,15 +237,18 @@ Respond with the modified workout in JSON format, identical to the original stru
           'template_version': template.version,
         },
       );
-      
+
       return result;
     } catch (e) {
       debugPrint('Error building prompt: $e');
       _analytics.logError(
         error: e.toString(),
-        parameters: {'context': 'PromptEngine.buildPrompt', 'templateId': templateId},
+        parameters: {
+          'context': 'PromptEngine.buildPrompt',
+          'templateId': templateId,
+        },
       );
-      
+
       // Return fallback prompt
       return "You are a helpful fitness assistant. Provide a helpful response.";
     }

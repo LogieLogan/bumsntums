@@ -1,6 +1,7 @@
 // lib/features/home/screens/home_tab.dart
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
+import 'package:bums_n_tums/shared/providers/environment_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bums_n_tums/features/ai/screens/ai_chat_screen.dart';
@@ -132,9 +133,48 @@ class _HomeTabState extends ConsumerState<HomeTab>
   Widget _buildAIWorkoutFeature() {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const AIWorkoutScreen()),
+        // Show loading indicator while checking if environment service is ready
+        final loadingDialog = showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (context) => const Center(
+                child: CircularProgressIndicator(color: AppColors.salmon),
+              ),
         );
+
+        // Check if environment service is initialized
+        ref
+            .read(environmentServiceInitProvider.future)
+            .then(
+              (service) {
+                // Close loading dialog
+                Navigator.of(context).pop();
+
+                // Navigate to AI Workout screen
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AIWorkoutScreen(),
+                  ),
+                );
+              },
+              onError: (error) {
+                // Close loading dialog
+                Navigator.of(context).pop();
+
+                // Show error message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Unable to load AI Workout Creator. Please try again later.',
+                    ),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
+
+                print('Error initializing environment service: $error');
+              },
+            );
       },
       child: Container(
         height: 180,

@@ -1,6 +1,7 @@
 // lib/features/ai/services/openai_service.dart (minimal update to fix errors)
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:bums_n_tums/features/ai/services/context_service.dart';
 import 'package:bums_n_tums/features/ai/services/personality_engine.dart';
 import 'package:flutter/foundation.dart';
@@ -28,94 +29,85 @@ class OpenAIService {
        _contextService = contextService,
        _personalityEngine = personalityEngine;
 
-  // lib/features/ai/services/openai_service.dart
-  // Update generateWorkoutRecommendation method
-
   Future<Map<String, dynamic>> generateWorkoutRecommendation({
     required String userId,
     String? specificRequest,
     WorkoutCategory? category,
     int? maxMinutes,
+    List<String>? equipment,
+    List<String>? focusAreas,
   }) async {
     try {
       final categoryName = category?.name ?? 'fullBody';
       final minutes = maxMinutes ?? 30;
+      final roundedMinutes = ((minutes / 5).round() * 5).clamp(5, 60);
 
-      List<Map<String, dynamic>> messages;
+      // Log what we're sending
+      debugPrint('Generating workout with actual parameters:');
+      debugPrint('Category: $categoryName');
+      debugPrint('Duration: $roundedMinutes minutes');
+      debugPrint(
+        'Equipment: ${equipment != null ? equipment.join(", ") : "bodyweight"}',
+      );
+      debugPrint(
+        'Focus Areas: ${focusAreas != null ? focusAreas.join(", ") : "overall fitness"}',
+      );
+      debugPrint('Special Request: ${specificRequest ?? "none"}');
 
-      // Use our enhanced components if available
-      if (_promptEngine != null &&
-          _contextService != null &&
-          _personalityEngine != null) {
-        // Build the context with user profile and feature-specific data
-        final context = await _contextService.buildContext(
-          userId: userId,
-          featureData: {
-            'workoutCategory': categoryName,
-            'duration': minutes.toString(),
-            'specificRequest': specificRequest ?? '',
-          },
-        );
+      // Skip the prompt engine and build the system prompt directly
+      final systemPrompt = '''
+You are a fitness trainer creating a personalized workout.
 
-        // Get personality settings for this user
-        final personality = _personalityEngine.getPersonalityForUser(userId);
+CREATE A WORKOUT WITH THESE SPECIFICATIONS:
+- Category: $categoryName
+- Duration: $roundedMinutes minutes (must be exactly this duration)
+- Equipment: ${equipment != null && equipment.isNotEmpty ? equipment.join(', ') : 'bodyweight'}
+- Fitness level: beginner
+- Focus areas: ${focusAreas != null && focusAreas.isNotEmpty ? focusAreas.join(', ') : 'overall fitness'}
+- Special requests: ${specificRequest ?? ''}
 
-        // Build system prompt using prompt engine
-        final systemPrompt = _promptEngine.buildPrompt(
-          templateId: 'workout_creation',
-          context: context.getAllContext(),
-          customVars: {
-            'personalityModifier': _personalityEngine.getPromptModifier(
-              personality,
-            ),
-          },
-        );
+IMPORTANT RULES:
+1. STRICTLY maintain $roundedMinutes minutes total workout time
+2. Use SPECIFIC exercise names (e.g., "Squats", "Push-ups", not generic "Exercise 1")
+3. Include appropriate sets, reps, and rest periods
+4. Design the workout to match the specified fitness level
+5. Ensure exercises target the specified focus areas
+6. For cardio exercises, use durationSeconds instead of reps
+7. Ensure the workout is appropriate for the equipment specified
 
-        messages = [
-          {"role": "system", "content": systemPrompt},
-          {"role": "user", "content": "Create a workout for me."},
-        ];
-
-        // Analyze user message if one was provided
-        if (specificRequest != null && specificRequest.isNotEmpty) {
-          _personalityEngine.analyzeUserMessage(userId, specificRequest);
-        }
-      } else {
-        // Fallback to our previous implementation
-        messages = [
-          {
-            "role": "system",
-            "content": """
-You are a fitness trainer creating personalized workouts. 
-Create a ${categoryName} workout for ${minutes} minutes.
-${specificRequest != null ? 'Special request: $specificRequest' : ''}
-
-IMPORTANT: Respond ONLY with valid JSON in this exact format:
+Respond ONLY with valid JSON in this exact format:
 {
   "title": "Workout title",
   "description": "Brief workout description",
-  "category": "${categoryName}",
+  "category": "$categoryName",
   "difficulty": "beginner",
-  "durationMinutes": ${minutes},
-  "estimatedCaloriesBurn": 150,
+  "durationMinutes": $roundedMinutes,
+  "estimatedCaloriesBurn": integer,
   "equipment": ["item1", "item2"],
   "exercises": [
     {
-      "name": "Exercise Name",
-      "description": "Instructions for the exercise",
-      "targetArea": "Muscle group",
-      "sets": 3,
-      "reps": 10,
-      "durationSeconds": null,
-      "restBetweenSeconds": 30
+      "name": "Specific Exercise Name",
+      "description": "Clear instructions for the exercise",
+      "targetArea": "Specific muscle group",
+      "sets": integer,
+      "reps": integer,
+      "durationSeconds": integer or null,
+      "restBetweenSeconds": integer
     }
   ]
 }
-""",
-          },
-          {"role": "user", "content": "Create a workout for me."},
-        ];
-      }
+''';
+
+      // Log the prompt to debug
+      debugPrint('Generate workout prompt: $systemPrompt');
+
+      final messages = [
+        {"role": "system", "content": systemPrompt},
+        {
+          "role": "user",
+          "content": "Create a workout based on these specifications",
+        },
+      ];
 
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -139,13 +131,206 @@ IMPORTANT: Respond ONLY with valid JSON in this exact format:
       final data = jsonDecode(response.body);
       final content = data['choices'][0]['message']['content'];
 
-      // Log the raw response to help with debugging
       debugPrint('Raw AI response: $content');
 
-      return _parseWorkoutResponse(content);
+      final workoutData = _parseWorkoutResponse(content);
+
+      // Ensure the duration is set to the rounded minutes
+      workoutData['durationMinutes'] = roundedMinutes;
+
+      // Ensure category is correctly set
+      workoutData['category'] = categoryName;
+
+      return workoutData;
     } catch (e) {
       debugPrint('Error generating workout: $e');
       throw Exception('Failed to generate workout: ${e.toString()}');
+    }
+  }
+
+  // Updated refineWorkout method in openai_service.dart
+  Future<Map<String, dynamic>> refineWorkout({
+    required String userId,
+    required Map<String, dynamic> originalWorkout,
+    required String refinementRequest,
+    String? originalRequest, // Keep for backward compatibility, but don't use
+  }) async {
+    try {
+      List<Map<String, dynamic>> messages;
+
+      // Get essential data from the original workout
+      final Map<String, dynamic> workoutEssentials = {
+        'title': originalWorkout['title'],
+        'description': originalWorkout['description'],
+        'category': originalWorkout['category'],
+        'difficulty': originalWorkout['difficulty'],
+        'durationMinutes': originalWorkout['durationMinutes'],
+        'exercises': originalWorkout['exercises'],
+        'equipment': originalWorkout['equipment'] ?? [],
+      };
+
+      // Log the size of the original workout data for debugging
+      debugPrint(
+        'Original workout json size: ${jsonEncode(workoutEssentials).length} chars',
+      );
+
+      if (_promptEngine != null) {
+        // Build system prompt directly, without depending on profile context
+        final systemPrompt = _promptEngine.buildPrompt(
+          templateId: 'workout_refinement',
+          context: {},
+          customVars: {
+            'workoutDetails': jsonEncode(workoutEssentials),
+            'userFeedback': refinementRequest,
+          },
+        );
+
+        messages = [
+          {"role": "system", "content": systemPrompt},
+          {
+            "role": "user",
+            "content":
+                "Please refine this workout based on my feedback: $refinementRequest",
+          },
+        ];
+      } else {
+        // Fallback implementation
+        messages = [
+          {
+            "role": "system",
+            "content": """
+WORKOUT REFINEMENT TASK
+
+Current workout to modify:
+${jsonEncode(workoutEssentials)}
+
+User wants to change: ${refinementRequest}
+
+ESSENTIAL INSTRUCTIONS:
+1. You MUST update the actual exercises based on the refinement request
+2. Duration should be a multiple of 15 minutes (15, 30, 45, 60)
+3. Use SPECIFIC exercise names (like "Squats", "Lunges", NOT "Exercise 1")
+4. When adding exercises, provide full details (name, description, sets, reps, rest)
+5. When modifying existing exercises, change the actual exercise data
+
+IMPORTANT: If the refinement affects exercise selection, you MUST change the exercises array.
+
+Respond with the complete modified workout in JSON format, plus a "changesSummary" field that explains exactly what you changed.
+""",
+          },
+          {
+            "role": "user",
+            "content":
+                "Refine this workout based on my feedback: $refinementRequest",
+          },
+        ];
+      }
+
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_apiKey',
+        },
+        body: jsonEncode({
+          'model': _model,
+          'messages': messages,
+          'temperature': 0.7,
+          'max_tokens': 1500, // Increase max tokens for complete response
+          'response_format': {"type": "json_object"},
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('API request failed: ${response.body}');
+      }
+
+      final data = jsonDecode(response.body);
+      final content = data['choices'][0]['message']['content'];
+
+      // Log the raw response to help with debugging
+      debugPrint('Raw refinement response: $content');
+
+      try {
+        final Map<String, dynamic> parsedResponse = jsonDecode(content);
+
+        // Extract changes summary
+        String? changesSummary;
+        if (parsedResponse.containsKey('changesSummary')) {
+          changesSummary = parsedResponse['changesSummary'];
+        } else {
+          // Generate a basic summary if none provided
+          changesSummary = 'Workout refined based on your feedback.';
+          parsedResponse['changesSummary'] = changesSummary;
+        }
+
+        // Create the refined workout with the original ID preserved
+        final refinedWorkout = Map<String, dynamic>.from(parsedResponse);
+        refinedWorkout['id'] =
+            originalWorkout['id'] ??
+            'workout-${DateTime.now().millisecondsSinceEpoch}';
+
+        // Ensure the changes summary is preserved
+        refinedWorkout['changesSummary'] = changesSummary;
+
+        // If the refined workout has no exercises but the original did, preserve them
+        if (!refinedWorkout.containsKey('exercises') ||
+            refinedWorkout['exercises'] == null ||
+            (refinedWorkout['exercises'] as List).isEmpty) {
+          debugPrint(
+            'Preserving exercises from original workout as refined workout had none',
+          );
+          refinedWorkout['exercises'] = originalWorkout['exercises'];
+
+          // Add this information to the changes summary
+          if (changesSummary == 'Workout refined based on your feedback.') {
+            refinedWorkout['changesSummary'] =
+                'Workout parameters adjusted based on your feedback, maintaining the original exercises.';
+          } else {
+            refinedWorkout['changesSummary'] +=
+                ' Original exercises preserved.';
+          }
+        }
+
+        // Ensure the duration is a multiple of 15 minutes
+        if (refinedWorkout.containsKey('durationMinutes') &&
+            refinedWorkout['durationMinutes'] != null) {
+          int duration = refinedWorkout['durationMinutes'] as int;
+          int roundedDuration = ((duration / 15).round() * 15).clamp(15, 60);
+          refinedWorkout['durationMinutes'] = roundedDuration;
+        }
+
+        // Make sure all necessary fields are present
+        final requiredFields = [
+          'title',
+          'description',
+          'category',
+          'difficulty',
+          'durationMinutes',
+          'equipment',
+        ];
+        for (final field in requiredFields) {
+          if (!refinedWorkout.containsKey(field) ||
+              refinedWorkout[field] == null) {
+            refinedWorkout[field] = originalWorkout[field];
+          }
+        }
+
+        debugPrint(
+          'Final refined workout: ${refinedWorkout.toString().substring(0, min(refinedWorkout.toString().length, 200))}...',
+        );
+        debugPrint(
+          'Exercise count: ${(refinedWorkout['exercises'] as List?)?.length ?? 0}',
+        );
+
+        return refinedWorkout;
+      } catch (e) {
+        debugPrint('Error parsing refinement response: $e');
+        throw Exception('Failed to parse AI response: ${e.toString()}');
+      }
+    } catch (e) {
+      debugPrint('Error refining workout: $e');
+      throw Exception('Failed to refine workout: ${e.toString()}');
     }
   }
 

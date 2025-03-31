@@ -1,4 +1,5 @@
 // lib/features/ai/providers/workout_generation_provider.dart
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../workouts/models/workout.dart';
 import '../services/openai_service.dart';
@@ -11,12 +12,18 @@ class WorkoutGenerationState {
   final Map<String, dynamic>? workoutData;
   final String? error;
   final Map<String, dynamic> parameters;
+  final List<Map<String, dynamic>> refinementHistory;
+  final String? changesSummary;
+  final String? originalRequest; // Add this field
 
   WorkoutGenerationState({
     this.isLoading = false,
     this.workoutData,
     this.error,
     this.parameters = const {},
+    this.refinementHistory = const [],
+    this.changesSummary,
+    this.originalRequest, // Add this parameter
   });
 
   WorkoutGenerationState copyWith({
@@ -24,19 +31,26 @@ class WorkoutGenerationState {
     Map<String, dynamic>? workoutData,
     String? error,
     Map<String, dynamic>? parameters,
+    List<Map<String, dynamic>>? refinementHistory,
+    String? changesSummary,
+    String? originalRequest, // Add this parameter
   }) {
     return WorkoutGenerationState(
       isLoading: isLoading ?? this.isLoading,
       workoutData: workoutData ?? this.workoutData,
       error: error ?? this.error,
       parameters: parameters ?? this.parameters,
+      refinementHistory: refinementHistory ?? this.refinementHistory,
+      changesSummary: changesSummary ?? this.changesSummary,
+      originalRequest:
+          originalRequest ?? this.originalRequest, // Include it here
     );
   }
 
   WorkoutGenerationState updateParameters(Map<String, dynamic> newParams) {
     final updatedParams = Map<String, dynamic>.from(parameters);
     updatedParams.addAll(newParams);
-    
+
     return copyWith(parameters: updatedParams);
   }
 }
@@ -47,7 +61,7 @@ class WorkoutGenerationNotifier extends StateNotifier<WorkoutGenerationState> {
   final AnalyticsService _analytics;
 
   WorkoutGenerationNotifier(this._openAIService, this._analytics)
-      : super(WorkoutGenerationState());
+    : super(WorkoutGenerationState());
 
   // Set initial parameters
   void setParameters({
@@ -71,61 +85,161 @@ class WorkoutGenerationNotifier extends StateNotifier<WorkoutGenerationState> {
     state = state.updateParameters({key: value});
   }
 
-  // Generate a workout - update to use generateWorkoutRecommendation
-  Future<void> generateWorkout({
-    required String userId,
-  }) async {
+  Future<void> generateWorkout({required String userId}) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
 
       final params = state.parameters;
-      
-      // Extract parameters
+
+      // Extract parameters with proper defaults
       final workoutCategory = params['workoutCategory'] ?? 'fullBody';
       final durationMinutes = params['durationMinutes'] ?? 30;
-      final focusAreas = params['focusAreas'] ?? ['Full Body'];
-      final specialRequest = params['specialRequest'];
-      final equipment = params['equipment'];
 
-      // Map params to WorkoutCategory
-      WorkoutCategory? category;
-      if (workoutCategory is String) {
-        switch (workoutCategory.toLowerCase()) {
-          case 'bums':
-            category = WorkoutCategory.bums;
-            break;
-          case 'tums':
-            category = WorkoutCategory.tums;
-            break;
-          case 'fullbody':
-            category = WorkoutCategory.fullBody;
-            break;
-          case 'cardio':
-            category = WorkoutCategory.cardio;
-            break;
-          case 'quick':
-            category = WorkoutCategory.quickWorkout;
-            break;
-        }
+      // Make sure these are properly cast to List<String>
+      final List<String> focusAreas;
+      if (params['focusAreas'] is List<String>) {
+        focusAreas = params['focusAreas'] as List<String>;
+      } else if (params['focusAreas'] is List) {
+        focusAreas =
+            (params['focusAreas'] as List).map((e) => e.toString()).toList();
+      } else {
+        focusAreas = ['Overall Fitness'];
       }
 
-      // Use the correct method name from OpenAIService
+      final String? specialRequest = params['specialRequest'];
+
+      final List<String> equipment;
+      if (params['equipment'] is List<String>) {
+        equipment = params['equipment'] as List<String>;
+      } else if (params['equipment'] is List) {
+        equipment =
+            (params['equipment'] as List).map((e) => e.toString()).toList();
+      } else {
+        equipment = [];
+      }
+
+      // Debug
+      debugPrint('Generating workout with:');
+      debugPrint('Category: $workoutCategory');
+      debugPrint('Duration: $durationMinutes minutes');
+      debugPrint('Equipment: ${equipment.join(', ')}');
+      debugPrint('Special Request: $specialRequest');
+      debugPrint('Focus Areas: ${focusAreas.join(', ')}');
+
+      // Map string category to enum
+      WorkoutCategory category;
+      switch (workoutCategory.toLowerCase()) {
+        case 'bums':
+          category = WorkoutCategory.bums;
+          break;
+        case 'tums':
+          category = WorkoutCategory.tums;
+          break;
+        case 'fullbody':
+          category = WorkoutCategory.fullBody;
+          break;
+        case 'cardio':
+          category = WorkoutCategory.cardio;
+          break;
+        case 'quick':
+        case 'quickworkout':
+          category = WorkoutCategory.quickWorkout;
+          break;
+        default:
+          category = WorkoutCategory.fullBody;
+      }
+
+      // Call the service with explicitly passed parameters
       final workoutData = await _openAIService.generateWorkoutRecommendation(
         userId: userId,
-        specificRequest: specialRequest,
         category: category,
         maxMinutes: durationMinutes,
+        equipment: equipment,
+        focusAreas: focusAreas,
+        specificRequest: specialRequest,
       );
 
-      state = state.copyWith(isLoading: false, workoutData: workoutData);
+      // Update state
+      state = state.copyWith(
+        isLoading: false,
+        workoutData: workoutData,
+        originalRequest:
+            'Create a ${category.name} workout for $durationMinutes minutes',
+      );
 
       // Log success
       _analytics.logEvent(
         name: 'workout_generation_success',
         parameters: {
           'user_id': userId,
-          'category': workoutCategory,
+          'category': category.name,
           'duration': durationMinutes,
+          'equipment_count': equipment.length,
+        },
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      _analytics.logError(
+        error: e.toString(),
+        parameters: {'context': 'generateWorkout', 'userId': userId},
+      );
+    }
+  }
+
+  Future<void> refineWorkout({
+    required String userId,
+    required String refinementRequest,
+  }) async {
+    try {
+      // Must have a workout to refine
+      if (state.workoutData == null) {
+        throw Exception('No workout to refine');
+      }
+
+      state = state.copyWith(
+        isLoading: true,
+        error: null,
+        changesSummary: null,
+      );
+
+      // Save current workout to history before refining
+      final currentWorkout = state.workoutData!;
+      final updatedHistory = List<Map<String, dynamic>>.from(
+        state.refinementHistory,
+      )..add(currentWorkout);
+
+      // Pass the original request to the OpenAI service
+      final refinedWorkout = await _openAIService.refineWorkout(
+        userId: userId,
+        originalWorkout: currentWorkout,
+        refinementRequest: refinementRequest,
+        originalRequest: state.originalRequest, // Pass the original request
+      );
+
+      // Extract and remove the changes summary if it exists
+      String? changesSummary;
+      if (refinedWorkout.containsKey('changesSummary')) {
+        changesSummary = refinedWorkout['changesSummary'];
+        refinedWorkout.remove('changesSummary');
+      } else {
+        // Generate a basic summary if none provided
+        changesSummary = 'Workout refined based on your feedback.';
+      }
+
+      state = state.copyWith(
+        isLoading: false,
+        workoutData: refinedWorkout,
+        refinementHistory: updatedHistory,
+        changesSummary: changesSummary,
+      );
+
+      // Log success
+      _analytics.logEvent(
+        name: 'workout_refinement_success',
+        parameters: {
+          'user_id': userId,
+          'refinement_request': refinementRequest,
+          'refinement_count': updatedHistory.length,
         },
       );
     } catch (e) {
@@ -135,11 +249,37 @@ class WorkoutGenerationNotifier extends StateNotifier<WorkoutGenerationState> {
       _analytics.logError(
         error: e.toString(),
         parameters: {
-          'context': 'generateWorkout',
+          'context': 'refineWorkout',
           'userId': userId,
+          'refinementRequest': refinementRequest,
         },
       );
     }
+  }
+
+  // Add this method to WorkoutGenerationNotifier
+  void undoRefinement() {
+    if (state.refinementHistory.isEmpty) {
+      return; // Nothing to undo
+    }
+
+    // Get the last workout from history
+    final previousWorkoutData = state.refinementHistory.last;
+    final updatedHistory = List<Map<String, dynamic>>.from(
+      state.refinementHistory,
+    )..removeLast();
+
+    state = state.copyWith(
+      workoutData: previousWorkoutData,
+      refinementHistory: updatedHistory,
+      changesSummary: 'Reverted to previous version of the workout.',
+    );
+
+    // Log undo action
+    _analytics.logEvent(
+      name: 'workout_refinement_undo',
+      parameters: {'remaining_history_count': updatedHistory.length},
+    );
   }
 
   // Reset the state
@@ -149,9 +289,11 @@ class WorkoutGenerationNotifier extends StateNotifier<WorkoutGenerationState> {
 }
 
 // Provider for workout generation
-final workoutGenerationProvider = StateNotifierProvider<WorkoutGenerationNotifier, WorkoutGenerationState>((ref) {
-
-  final openAIService = ref.watch(openAIServiceProvider);
-  final analytics = AnalyticsService();
-  return WorkoutGenerationNotifier(openAIService, analytics);
-});
+final workoutGenerationProvider =
+    StateNotifierProvider<WorkoutGenerationNotifier, WorkoutGenerationState>((
+      ref,
+    ) {
+      final openAIService = ref.watch(openAIServiceProvider);
+      final analytics = AnalyticsService();
+      return WorkoutGenerationNotifier(openAIService, analytics);
+    });
