@@ -26,7 +26,20 @@ project structure:
 │   │   ├── screens
 │   │   │   ├── ai_chat_screen.dart
 │   │   │   ├── ai_plan_creation_screen.dart
-│   │   │   └── ai_workout_screen.dart
+│   │   │   └── workout_creation
+│   │   │       ├── ai_workout_screen.dart
+│   │   │       ├── models
+│   │   │       │   └── creation_step.dart
+│   │   │       └── widgets
+│   │   │           ├── category_selection_step.dart
+│   │   │           ├── custom_request_step.dart
+│   │   │           ├── duration_selection_step.dart
+│   │   │           ├── equipment_selection_step.dart
+│   │   │           ├── generating_step.dart
+│   │   │           ├── refinement_result.dart
+│   │   │           ├── refinement_step.dart
+│   │   │           ├── welcome_step.dart
+│   │   │           └── workout_result.dart
 │   │   └── services
 │   │       ├── ai_planning_service.dart
 │   │       ├── context_service.dart
@@ -265,6 +278,7 @@ project structure:
     ├── 03_technical_architecture.md
     ├── 04_firebase_architecture.md
     ├── 05a_ai_integration.md
+    ├── 05b_ai_prompting.md
     ├── 06a_auth_system.md
     ├── 06b_food_scanning.md
     ├── 06d_social_features.md
