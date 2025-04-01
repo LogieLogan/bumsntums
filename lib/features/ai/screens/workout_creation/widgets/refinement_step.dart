@@ -1,11 +1,13 @@
 // lib/features/ai/screens/workout_creation/widgets/refinement_step.dart
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../../shared/theme/color_palette.dart';
 import '../../../../../shared/theme/text_styles.dart';
 import '../../../../../shared/components/buttons/primary_button.dart';
 import '../../../../../shared/components/buttons/secondary_button.dart';
 
-class RefinementStep extends StatelessWidget {
+class RefinementStep extends StatefulWidget {
   final Map<String, dynamic> workoutData;
   final TextEditingController controller;
   final bool isRefining;
@@ -25,6 +27,14 @@ class RefinementStep extends StatelessWidget {
     required this.onApplyChanges,
   }) : super(key: key);
 
+  @override
+  State<RefinementStep> createState() => _RefinementStepState();
+}
+
+class _RefinementStepState extends State<RefinementStep> {
+  // Track selected chips to show visual feedback
+  final Set<String> _selectedSuggestions = {};
+  
   @override
   Widget build(BuildContext context) {
     // Create categorized refinement suggestions
@@ -96,15 +106,58 @@ class RefinementStep extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
+        
+        // Current refinement text with clear button
         TextField(
-          controller: controller,
+          controller: widget.controller,
           decoration: InputDecoration(
-            hintText: 'E.g., "Add core exercises" or "Remove jumping exercises"',
+            hintText: 'Describe what changes you want...',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+            suffixIcon: widget.controller.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      setState(() {
+                        widget.controller.clear();
+                        _selectedSuggestions.clear();
+                      });
+                    },
+                  )
+                : null,
           ),
           maxLines: 3,
+          onChanged: (value) {
+            // Force refresh to show/hide clear button
+            setState(() {});
+          },
         ),
+        
+        // Selected suggestions display
+        if (_selectedSuggestions.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: _selectedSuggestions.map((suggestion) {
+                return Chip(
+                  label: Text(suggestion),
+                  backgroundColor: AppColors.salmon,
+                  labelStyle: const TextStyle(color: Colors.white),
+                  deleteIconColor: Colors.white,
+                  onDeleted: () {
+                    setState(() {
+                      _selectedSuggestions.remove(suggestion);
+                      _updateControllerText();
+                    });
+                    HapticFeedback.lightImpact();
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+
         const SizedBox(height: 16),
 
         // Display suggestion categories with labels
@@ -121,28 +174,32 @@ class RefinementStep extends StatelessWidget {
         // Bottom buttons, with proper constraints
         Row(
           children: [
-            if (refinementHistoryExists)
+            if (widget.refinementHistoryExists)
               Expanded(
                 child: SecondaryButton(
                   text: 'Undo Changes',
                   iconData: Icons.undo,
-                  onPressed: isRefining ? null : onUndoChanges,
+                  onPressed: widget.isRefining ? null : widget.onUndoChanges,
                 ),
               ),
-            if (refinementHistoryExists)
+            if (widget.refinementHistoryExists)
               const SizedBox(width: 8),
             Expanded(
               child: SecondaryButton(
                 text: 'Cancel',
-                onPressed: isRefining ? null : onCancel,
+                onPressed: widget.isRefining ? null : widget.onCancel,
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: PrimaryButton(
                 text: 'Apply Changes',
-                isLoading: isRefining,
-                onPressed: isRefining ? null : onApplyChanges,
+                isLoading: widget.isRefining,
+                onPressed: widget.isRefining 
+                    ? null 
+                    : widget.controller.text.trim().isEmpty
+                        ? null  // Disable if text is empty
+                        : widget.onApplyChanges,
               ),
             ),
           ],
@@ -182,45 +239,48 @@ class RefinementStep extends StatelessWidget {
   }
 
   Widget _buildSuggestionChip(BuildContext context, String text) {
+    final isSelected = _selectedSuggestions.contains(text);
+    
     return ActionChip(
       label: Text(text),
-      backgroundColor: AppColors.salmon.withOpacity(0.1),
-      labelStyle: TextStyle(color: AppColors.salmon),
+      backgroundColor: isSelected 
+          ? AppColors.salmon 
+          : AppColors.salmon.withOpacity(0.1),
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : AppColors.salmon,
+      ),
       onPressed: () {
-        final currentText = controller.text;
-
-        // Handle empty or placeholder text
-        if (currentText.isEmpty ||
-            currentText == 'Modify this workout by adding...') {
-          controller.text = text;
-        }
-        // Check if text is already in the input
-        else if (!currentText.toLowerCase().contains(text.toLowerCase())) {
-          // If the existing text ends with punctuation, add a space
-          if (currentText.endsWith('.') ||
-              currentText.endsWith(',') ||
-              currentText.endsWith(':') ||
-              currentText.endsWith(';')) {
-            controller.text = '$currentText $text';
+        HapticFeedback.selectionClick();
+        setState(() {
+          if (isSelected) {
+            _selectedSuggestions.remove(text);
+          } else {
+            _selectedSuggestions.add(text);
           }
-          // If existing text doesn't end with space, add a comma and space
-          else if (!currentText.endsWith(' ')) {
-            controller.text = '$currentText, $text';
-          }
-          // Otherwise just append with a space
-          else {
-            controller.text = '$currentText$text';
-          }
-        }
-
-        // Set cursor at the end of the text
-        controller.selection = TextSelection.fromPosition(
-          TextPosition(offset: controller.text.length),
-        );
-
-        // Focus on the text field after selecting a chip
-        FocusScope.of(context).requestFocus(FocusNode());
+          _updateControllerText();
+        });
       },
+    );
+  }
+  
+  void _updateControllerText() {
+    if (_selectedSuggestions.isEmpty) {
+      widget.controller.clear();
+      return;
+    }
+    
+    // Combine all selected suggestions into a coherent sentence
+    final suggestions = _selectedSuggestions.toList();
+    if (suggestions.length == 1) {
+      widget.controller.text = suggestions[0];
+    } else {
+      final lastSuggestion = suggestions.removeLast();
+      widget.controller.text = '${suggestions.join(", ")} and $lastSuggestion';
+    }
+    
+    // Set cursor at the end of the text
+    widget.controller.selection = TextSelection.fromPosition(
+      TextPosition(offset: widget.controller.text.length),
     );
   }
 }

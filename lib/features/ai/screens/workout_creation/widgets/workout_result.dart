@@ -23,10 +23,11 @@ class WorkoutResult extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final analytics = AnalyticsService();
-    
+
     // Extract workout details
     final title = workoutData['title'] ?? 'Custom Workout';
-    final description = workoutData['description'] ?? 'A personalized workout just for you.';
+    final description =
+        workoutData['description'] ?? 'A personalized workout just for you.';
     final difficulty = workoutData['difficulty'] ?? 'beginner';
     final duration = workoutData['durationMinutes'] ?? 30;
     final calories = workoutData['estimatedCaloriesBurn'] ?? 150;
@@ -53,14 +54,14 @@ class WorkoutResult extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Your personalized workout is ready!',
+                      'Your ${_capitalizeFirst(workoutData['category'] ?? 'custom')} workout is ready!',
                       style: AppTextStyles.body.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Based on your preferences, I\'ve created a workout for you.',
+                      _getPersonalizedMessage(workoutData),
                       style: AppTextStyles.small,
                     ),
                   ],
@@ -271,7 +272,7 @@ class WorkoutResult extends ConsumerWidget {
         const SizedBox(height: 32),
 
         // Feedback section
-// Continuing lib/features/ai/screens/workout_creation/widgets/workout_result.dart
+        // Continuing lib/features/ai/screens/workout_creation/widgets/workout_result.dart
         // Feedback section
         Container(
           padding: const EdgeInsets.all(16),
@@ -284,53 +285,45 @@ class WorkoutResult extends ConsumerWidget {
             children: [
               Text(
                 'How was this workout suggestion?',
-                style: AppTextStyles.body.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildFeedbackButton(
-                    Icons.thumb_down, 
-                    'Too Easy',
-                    () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Thanks for your feedback!'))
-                      );
-                      analytics.logEvent(
-                        name: 'workout_feedback', 
-                        parameters: {'rating': 'too_easy'}
-                      );
-                    }
-                  ),
-                  _buildFeedbackButton(
-                    Icons.check_circle, 
-                    'Just Right',
-                    () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Thanks for your feedback!'))
-                      );
-                      analytics.logEvent(
-                        name: 'workout_feedback', 
-                        parameters: {'rating': 'just_right'}
-                      );
-                    }
-                  ),
-                  _buildFeedbackButton(
-                    Icons.fitness_center, 
-                    'Too Hard',
-                    () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Thanks for your feedback!'))
-                      );
-                      analytics.logEvent(
-                        name: 'workout_feedback', 
-                        parameters: {'rating': 'too_hard'}
-                      );
-                    }
-                  ),
+                  _buildFeedbackButton(Icons.thumb_down, 'Too Easy', () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Thanks for your feedback!'),
+                      ),
+                    );
+                    analytics.logEvent(
+                      name: 'workout_feedback',
+                      parameters: {'rating': 'too_easy'},
+                    );
+                  }),
+                  _buildFeedbackButton(Icons.check_circle, 'Just Right', () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Thanks for your feedback!'),
+                      ),
+                    );
+                    analytics.logEvent(
+                      name: 'workout_feedback',
+                      parameters: {'rating': 'just_right'},
+                    );
+                  }),
+                  _buildFeedbackButton(Icons.fitness_center, 'Too Hard', () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Thanks for your feedback!'),
+                      ),
+                    );
+                    analytics.logEvent(
+                      name: 'workout_feedback',
+                      parameters: {'rating': 'too_hard'},
+                    );
+                  }),
                 ],
               ),
             ],
@@ -370,7 +363,11 @@ class WorkoutResult extends ConsumerWidget {
     );
   }
 
-  Future<void> _saveWorkout(BuildContext context, WidgetRef ref, Map<String, dynamic> workoutData) async {
+  Future<void> _saveWorkout(
+    BuildContext context,
+    WidgetRef ref,
+    Map<String, dynamic> workoutData,
+  ) async {
     try {
       // Get the user ID
       final userProfile = await ref.read(userProfileProvider.future);
@@ -419,25 +416,27 @@ class WorkoutResult extends ConsumerWidget {
   Workout _createWorkoutFromData(Map<String, dynamic> data) {
     // Extract exercises
     final exercisesList = data['exercises'] as List<dynamic>? ?? [];
-    final exercises = exercisesList.map((e) {
-      return Exercise(
-        id: (e['name'] ?? 'exercise').hashCode.toString(),
-        name: e['name'] ?? 'Unnamed Exercise',
-        description: e['description'] ?? 'No description available',
-        imageUrl: 'assets/images/placeholder_exercise.jpg',
-        sets: e['sets'] ?? 3,
-        reps: e['reps'] ?? 10,
-        durationSeconds: e['durationSeconds'],
-        restBetweenSeconds: e['restBetweenSeconds'] ?? 30,
-        targetArea: e['targetArea'] ?? 'Core',
-      );
-    }).toList();
+    final exercises =
+        exercisesList.map((e) {
+          return Exercise(
+            id: (e['name'] ?? 'exercise').hashCode.toString(),
+            name: e['name'] ?? 'Unnamed Exercise',
+            description: e['description'] ?? 'No description available',
+            imageUrl: 'assets/images/placeholder_exercise.jpg',
+            sets: e['sets'] ?? 3,
+            reps: e['reps'] ?? 10,
+            durationSeconds: e['durationSeconds'],
+            restBetweenSeconds: e['restBetweenSeconds'] ?? 30,
+            targetArea: e['targetArea'] ?? 'Core',
+          );
+        }).toList();
 
     // Create the workout model
     return Workout(
       id: data['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
       title: data['title'] ?? 'Custom Workout',
-      description: data['description'] ?? 'A personalized workout created just for you.',
+      description:
+          data['description'] ?? 'A personalized workout created just for you.',
       imageUrl: 'assets/images/placeholder_workout.jpg',
       category: _getCategoryFromName(data['category']),
       difficulty: _getDifficultyFromName(data['difficulty']),
@@ -447,7 +446,8 @@ class WorkoutResult extends ConsumerWidget {
       createdAt: DateTime.now(),
       createdBy: 'ai',
       exercises: exercises,
-      equipment: data['equipment'] != null ? List<String>.from(data['equipment']) : [],
+      equipment:
+          data['equipment'] != null ? List<String>.from(data['equipment']) : [],
       tags: ['ai-generated'],
       featured: false,
     );
@@ -486,6 +486,24 @@ class WorkoutResult extends ConsumerWidget {
       default:
         return WorkoutDifficulty.beginner;
     }
+  }
+
+  String _getPersonalizedMessage(Map<String, dynamic> workout) {
+    final category = workout['category'] ?? '';
+    final difficulty = workout['difficulty'] ?? 'beginner';
+    final duration = workout['durationMinutes'] ?? 30;
+
+    if (category.toLowerCase() == 'bums') {
+      return 'This workout focuses on strengthening and toning your glutes with $duration minutes of targeted exercises.';
+    } else if (category.toLowerCase() == 'tums') {
+      return 'Get ready to work your core with this $difficulty-level ab workout that fits into $duration minutes.';
+    } else if (category.toLowerCase() == 'cardio') {
+      return 'Boost your heart rate and burn calories with this $duration-minute cardio session.';
+    } else if (category.toLowerCase() == 'fullbody') {
+      return 'This complete full body workout targets all major muscle groups in just $duration minutes.';
+    }
+
+    return 'Based on your preferences, I\'ve created a $difficulty level workout that takes $duration minutes.';
   }
 
   String _capitalizeFirst(String text) {

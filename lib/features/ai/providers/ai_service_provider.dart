@@ -4,10 +4,8 @@ import '../services/openai_service.dart';
 import '../services/prompt_engine.dart';
 import '../services/context_service.dart';
 import '../services/personality_engine.dart';
-import '../services/conversation_manager.dart';
 import '../../auth/services/fitness_profile_service.dart';
 import '../../../shared/providers/environment_provider.dart';
-import '../services/prompt_engine.dart';
 
 // Provider for PromptEngine
 final promptEngineProvider = Provider<PromptEngine>((ref) {

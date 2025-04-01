@@ -36,6 +36,13 @@ class OpenAIService {
     int? maxMinutes,
     List<String>? equipment,
     List<String>? focusAreas,
+    String? fitnessLevel,
+    int? age,
+    List<String>? goals,
+    String? preferredLocation,
+    List<String>? healthConditions,
+    Map<String, dynamic>?
+    consultationResponses, // Make sure this parameter exists
   }) async {
     try {
       final categoryName = category?.name ?? 'fullBody';
@@ -54,41 +61,100 @@ class OpenAIService {
       );
       debugPrint('Special Request: ${specificRequest ?? "none"}');
 
-      // Skip the prompt engine and build the system prompt directly
+      // Add debug log for consultation responses
+      debugPrint('Consultation responses: $consultationResponses');
+
+      // Process consultation responses if available
+      String consultationSection = '';
+      if (consultationResponses != null && consultationResponses.isNotEmpty) {
+        consultationSection = '\nUSER PREFERENCES FROM CONSULTATION:\n';
+
+        // Handle response format from ConsultationStep
+        if (consultationResponses.containsKey('q1') ||
+            consultationResponses.keys.any((k) => k.startsWith('answer_'))) {
+          // Format for direct key-value answers
+          consultationResponses.forEach((key, value) {
+            consultationSection += "- $value\n";
+          });
+        } else if (consultationResponses.containsKey('questions')) {
+          // Format for questions array
+          final questions = consultationResponses['questions'];
+          if (questions is List) {
+            for (var i = 0; i < questions.length; i++) {
+              final q = questions[i];
+              if (q is Map) {
+                final question = q['question'];
+                final answer = q['answer'];
+                if (question != null && answer != null) {
+                  consultationSection += "- $question: $answer\n";
+                }
+              }
+            }
+          }
+        } else {
+          // General format - try to extract any useful information
+          consultationResponses.forEach((key, value) {
+            if (value is Map &&
+                value.containsKey('question') &&
+                value.containsKey('answer')) {
+              consultationSection +=
+                  "- ${value['question']}: ${value['answer']}\n";
+            } else {
+              // Just include key-value pairs directly
+              consultationSection += "- $key: $value\n";
+            }
+          });
+        }
+
+        debugPrint(
+          'Adding consultation section to prompt: $consultationSection',
+        );
+      }
+
+      // Construct an enhanced system prompt with user profile information and consultation data
       final systemPrompt = '''
-You are a fitness trainer creating a personalized workout.
+You are a creative fitness trainer designing a personalized workout experience. Your goal is to create an effective, engaging workout that feels custom-made.
 
-CREATE A WORKOUT WITH THESE SPECIFICATIONS:
-- Category: $categoryName
-- Duration: $roundedMinutes minutes (must be exactly this duration)
-- Equipment: ${equipment != null && equipment.isNotEmpty ? equipment.join(', ') : 'bodyweight'}
-- Fitness level: beginner
+USER PROFILE:
+- Fitness level: ${fitnessLevel ?? "beginner"}
+${age != null ? "- Age: $age\n" : ""}${goals != null && goals.isNotEmpty ? "- Goals: ${goals.join(', ')}\n" : ""}
 - Focus areas: ${focusAreas != null && focusAreas.isNotEmpty ? focusAreas.join(', ') : 'overall fitness'}
-- Special requests: ${specificRequest ?? ''}
+${healthConditions != null && healthConditions.isNotEmpty ? "- Health considerations: ${healthConditions.join(', ')}\n" : ""}
 
-IMPORTANT RULES:
-1. STRICTLY maintain $roundedMinutes minutes total workout time
-2. Use SPECIFIC exercise names (e.g., "Squats", "Push-ups", not generic "Exercise 1")
-3. Include appropriate sets, reps, and rest periods
-4. Design the workout to match the specified fitness level
-5. Ensure exercises target the specified focus areas
-6. For cardio exercises, use durationSeconds instead of reps
-7. Ensure the workout is appropriate for the equipment specified
+WORKOUT PARAMETERS:
+- Category: $categoryName
+- Duration: $roundedMinutes minutes
+- Available equipment: ${equipment != null && equipment.isNotEmpty ? equipment.join(', ') : 'bodyweight only'}
+${specificRequest != null && specificRequest.isNotEmpty ? "- Special request: $specificRequest\n" : ""}
+$consultationSection
+
+DESIGN PRINCIPLES:
+1. Create a workout that fits exactly $roundedMinutes minutes
+2. View equipment as available resources, not requirements - use what makes sense for the best workout
+3. Incorporate exercise variety and unexpected combinations while maintaining safety and effectiveness
+4. Consider proper exercise sequencing (warm-up, main work, cool-down)
+5. Design with the user's fitness level and goals in mind
+
+BE CREATIVE:
+- Feel free to introduce novel exercise combinations
+- Consider how exercises flow together
+- Mix equipment-based and bodyweight movements where appropriate
+- Add engaging elements like circuits, intervals, or challenges
 
 Respond ONLY with valid JSON in this exact format:
 {
-  "title": "Workout title",
-  "description": "Brief workout description",
+  "title": "Workout title - make it engaging and descriptive",
+  "description": "Brief workout description including goals and approach",
   "category": "$categoryName",
-  "difficulty": "beginner",
+  "difficulty": "${fitnessLevel ?? "beginner"}",
   "durationMinutes": $roundedMinutes,
   "estimatedCaloriesBurn": integer,
-  "equipment": ["item1", "item2"],
+  "equipment": ["only list equipment actually used"],
   "exercises": [
     {
       "name": "Specific Exercise Name",
       "description": "Clear instructions for the exercise",
-      "targetArea": "Specific muscle group",
+      "targetArea": "Primary muscle group",
       "sets": integer,
       "reps": integer,
       "durationSeconds": integer or null,
@@ -148,83 +214,71 @@ Respond ONLY with valid JSON in this exact format:
     }
   }
 
-  // Updated refineWorkout method in openai_service.dart
   Future<Map<String, dynamic>> refineWorkout({
     required String userId,
     required Map<String, dynamic> originalWorkout,
     required String refinementRequest,
-    String? originalRequest, // Keep for backward compatibility, but don't use
+    String? originalRequest,
   }) async {
     try {
-      List<Map<String, dynamic>> messages;
-
-      // Get essential data from the original workout
+      // Create a cleaner version of the original workout for the prompt
+      // Include only the essential properties to keep the prompt size manageable
       final Map<String, dynamic> workoutEssentials = {
         'title': originalWorkout['title'],
         'description': originalWorkout['description'],
         'category': originalWorkout['category'],
         'difficulty': originalWorkout['difficulty'],
         'durationMinutes': originalWorkout['durationMinutes'],
-        'exercises': originalWorkout['exercises'],
         'equipment': originalWorkout['equipment'] ?? [],
+        'exercises': originalWorkout['exercises'],
       };
 
-      // Log the size of the original workout data for debugging
+      // Build a more explicit prompt for refinement
+      final systemPrompt = '''
+WORKOUT REFINEMENT TASK
+
+I have a workout that I want to refine based on specific feedback. DO NOT create an entirely new workout - 
+I need you to modify the EXISTING workout while preserving its core structure and purpose.
+
+CURRENT WORKOUT:
+${jsonEncode(workoutEssentials)}
+
+USER REFINEMENT REQUEST: "${refinementRequest}"
+
+INSTRUCTIONS:
+1. MODIFY the existing workout - do not create an entirely new one
+2. Keep the same category and general structure
+3. Make specific changes based on the refinement request
+4. Preserve the existing exercise structure where possible
+5. ALWAYS include a complete "exercises" array in your response
+6. Return the complete modified workout JSON
+
+Your response should be VALID JSON with these fields:
+- title (can be updated based on changes)
+- description (can be updated to reflect changes)
+- category (should generally remain the same)
+- difficulty (can be adjusted based on the request)
+- durationMinutes (can be adjusted but should be a multiple of 15)
+- equipment (can be updated based on the request)
+- exercises (MUST include the complete array with all modifications)
+- changesSummary (a brief explanation of what you changed)
+
+DO NOT nest the workout under another object. Respond with the direct workout JSON.
+''';
+
+      final messages = [
+        {"role": "system", "content": systemPrompt},
+        {
+          "role": "user",
+          "content":
+              "Please refine this workout based on my feedback: $refinementRequest",
+        },
+      ];
+
+      // Add debug logging
       debugPrint(
         'Original workout json size: ${jsonEncode(workoutEssentials).length} chars',
       );
-
-      if (_promptEngine != null) {
-        // Build system prompt directly, without depending on profile context
-        final systemPrompt = _promptEngine.buildPrompt(
-          templateId: 'workout_refinement',
-          context: {},
-          customVars: {
-            'workoutDetails': jsonEncode(workoutEssentials),
-            'userFeedback': refinementRequest,
-          },
-        );
-
-        messages = [
-          {"role": "system", "content": systemPrompt},
-          {
-            "role": "user",
-            "content":
-                "Please refine this workout based on my feedback: $refinementRequest",
-          },
-        ];
-      } else {
-        // Fallback implementation
-        messages = [
-          {
-            "role": "system",
-            "content": """
-WORKOUT REFINEMENT TASK
-
-Current workout to modify:
-${jsonEncode(workoutEssentials)}
-
-User wants to change: ${refinementRequest}
-
-ESSENTIAL INSTRUCTIONS:
-1. You MUST update the actual exercises based on the refinement request
-2. Duration should be a multiple of 15 minutes (15, 30, 45, 60)
-3. Use SPECIFIC exercise names (like "Squats", "Lunges", NOT "Exercise 1")
-4. When adding exercises, provide full details (name, description, sets, reps, rest)
-5. When modifying existing exercises, change the actual exercise data
-
-IMPORTANT: If the refinement affects exercise selection, you MUST change the exercises array.
-
-Respond with the complete modified workout in JSON format, plus a "changesSummary" field that explains exactly what you changed.
-""",
-          },
-          {
-            "role": "user",
-            "content":
-                "Refine this workout based on my feedback: $refinementRequest",
-          },
-        ];
-      }
 
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -236,7 +290,7 @@ Respond with the complete modified workout in JSON format, plus a "changesSummar
           'model': _model,
           'messages': messages,
           'temperature': 0.7,
-          'max_tokens': 1500, // Increase max tokens for complete response
+          'max_tokens': 1500,
           'response_format': {"type": "json_object"},
         }),
       );
@@ -248,24 +302,43 @@ Respond with the complete modified workout in JSON format, plus a "changesSummar
       final data = jsonDecode(response.body);
       final content = data['choices'][0]['message']['content'];
 
-      // Log the raw response to help with debugging
-      debugPrint('Raw refinement response: $content');
+      // Debug logging
+      debugPrint('Raw API Response:');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint(
+        'Response content (first 200 chars): ${content.substring(0, min(200, content.length))}...',
+      );
 
       try {
         final Map<String, dynamic> parsedResponse = jsonDecode(content);
 
+        // Handle nested workout structure if present
+        Map<String, dynamic> workoutData;
+        if (parsedResponse.containsKey('workout')) {
+          // Extract the workout from nested structure
+          workoutData = Map<String, dynamic>.from(parsedResponse['workout']);
+
+          // Check if there's a changes summary at the root level
+          if (parsedResponse.containsKey('changesSummary')) {
+            workoutData['changesSummary'] = parsedResponse['changesSummary'];
+          }
+        } else {
+          // Response is already in the expected format
+          workoutData = parsedResponse;
+        }
+
         // Extract changes summary
         String? changesSummary;
-        if (parsedResponse.containsKey('changesSummary')) {
-          changesSummary = parsedResponse['changesSummary'];
+        if (workoutData.containsKey('changesSummary')) {
+          changesSummary = workoutData['changesSummary'];
+          workoutData.remove('changesSummary');
         } else {
           // Generate a basic summary if none provided
           changesSummary = 'Workout refined based on your feedback.';
-          parsedResponse['changesSummary'] = changesSummary;
         }
 
         // Create the refined workout with the original ID preserved
-        final refinedWorkout = Map<String, dynamic>.from(parsedResponse);
+        final refinedWorkout = Map<String, dynamic>.from(workoutData);
         refinedWorkout['id'] =
             originalWorkout['id'] ??
             'workout-${DateTime.now().millisecondsSinceEpoch}';
@@ -292,27 +365,44 @@ Respond with the complete modified workout in JSON format, plus a "changesSummar
           }
         }
 
-        // Ensure the duration is a multiple of 15 minutes
-        if (refinedWorkout.containsKey('durationMinutes') &&
-            refinedWorkout['durationMinutes'] != null) {
-          int duration = refinedWorkout['durationMinutes'] as int;
-          int roundedDuration = ((duration / 15).round() * 15).clamp(15, 60);
-          refinedWorkout['durationMinutes'] = roundedDuration;
-        }
-
-        // Make sure all necessary fields are present
-        final requiredFields = [
-          'title',
-          'description',
+        // Ensure the workout maintains critical fields from the original if missing
+        final originalFields = [
           'category',
+          'title',
           'difficulty',
           'durationMinutes',
           'equipment',
         ];
-        for (final field in requiredFields) {
+        for (final field in originalFields) {
           if (!refinedWorkout.containsKey(field) ||
               refinedWorkout[field] == null) {
             refinedWorkout[field] = originalWorkout[field];
+          }
+        }
+
+        // Make sure title is present (use the "name" field if provided)
+        if (!refinedWorkout.containsKey('title') &&
+            refinedWorkout.containsKey('name')) {
+          refinedWorkout['title'] = refinedWorkout['name'];
+          refinedWorkout.remove('name');
+        }
+
+        // Fix any "duration" field instead of "durationMinutes"
+        if (!refinedWorkout.containsKey('durationMinutes') &&
+            refinedWorkout.containsKey('duration')) {
+          refinedWorkout['durationMinutes'] = refinedWorkout['duration'];
+          refinedWorkout.remove('duration');
+        }
+
+        // Ensure duration is a multiple of 15 minutes
+        if (refinedWorkout.containsKey('durationMinutes')) {
+          final duration = refinedWorkout['durationMinutes'];
+          if (duration is int) {
+            final roundedDuration = ((duration / 15).round() * 15).clamp(
+              15,
+              60,
+            );
+            refinedWorkout['durationMinutes'] = roundedDuration;
           }
         }
 

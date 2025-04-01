@@ -44,66 +44,6 @@ Keep responses concise, positive, and reference their goals when relevant. Never
 
     _addTemplate(
       PromptTemplate(
-        id: 'workout_creation',
-        name: 'Workout Creation',
-        version: '2.2.0',
-        category: PromptCategory.workoutCreation,
-        systemPrompt: '''
-You are a fitness trainer creating a personalized workout.
-
-CREATE A WORKOUT WITH THESE SPECIFICATIONS:
-- Category: {workoutCategory}
-- Duration: {duration} minutes (must be exactly this duration)
-- Equipment: {equipment}
-- Fitness level: {fitnessLevel}
-- Focus areas: {focusAreas}
-- Special requests: {specialRequest}
-
-IMPORTANT RULES:
-1. STRICTLY maintain {duration} minutes total workout time
-2. Use SPECIFIC exercise names (e.g., "Squats", "Push-ups", not generic "Exercise 1")
-3. Include appropriate sets, reps, and rest periods
-4. Design the workout to match the specified fitness level
-5. Ensure exercises target the specified focus areas
-6. For cardio exercises, use durationSeconds instead of reps
-7. Ensure the workout is appropriate for the equipment specified
-
-Respond ONLY with valid JSON in this exact format:
-{
-  "title": "Workout title",
-  "description": "Brief workout description",
-  "category": "{workoutCategory}",
-  "difficulty": "{fitnessLevel}",
-  "durationMinutes": {duration},
-  "estimatedCaloriesBurn": integer,
-  "equipment": ["item1", "item2"],
-  "exercises": [
-    {
-      "name": "Specific Exercise Name",
-      "description": "Clear instructions for the exercise",
-      "targetArea": "Specific muscle group",
-      "sets": integer,
-      "reps": integer,
-      "durationSeconds": integer or null,
-      "restBetweenSeconds": integer
-    }
-  ]
-}
-''',
-        requiredUserAttributes: [],
-        variables: {
-          'workoutCategory': 'fullBody',
-          'duration': '30',
-          'equipment': 'bodyweight',
-          'fitnessLevel': 'beginner',
-          'focusAreas': 'overall fitness',
-          'specialRequest': '',
-        },
-      ),
-    );
-
-    _addTemplate(
-      PromptTemplate(
         id: 'plan_creation',
         name: 'Plan Creation',
         version: '1.0.0',
@@ -155,36 +95,6 @@ Explain the plan structure and how it supports their goals. Offer guidance on pr
           'duration': '7',
           'focusAreas': 'overall fitness with emphasis on user\'s goals',
         },
-      ),
-    );
-
-    _addTemplate(
-      PromptTemplate(
-        id: 'workout_refinement',
-        name: 'Workout Refinement',
-        version: '2.0.0',
-        category: PromptCategory.workoutRefinement,
-        systemPrompt: '''
-WORKOUT REFINEMENT TASK
-
-Current workout to modify:
-{workoutDetails}
-
-User wants to change: {userFeedback}
-
-ESSENTIAL INSTRUCTIONS:
-1. You MUST update the actual exercises based on the refinement request
-2. Duration should be a multiple of 15 minutes (15, 30, 45, 60)
-3. Use SPECIFIC exercise names (like "Squats", "Lunges", NOT "Exercise 1")
-4. When adding exercises, provide full details (name, description, sets, reps, rest)
-5. When modifying existing exercises, change the actual exercise data
-
-IMPORTANT: If the refinement affects exercise selection, you MUST change the exercises array.
-
-Respond with the complete modified workout in JSON format, plus a "changesSummary" field that explains exactly what you changed.
-''',
-        requiredUserAttributes: [],
-        variables: {'workoutDetails': '{}', 'userFeedback': ''},
       ),
     );
   }

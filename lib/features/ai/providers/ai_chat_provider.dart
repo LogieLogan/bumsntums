@@ -1,6 +1,5 @@
 // lib/features/ai/providers/ai_chat_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import '../models/message.dart';
 import '../services/openai_service.dart';
 import 'openai_provider.dart';
@@ -36,7 +35,6 @@ class AIChatNotifier extends StateNotifier<AIChatState> {
   final OpenAIService _openAIService;
   final FirebaseFirestore _firestore;
   final AnalyticsService _analytics;
-  final Uuid _uuid = const Uuid();
 
   // Track disposal state
   bool _isDisposed = false;

@@ -1,8 +1,7 @@
-Using the Project Knowledge and the specs provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
+Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-I need to refactor ai_workout_screen
-If we need to make a new folder to handle this part of the project then we should think about that that looks like first
+review AI wrokout generation and refinement
 
 project structure: 
 

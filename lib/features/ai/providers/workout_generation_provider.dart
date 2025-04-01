@@ -85,11 +85,22 @@ class WorkoutGenerationNotifier extends StateNotifier<WorkoutGenerationState> {
     state = state.updateParameters({key: value});
   }
 
-  Future<void> generateWorkout({required String userId}) async {
+  Future<void> generateWorkout({
+    required String userId,
+    Map<String, dynamic>? userProfileData,
+  }) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
 
       final params = state.parameters;
+
+      // Extract user profile data for better context
+      final userFitnessLevel = userProfileData?['fitnessLevel'] ?? 'beginner';
+      final userAge = userProfileData?['age'];
+      final userGoals = userProfileData?['goals'] as List<String>? ?? [];
+      final userPreferredLocation = userProfileData?['preferredLocation'];
+      final userHealthConditions =
+          userProfileData?['healthConditions'] as List<String>? ?? [];
 
       // Extract parameters with proper defaults
       final workoutCategory = params['workoutCategory'] ?? 'fullBody';
@@ -157,6 +168,12 @@ class WorkoutGenerationNotifier extends StateNotifier<WorkoutGenerationState> {
         equipment: equipment,
         focusAreas: focusAreas,
         specificRequest: specialRequest,
+        fitnessLevel: userFitnessLevel,
+        age: userAge,
+        goals: userGoals,
+        preferredLocation: userPreferredLocation,
+        healthConditions:
+            userHealthConditions.isNotEmpty ? userHealthConditions : null,
       );
 
       // Update state
