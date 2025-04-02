@@ -1,4 +1,4 @@
-// lib/features/ai/screens/workout_creation/widgets/parameter_summary_sheet.dart
+// lib/features/ai_workout_creation/screens/workout_creation/widgets/parameter_summary_sheet.dart
 import 'package:flutter/material.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
@@ -16,7 +16,7 @@ class ParameterSummarySheet extends StatelessWidget {
   final bool showBackButton;
   final bool showContinueButton;
   final String continueButtonText;
-  
+
   const ParameterSummarySheet({
     Key? key,
     this.selectedCategory,
@@ -58,10 +58,12 @@ class ParameterSummarySheet extends StatelessWidget {
             ),
             margin: const EdgeInsets.only(bottom: 16),
           ),
-          
+
           // Parameter summary
-          if (selectedCategory != null || selectedDuration != null || 
-              selectedEquipment.isNotEmpty || specialRequest != null)
+          if (selectedCategory != null ||
+              selectedDuration != null ||
+              selectedEquipment.isNotEmpty ||
+              specialRequest != null)
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               decoration: BoxDecoration(
@@ -87,7 +89,7 @@ class ParameterSummarySheet extends StatelessWidget {
                       _formatCategory(selectedCategory!),
                       Icons.fitness_center,
                     ),
-                  
+
                   // Duration
                   if (selectedDuration != null)
                     _buildParameter(
@@ -95,17 +97,18 @@ class ParameterSummarySheet extends StatelessWidget {
                       '$selectedDuration minutes',
                       Icons.timer,
                     ),
-                  
+
                   // Equipment
                   if (selectedEquipment.isNotEmpty)
                     _buildParameter(
                       'Equipment',
-                      selectedEquipment.length == 1 && selectedEquipment.first == 'None'
+                      selectedEquipment.length == 1 &&
+                              selectedEquipment.first == 'None'
                           ? 'No equipment'
                           : selectedEquipment.join(', '),
                       Icons.fitness_center,
                     ),
-                  
+
                   // Special request
                   if (specialRequest != null && specialRequest!.isNotEmpty)
                     _buildParameter(
@@ -116,18 +119,15 @@ class ParameterSummarySheet extends StatelessWidget {
                 ],
               ),
             ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Action buttons
           Row(
             children: [
               if (showBackButton)
                 Expanded(
-                  child: SecondaryButton(
-                    text: 'Back',
-                    onPressed: onBack,
-                  ),
+                  child: SecondaryButton(text: 'Back', onPressed: onBack),
                 ),
               if (showBackButton && showContinueButton)
                 const SizedBox(width: 16),
@@ -151,11 +151,7 @@ class ParameterSummarySheet extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            size: 16,
-            color: AppColors.salmon.withOpacity(0.7),
-          ),
+          Icon(icon, size: 16, color: AppColors.salmon.withOpacity(0.7)),
           const SizedBox(width: 8),
           Expanded(
             child: Column(

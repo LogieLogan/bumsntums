@@ -1,4 +1,4 @@
-// lib/features/ai/screens/workout_creation/widgets/refinement_step.dart
+// lib/features/ai_workout_creation/screens/workout_creation/widgets/refinement_step.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,7 +34,7 @@ class RefinementStep extends StatefulWidget {
 class _RefinementStepState extends State<RefinementStep> {
   // Track selected chips to show visual feedback
   final Set<String> _selectedSuggestions = {};
-  
+
   @override
   Widget build(BuildContext context) {
     // Create categorized refinement suggestions
@@ -107,24 +107,25 @@ class _RefinementStepState extends State<RefinementStep> {
         ),
 
         const SizedBox(height: 16),
-        
+
         // Current refinement text with clear button
         TextField(
           controller: widget.controller,
           decoration: InputDecoration(
             hintText: 'Describe what changes you want...',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-            suffixIcon: widget.controller.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      setState(() {
-                        widget.controller.clear();
-                        _selectedSuggestions.clear();
-                      });
-                    },
-                  )
-                : null,
+            suffixIcon:
+                widget.controller.text.isNotEmpty
+                    ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        setState(() {
+                          widget.controller.clear();
+                          _selectedSuggestions.clear();
+                        });
+                      },
+                    )
+                    : null,
           ),
           maxLines: 3,
           onChanged: (value) {
@@ -132,7 +133,7 @@ class _RefinementStepState extends State<RefinementStep> {
             setState(() {});
           },
         ),
-        
+
         // Selected suggestions display
         if (_selectedSuggestions.isNotEmpty)
           Padding(
@@ -140,21 +141,22 @@ class _RefinementStepState extends State<RefinementStep> {
             child: Wrap(
               spacing: 8.0,
               runSpacing: 8.0,
-              children: _selectedSuggestions.map((suggestion) {
-                return Chip(
-                  label: Text(suggestion),
-                  backgroundColor: AppColors.salmon,
-                  labelStyle: const TextStyle(color: Colors.white),
-                  deleteIconColor: Colors.white,
-                  onDeleted: () {
-                    setState(() {
-                      _selectedSuggestions.remove(suggestion);
-                      _updateControllerText();
-                    });
-                    HapticFeedback.lightImpact();
-                  },
-                );
-              }).toList(),
+              children:
+                  _selectedSuggestions.map((suggestion) {
+                    return Chip(
+                      label: Text(suggestion),
+                      backgroundColor: AppColors.salmon,
+                      labelStyle: const TextStyle(color: Colors.white),
+                      deleteIconColor: Colors.white,
+                      onDeleted: () {
+                        setState(() {
+                          _selectedSuggestions.remove(suggestion);
+                          _updateControllerText();
+                        });
+                        HapticFeedback.lightImpact();
+                      },
+                    );
+                  }).toList(),
             ),
           ),
 
@@ -167,7 +169,11 @@ class _RefinementStepState extends State<RefinementStep> {
         const SizedBox(height: 8),
         _buildSuggestionCategory(context, 'Equipment', equipmentSuggestions),
         const SizedBox(height: 8),
-        _buildSuggestionCategory(context, 'Modifications', modificationSuggestions),
+        _buildSuggestionCategory(
+          context,
+          'Modifications',
+          modificationSuggestions,
+        ),
 
         const SizedBox(height: 24),
 
@@ -182,8 +188,7 @@ class _RefinementStepState extends State<RefinementStep> {
                   onPressed: widget.isRefining ? null : widget.onUndoChanges,
                 ),
               ),
-            if (widget.refinementHistoryExists)
-              const SizedBox(width: 8),
+            if (widget.refinementHistoryExists) const SizedBox(width: 8),
             Expanded(
               child: SecondaryButton(
                 text: 'Cancel',
@@ -195,10 +200,11 @@ class _RefinementStepState extends State<RefinementStep> {
               child: PrimaryButton(
                 text: 'Apply Changes',
                 isLoading: widget.isRefining,
-                onPressed: widget.isRefining 
-                    ? null 
-                    : widget.controller.text.trim().isEmpty
-                        ? null  // Disable if text is empty
+                onPressed:
+                    widget.isRefining
+                        ? null
+                        : widget.controller.text.trim().isEmpty
+                        ? null // Disable if text is empty
                         : widget.onApplyChanges,
               ),
             ),
@@ -208,7 +214,11 @@ class _RefinementStepState extends State<RefinementStep> {
     );
   }
 
-  Widget _buildSuggestionCategory(BuildContext context, String title, List<String> suggestions) {
+  Widget _buildSuggestionCategory(
+    BuildContext context,
+    String title,
+    List<String> suggestions,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -224,14 +234,15 @@ class _RefinementStepState extends State<RefinementStep> {
           height: 40,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            children: suggestions
-                .map(
-                  (suggestion) => Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: _buildSuggestionChip(context, suggestion),
-                  ),
-                )
-                .toList(),
+            children:
+                suggestions
+                    .map(
+                      (suggestion) => Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: _buildSuggestionChip(context, suggestion),
+                      ),
+                    )
+                    .toList(),
           ),
         ),
       ],
@@ -240,12 +251,11 @@ class _RefinementStepState extends State<RefinementStep> {
 
   Widget _buildSuggestionChip(BuildContext context, String text) {
     final isSelected = _selectedSuggestions.contains(text);
-    
+
     return ActionChip(
       label: Text(text),
-      backgroundColor: isSelected 
-          ? AppColors.salmon 
-          : AppColors.salmon.withOpacity(0.1),
+      backgroundColor:
+          isSelected ? AppColors.salmon : AppColors.salmon.withOpacity(0.1),
       labelStyle: TextStyle(
         color: isSelected ? Colors.white : AppColors.salmon,
       ),
@@ -262,13 +272,13 @@ class _RefinementStepState extends State<RefinementStep> {
       },
     );
   }
-  
+
   void _updateControllerText() {
     if (_selectedSuggestions.isEmpty) {
       widget.controller.clear();
       return;
     }
-    
+
     // Combine all selected suggestions into a coherent sentence
     final suggestions = _selectedSuggestions.toList();
     if (suggestions.length == 1) {
@@ -277,7 +287,7 @@ class _RefinementStepState extends State<RefinementStep> {
       final lastSuggestion = suggestions.removeLast();
       widget.controller.text = '${suggestions.join(", ")} and $lastSuggestion';
     }
-    
+
     // Set cursor at the end of the text
     widget.controller.selection = TextSelection.fromPosition(
       TextPosition(offset: widget.controller.text.length),

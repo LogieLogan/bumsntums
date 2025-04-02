@@ -1,4 +1,4 @@
-// lib/features/ai/screens/workout_creation/widgets/welcome_step.dart
+// lib/features/ai_workout_creation/screens/workout_creation/widgets/welcome_step.dart
 import 'package:flutter/material.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
@@ -7,10 +7,7 @@ import '../../../shared/components/buttons/primary_button.dart';
 class WelcomeStep extends StatelessWidget {
   final VoidCallback onGetStarted;
 
-  const WelcomeStep({
-    Key? key,
-    required this.onGetStarted,
-  }) : super(key: key);
+  const WelcomeStep({Key? key, required this.onGetStarted}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +32,7 @@ class WelcomeStep extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
-        PrimaryButton(
-          text: 'Get Started',
-          onPressed: onGetStarted,
-        ),
+        PrimaryButton(text: 'Get Started', onPressed: onGetStarted),
       ],
     );
   }

@@ -1,4 +1,4 @@
-// lib/features/ai/screens/workout_creation/widgets/refinement_result.dart
+// lib/features/ai_workout_creation/screens/workout_creation/widgets/refinement_result.dart
 import 'package:flutter/material.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
@@ -35,14 +35,16 @@ class RefinementResult extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: originalExercisesPreserved
-                ? AppColors.warning.withOpacity(0.1)
-                : AppColors.success.withOpacity(0.1),
+            color:
+                originalExercisesPreserved
+                    ? AppColors.warning.withOpacity(0.1)
+                    : AppColors.success.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: originalExercisesPreserved
-                  ? AppColors.warning.withOpacity(0.3)
-                  : AppColors.success.withOpacity(0.3),
+              color:
+                  originalExercisesPreserved
+                      ? AppColors.warning.withOpacity(0.3)
+                      : AppColors.success.withOpacity(0.3),
             ),
           ),
           child: Column(
@@ -54,9 +56,10 @@ class RefinementResult extends StatelessWidget {
                     originalExercisesPreserved
                         ? Icons.info_outline
                         : Icons.check_circle,
-                    color: originalExercisesPreserved
-                        ? AppColors.warning
-                        : AppColors.success,
+                    color:
+                        originalExercisesPreserved
+                            ? AppColors.warning
+                            : AppColors.success,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -65,9 +68,10 @@ class RefinementResult extends StatelessWidget {
                         : 'Changes Applied',
                     style: AppTextStyles.body.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: originalExercisesPreserved
-                          ? AppColors.warning
-                          : AppColors.success,
+                      color:
+                          originalExercisesPreserved
+                              ? AppColors.warning
+                              : AppColors.success,
                     ),
                   ),
                 ],
@@ -129,9 +133,7 @@ class RefinementResult extends StatelessWidget {
                     ),
                     _buildStatColumn(
                       Icons.fitness_center,
-                      _capitalizeFirst(
-                        workoutData['difficulty'] ?? 'beginner',
-                      ),
+                      _capitalizeFirst(workoutData['difficulty'] ?? 'beginner'),
                     ),
                   ],
                 ),

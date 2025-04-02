@@ -1,4 +1,4 @@
-// lib/features/workout_planning/screens/ai_plan_creation_screen.dart
+// lib/features/ai_workout_planning/screens/ai_plan_creation_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../ai/providers/ai_planning_provider.dart';

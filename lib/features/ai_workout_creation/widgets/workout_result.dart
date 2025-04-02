@@ -1,4 +1,4 @@
-// lib/features/ai/screens/workout_creation/widgets/workout_result.dart
+// lib/features/ai_workout_creation/screens/workout_creation/widgets/workout_result.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/theme/color_palette.dart';
