@@ -1,7 +1,26 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-workout execution rest_period_widget coming up next section is cut off. Can the layout be improved to show all the information? 
+Ai planning service. 
+align the current plan feature wih the ai workout generation only for planning up to a weeks of workouts 
+Tailore the set up steps and questions and generation prompt to guide the generation to make an excellent weekly workout plan. 
+
+intial thoughts are:
+- variation (bums one day, arms another, harder days, easier days, etc etc)
+- tailored vairation (bums, bums, bums, or a bit of everyhting)
+- options to take complete control over very aspect to being able to say you decide for varied levels of people
+- make it super configurabel yet only show options when needed
+- Design a beuatiful plan overview screen at the end to display the pan on a bespoke weekly laid out screen
+- allow for indicvduals to refine the plan using ai (similar to workout generation)
+- leverage other app features were needed that are made already to ensure a consistent experience with the rest of the app
+- for example once the plan is made there should be an option to save workouts should be saved as individula woerkouts in my workouts screen and then have the same configurability as if  the workout was made using other methods.
+- workouts should be configurable manually in the panning workflow before saving a plan using the modals to set reps, set,s weights, times resitence etc. 
+- a way to save the plan with a name description (pre made with AI but can be edited) 
+- a my plans screen where the plan will be viewd, set and edited.
+
+Steps: 
+
+
 
 project structure: 
 
@@ -23,23 +42,7 @@ project structure:
 │   │   │   ├── workout_generation_provider.dart
 │   │   │   └── workout_recommendation_provider.dart
 │   │   ├── screens
-│   │   │   ├── ai_chat_screen.dart
-│   │   │   ├── ai_plan_creation_screen.dart
-│   │   │   └── workout_creation
-│   │   │       ├── ai_workout_screen.dart
-│   │   │       ├── models
-│   │   │       │   └── creation_step.dart
-│   │   │       └── widgets
-│   │   │           ├── category_selection_step.dart
-│   │   │           ├── custom_request_step.dart
-│   │   │           ├── duration_selection_step.dart
-│   │   │           ├── equipment_selection_step.dart
-│   │   │           ├── generating_step.dart
-│   │   │           ├── parameter_summary_sheet.dart
-│   │   │           ├── refinement_result.dart
-│   │   │           ├── refinement_step.dart
-│   │   │           ├── welcome_step.dart
-│   │   │           └── workout_result.dart
+│   │   │   └── ai_chat_screen.dart
 │   │   └── services
 │   │       ├── ai_planning_service.dart
 │   │       ├── context_service.dart
@@ -47,6 +50,27 @@ project structure:
 │   │       ├── openai_service.dart
 │   │       ├── personality_engine.dart
 │   │       └── prompt_engine.dart
+│   ├── ai_workout_creation
+│   │   ├── models
+│   │   │   └── creation_step.dart
+│   │   ├── screens
+│   │   │   └── ai_workout_screen.dart
+│   │   └── widgets
+│   │       ├── category_selection_step.dart
+│   │       ├── custom_request_step.dart
+│   │       ├── duration_selection_step.dart
+│   │       ├── equipment_selection_step.dart
+│   │       ├── generating_step.dart
+│   │       ├── parameter_summary_sheet.dart
+│   │       ├── refinement_result.dart
+│   │       ├── refinement_step.dart
+│   │       ├── welcome_step.dart
+│   │       └── workout_result.dart
+│   ├── ai_workout_planning
+│   │   ├── models
+│   │   ├── screens
+│   │   │   └── ai_plan_creation_screen.dart
+│   │   └── widgets
 │   ├── auth
 │   │   ├── models
 │   │   │   └── user_profile.dart

@@ -1,14 +1,14 @@
 // lib/features/ai/screens/workout_creation/widgets/workout_result.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../shared/theme/color_palette.dart';
-import '../../../../../shared/theme/text_styles.dart';
-import '../../../../../features/workouts/repositories/custom_workout_repository.dart';
-import '../../../../../features/workouts/models/workout.dart';
-import '../../../../../features/workouts/models/exercise.dart';
-import '../../../../../features/workouts/screens/pre_workout_setup_screen.dart';
-import '../../../../../features/auth/providers/user_provider.dart';
-import '../../../../../shared/analytics/firebase_analytics_service.dart';
+import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/text_styles.dart';
+import '../../workouts/repositories/custom_workout_repository.dart';
+import '../../workouts/models/workout.dart';
+import '../../workouts/models/exercise.dart';
+import '../../workouts/screens/pre_workout_setup_screen.dart';
+import '../../auth/providers/user_provider.dart';
+import '../../../shared/analytics/firebase_analytics_service.dart';
 
 class WorkoutResult extends ConsumerWidget {
   final Map<String, dynamic> workoutData;

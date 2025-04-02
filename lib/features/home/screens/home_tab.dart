@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bums_n_tums/features/ai/screens/ai_chat_screen.dart';
 import 'package:bums_n_tums/features/auth/models/user_profile.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_browse_screen.dart';
-import 'package:bums_n_tums/features/ai/screens/workout_creation/ai_workout_screen.dart';
+import 'package:bums_n_tums/features/ai_workout_creation/screens/ai_workout_screen.dart';
 import 'package:bums_n_tums/shared/theme/color_palette.dart';
 import 'package:bums_n_tums/shared/theme/text_styles.dart';
 import '../widgets/welcome_card.dart';

@@ -1,10 +1,10 @@
 // lib/features/ai/screens/workout_creation/widgets/parameter_summary_sheet.dart
 import 'package:flutter/material.dart';
-import '../../../../../shared/theme/color_palette.dart';
-import '../../../../../shared/theme/text_styles.dart';
-import '../../../../../shared/components/buttons/primary_button.dart';
-import '../../../../../shared/components/buttons/secondary_button.dart';
-import '../../../../workouts/models/workout.dart';
+import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/text_styles.dart';
+import '../../../shared/components/buttons/primary_button.dart';
+import '../../../shared/components/buttons/secondary_button.dart';
+import '../../workouts/models/workout.dart';
 
 class ParameterSummarySheet extends StatelessWidget {
   final WorkoutCategory? selectedCategory;

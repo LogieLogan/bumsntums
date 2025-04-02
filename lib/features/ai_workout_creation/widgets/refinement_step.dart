@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../../../shared/theme/color_palette.dart';
-import '../../../../../shared/theme/text_styles.dart';
-import '../../../../../shared/components/buttons/primary_button.dart';
-import '../../../../../shared/components/buttons/secondary_button.dart';
+import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/text_styles.dart';
+import '../../../shared/components/buttons/primary_button.dart';
+import '../../../shared/components/buttons/secondary_button.dart';
 
 class RefinementStep extends StatefulWidget {
   final Map<String, dynamic> workoutData;

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
-import '../../ai/screens/workout_creation/ai_workout_screen.dart';
+import '../../ai_workout_creation/screens/ai_workout_screen.dart';
 
 class AIWorkoutCreatorCard extends StatelessWidget {
   const AIWorkoutCreatorCard({Key? key}) : super(key: key);

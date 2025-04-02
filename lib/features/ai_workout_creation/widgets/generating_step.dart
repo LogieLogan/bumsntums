@@ -1,9 +1,9 @@
 // lib/features/ai/screens/workout_creation/widgets/generating_step.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../../../../../shared/theme/color_palette.dart';
-import '../../../../../shared/theme/text_styles.dart';
-import '../../../../../features/workouts/models/workout.dart';
+import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/text_styles.dart';
+import '../../workouts/models/workout.dart';
 
 class GeneratingStep extends StatefulWidget {
   final WorkoutCategory selectedCategory;

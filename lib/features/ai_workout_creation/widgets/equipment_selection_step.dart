@@ -2,11 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../shared/theme/color_palette.dart';
-import '../../../../../shared/theme/text_styles.dart';
-import '../../../../../shared/components/buttons/primary_button.dart';
-import '../../../../../shared/components/buttons/secondary_button.dart';
-import '../../../../../features/auth/providers/user_provider.dart';
+import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/text_styles.dart';
+import '../../../shared/components/buttons/primary_button.dart';
+import '../../../shared/components/buttons/secondary_button.dart';
+import '../../auth/providers/user_provider.dart';
 
 class EquipmentSelectionStep extends ConsumerStatefulWidget {
   final List<String> selectedEquipment;

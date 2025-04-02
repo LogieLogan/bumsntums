@@ -7,7 +7,8 @@ import 'rest_timer.dart';
 import '../exercise_demo_widget.dart';
 import '../../../../shared/theme/color_palette.dart';
 
-class RestPeriodWidget extends ConsumerWidget {
+// Convert to StatefulWidget
+class RestPeriodWidget extends ConsumerStatefulWidget {
   final WorkoutExecutionState state;
   final void Function(Exercise) showExerciseInfoSheet;
 
@@ -18,164 +19,61 @@ class RestPeriodWidget extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final nextExercise = state.nextExercise;
+  ConsumerState<RestPeriodWidget> createState() => _RestPeriodWidgetState();
+}
+
+class _RestPeriodWidgetState extends ConsumerState<RestPeriodWidget> {
+  // State for sheet visibility
+  bool _showSheet = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final nextExercise = widget.state.nextExercise;
     if (nextExercise == null) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Rest timer
           RestTimer(
-            durationSeconds: state.restTimeRemaining,
-            isPaused: state.isPaused,
+            durationSeconds: widget.state.restTimeRemaining,
+            isPaused: widget.state.isPaused,
             nextExerciseName: nextExercise.name,
             onComplete: () {
               ref.read(workoutExecutionProvider.notifier).endRestPeriod();
             },
-            onAddTime: () => ref.read(workoutExecutionProvider.notifier).adjustRestTime(15),
-            onReduceTime: () => ref.read(workoutExecutionProvider.notifier).adjustRestTime(-15, minimum: 5),
+            onAddTime:
+                () => ref
+                    .read(workoutExecutionProvider.notifier)
+                    .adjustRestTime(15),
+            onReduceTime:
+                () => ref
+                    .read(workoutExecutionProvider.notifier)
+                    .adjustRestTime(-15, minimum: 5),
           ),
 
           const SizedBox(height: 24),
 
-          // Coming up next header with info button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Coming Up Next',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.salmon,
-                ),
+          // Coming Up Next button
+          OutlinedButton.icon(
+            onPressed: () => widget.showExerciseInfoSheet(nextExercise),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: AppColors.salmon),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
               ),
-
-              // Info button
-              GestureDetector(
-                onTap: () => showExerciseInfoSheet(nextExercise),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.salmon.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.info_outline,
-                    color: AppColors.salmon,
-                    size: 18,
-                  ),
-                ),
+            ),
+            icon: Icon(Icons.visibility, size: 18, color: AppColors.salmon),
+            label: Text(
+              'Preview Next Exercise',
+              style: TextStyle(
+                color: AppColors.salmon,
+                fontWeight: FontWeight.bold,
               ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          Expanded(
-            child: _buildNextExercisePreview(context, nextExercise),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNextExercisePreview(BuildContext context, Exercise exercise) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Exercise name
-          Text(
-            exercise.name,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AppColors.darkGrey,
             ),
           ),
-
-          const SizedBox(height: 12),
-
-          // Exercise metrics
-          Row(
-            children: [
-              // Sets & Reps/Duration
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.popBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  exercise.durationSeconds != null
-                      ? '${exercise.sets} sets × ${exercise.durationSeconds} sec'
-                      : '${exercise.sets} sets × ${exercise.reps} reps',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.popBlue,
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // Target area
-              if (exercise.targetArea.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.popGreen.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    exercise.targetArea,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.popGreen,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Next exercise preview
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            clipBehavior: Clip.hardEdge,
-            child: ExerciseDemoWidget(
-              exercise: exercise,
-              showControls: false,
-              autoPlay: true,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          _buildPreparationSteps(context, exercise),
-          _buildFormTip(context, exercise),
         ],
       ),
     );
@@ -204,17 +102,10 @@ class RestPeriodWidget extends ConsumerWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.play_arrow,
-                      size: 16,
-                      color: AppColors.salmon,
-                    ),
+                    Icon(Icons.play_arrow, size: 16, color: AppColors.salmon),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        step,
-                        style: const TextStyle(fontSize: 14),
-                      ),
+                      child: Text(step, style: const TextStyle(fontSize: 14)),
                     ),
                   ],
                 ),
@@ -224,7 +115,10 @@ class RestPeriodWidget extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: GestureDetector(
-              onTap: () => showExerciseInfoSheet(exercise),
+              onTap:
+                  () => widget.showExerciseInfoSheet(
+                    exercise,
+                  ), // Changed to widget.showExerciseInfoSheet
               child: Text(
                 'See more...',
                 style: TextStyle(
@@ -273,17 +167,17 @@ class RestPeriodWidget extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            exercise.formTips.first,
-            style: const TextStyle(fontSize: 14),
-          ),
+          Text(exercise.formTips.first, style: const TextStyle(fontSize: 14)),
 
           // Show more link if there are additional tips
           if (exercise.formTips.length > 1)
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: GestureDetector(
-                onTap: () => showExerciseInfoSheet(exercise),
+                onTap:
+                    () => widget.showExerciseInfoSheet(
+                      exercise,
+                    ), // Changed to widget.showExerciseInfoSheet
                 child: Text(
                   'More tips...',
                   style: TextStyle(

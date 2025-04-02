@@ -1,9 +1,9 @@
 // lib/features/ai/screens/workout_creation/widgets/refinement_result.dart
 import 'package:flutter/material.dart';
-import '../../../../../shared/theme/color_palette.dart';
-import '../../../../../shared/theme/text_styles.dart';
-import '../../../../../shared/components/buttons/primary_button.dart';
-import '../../../../../shared/components/buttons/secondary_button.dart';
+import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/text_styles.dart';
+import '../../../shared/components/buttons/primary_button.dart';
+import '../../../shared/components/buttons/secondary_button.dart';
 
 class RefinementResult extends StatelessWidget {
   final Map<String, dynamic> workoutData;

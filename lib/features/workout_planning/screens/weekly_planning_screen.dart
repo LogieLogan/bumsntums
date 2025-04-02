@@ -1,7 +1,7 @@
 // lib/features/workout_planning/screens/weekly_planning_screen.dart
 import 'package:bums_n_tums/features/workout_planning/models/workout_plan.dart';
 import 'package:bums_n_tums/features/workout_planning/providers/workout_planning_provider.dart';
-import 'package:bums_n_tums/features/ai/screens/ai_plan_creation_screen.dart';
+import 'package:bums_n_tums/features/ai_workout_planning/screens/ai_plan_creation_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

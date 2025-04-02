@@ -1,9 +1,9 @@
 // Updated lib/features/ai/screens/workout_creation/widgets/category_selection_step.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../../../shared/theme/color_palette.dart';
-import '../../../../../shared/theme/text_styles.dart';
-import '../../../../../features/workouts/models/workout.dart';
+import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/text_styles.dart';
+import '../../workouts/models/workout.dart';
 
 class CategorySelectionStep extends StatefulWidget {
   final WorkoutCategory selectedCategory;
