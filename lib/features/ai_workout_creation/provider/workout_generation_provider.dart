@@ -1,9 +1,9 @@
-// lib/features/ai/providers/workout_generation_provider.dart
+// lib/features/ai_workout_screen/providers/workout_generation_provider.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../workouts/models/workout.dart';
-import '../services/openai_service.dart';
-import 'ai_service_provider.dart';
+import '../../ai/services/openai_service.dart';
+import '../../ai/providers/ai_service_provider.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 
 // Define the state class properly

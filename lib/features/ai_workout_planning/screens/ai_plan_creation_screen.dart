@@ -1,7 +1,7 @@
 // lib/features/ai_workout_planning/screens/ai_plan_creation_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../ai/providers/ai_planning_provider.dart';
+import '../provider/ai_planning_provider.dart';
 import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/components/buttons/secondary_button.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';

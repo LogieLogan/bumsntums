@@ -1,11 +1,11 @@
-// lib/features/workout_planning/services/ai_planning_service.dart
+// lib/features/ai_workout_planning/services/ai_planning_service.dart
 import 'package:uuid/uuid.dart';
 import '../../workout_planning/models/scheduled_workout.dart';
 import '../../workout_planning/models/workout_plan.dart';
 import '../../workout_planning/repositories/workout_planning_repository.dart';
 import '../../workouts/models/workout.dart';
 import '../../workouts/services/workout_service.dart';
-import 'openai_service.dart';
+import '../../ai/services/openai_service.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 
 class AIPlanningService {

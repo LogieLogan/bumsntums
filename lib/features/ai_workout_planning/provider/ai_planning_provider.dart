@@ -1,8 +1,8 @@
-// lib/features/workout_planning/providers/ai_planning_provider.dart
+// lib/features/ai_workout_planning/providers/ai_planning_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/ai_planning_service.dart';
 import '../../workouts/services/workout_service.dart';
-import 'openai_provider.dart';
+import '../../ai/providers/openai_provider.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../workout_planning/providers/workout_planning_provider.dart';
 

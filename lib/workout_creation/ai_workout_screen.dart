@@ -5,19 +5,19 @@ import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../shared/analytics/firebase_analytics_service.dart';
-import '../provider/workout_generation_provider.dart';
-import '../widgets/category_selection_step.dart';
-import '../widgets/custom_request_step.dart';
-import '../widgets/duration_selection_step.dart';
-import '../widgets/equipment_selection_step.dart';
-import '../widgets/generating_step.dart';
-import '../widgets/refinement_step.dart';
-import '../widgets/welcome_step.dart';
-import '../widgets/workout_result.dart';
-import '../widgets/refinement_result.dart';
-import '../widgets/parameter_summary_sheet.dart'; // Add this import
-import '../models/creation_step.dart';
+import '../shared/analytics/firebase_analytics_service.dart';
+import '../features/ai_workout_creation/provider/workout_generation_provider.dart';
+import 'widgets/category_selection_step.dart';
+import 'widgets/custom_request_step.dart';
+import 'widgets/duration_selection_step.dart';
+import 'widgets/equipment_selection_step.dart';
+import 'widgets/generating_step.dart';
+import 'widgets/refinement_step.dart';
+import 'widgets/welcome_step.dart';
+import 'widgets/workout_result.dart';
+import 'widgets/refinement_result.dart';
+import 'widgets/parameter_summary_sheet.dart'; // Add this import
+import 'models/creation_step.dart';
 
 class AIWorkoutScreen extends ConsumerStatefulWidget {
   const AIWorkoutScreen({Key? key}) : super(key: key);

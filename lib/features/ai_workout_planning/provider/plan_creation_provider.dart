@@ -1,7 +1,7 @@
-// lib/features/ai/providers/plan_creation_provider.dart
+// lib/features/ai_workout_planning/providers/plan_creation_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/openai_service.dart';
-import 'ai_service_provider.dart';
+import '../../ai/services/openai_service.dart';
+import '../../ai/providers/ai_service_provider.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 
 // Define the state class
