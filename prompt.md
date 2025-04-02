@@ -35,16 +35,11 @@ project structure:
 │   │   │   └── prompt_template.dart
 │   │   ├── providers
 │   │   │   ├── ai_chat_provider.dart
-│   │   │   ├── ai_planning_provider.dart
 │   │   │   ├── ai_service_provider.dart
-│   │   │   ├── openai_provider.dart
-│   │   │   ├── plan_creation_provider.dart
-│   │   │   ├── workout_generation_provider.dart
-│   │   │   └── workout_recommendation_provider.dart
+│   │   │   └── openai_provider.dart
 │   │   ├── screens
 │   │   │   └── ai_chat_screen.dart
 │   │   └── services
-│   │       ├── ai_planning_service.dart
 │   │       ├── context_service.dart
 │   │       ├── conversation_manager.dart
 │   │       ├── openai_service.dart
@@ -53,6 +48,8 @@ project structure:
 │   ├── ai_workout_creation
 │   │   ├── models
 │   │   │   └── creation_step.dart
+│   │   ├── provider
+│   │   │   └── workout_generation_provider.dart
 │   │   ├── screens
 │   │   │   └── ai_workout_screen.dart
 │   │   └── widgets
@@ -68,8 +65,13 @@ project structure:
 │   │       └── workout_result.dart
 │   ├── ai_workout_planning
 │   │   ├── models
+│   │   ├── provider
+│   │   │   ├── ai_planning_provider.dart
+│   │   │   └── plan_creation_provider.dart
 │   │   ├── screens
 │   │   │   └── ai_plan_creation_screen.dart
+│   │   ├── services
+│   │   │   └── ai_planning_service.dart
 │   │   └── widgets
 │   ├── auth
 │   │   ├── models
@@ -145,6 +147,8 @@ project structure:
 │   ├── splash
 │   │   └── screens
 │   │       └── splash_screen.dart
+│   ├── workout_creation
+│   │   └── ai_workout_screen.dart
 │   ├── workout_planning
 │   │   ├── index.dart
 │   │   ├── models
