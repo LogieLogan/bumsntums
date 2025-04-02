@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import '../../../../shared/theme/color_palette.dart';
+import '../../../../shared/theme/text_styles.dart';
 
-// In rest_timer.dart
 class RestTimer extends StatefulWidget {
   final int durationSeconds;
   final bool isPaused;
@@ -54,9 +54,6 @@ class _RestTimerState extends State<RestTimer>
 
     // If the duration has changed, update the seconds remaining
     if (widget.durationSeconds != oldWidget.durationSeconds) {
-      print(
-        "RestTimer: Duration updated from ${oldWidget.durationSeconds} to ${widget.durationSeconds}",
-      );
       setState(() {
         _secondsRemaining = widget.durationSeconds;
       });
@@ -110,15 +107,23 @@ class _RestTimerState extends State<RestTimer>
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.paleGrey,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             'Rest',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            style: TextStyle(
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: AppColors.popBlue,
             ),
@@ -130,33 +135,51 @@ class _RestTimerState extends State<RestTimer>
           Stack(
             alignment: Alignment.center,
             children: [
+              Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  color: AppColors.paleGrey,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              
               SizedBox(
-                width: 200,
-                height: 200,
+                width: 220,
+                height: 220,
                 child: AnimatedBuilder(
                   animation: _controller,
                   builder: (context, child) {
                     return CircularProgressIndicator(
                       value: 1 - _controller.value,
-                      strokeWidth: 12,
-                      backgroundColor: AppColors.lightGrey,
+                      strokeWidth: 15,
+                      backgroundColor: Colors.transparent,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.salmon,
+                        AppColors.popBlue,
                       ),
                     );
                   },
                 ),
               ),
+              
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _formatTime(_secondsRemaining),
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    _secondsRemaining.toString(),
+                    style: TextStyle(
+                      fontSize: 64,
                       fontWeight: FontWeight.bold,
+                      color: AppColors.darkGrey,
                     ),
                   ),
-                  Text('seconds', style: Theme.of(context).textTheme.bodyLarge),
+                  Text(
+                    'seconds',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.mediumGrey,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -168,30 +191,36 @@ class _RestTimerState extends State<RestTimer>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(
-                onPressed: () {
-                  print("Pressed reduce time button");
-                  widget.onReduceTime();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.popBlue.withOpacity(0.8),
-                  shape: const CircleBorder(),
+              GestureDetector(
+                onTap: widget.onReduceTime,
+                child: Container(
                   padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.popBlue.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.remove,
+                    color: AppColors.popBlue,
+                    size: 24,
+                  ),
                 ),
-                child: const Icon(Icons.remove, color: Colors.white),
               ),
-              const SizedBox(width: 24),
-              ElevatedButton(
-                onPressed: () {
-                  print("Pressed add time button");
-                  widget.onAddTime();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.popBlue,
-                  shape: const CircleBorder(),
+              const SizedBox(width: 32),
+              GestureDetector(
+                onTap: widget.onAddTime,
+                child: Container(
                   padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.popBlue,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
-                child: const Icon(Icons.add, color: Colors.white),
               ),
             ],
           ),
@@ -200,28 +229,37 @@ class _RestTimerState extends State<RestTimer>
 
           Text(
             'Coming up: ${widget.nextExerciseName}',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.darkGrey,
+            ),
             textAlign: TextAlign.center,
           ),
 
           const SizedBox(height: 16),
 
           // Skip button
-          ElevatedButton(
-            onPressed: widget.onComplete,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.popBlue,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+          GestureDetector(
+            onTap: widget.onComplete,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              decoration: BoxDecoration(
+                color: AppColors.popBlue,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Text(
+                'Skip Rest',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
             ),
-            child: const Text('Skip Rest'),
           ),
         ],
       ),
     );
-  }
-
-  String _formatTime(int seconds) {
-    return seconds.toString();
   }
 }

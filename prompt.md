@@ -1,7 +1,13 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-review AI wrokout generation and refinement
+workout execution
+first exercise in exercise list is done last, secdn exercise is doen first. why? 
+Time based exercises have overflow isue on the timer. Timer is too large should be half the size it currently is. Should be a static element not scrollable as it is a ver important aspect. layout is good just needs to be prportioned correctly. Issues started when adding inforamtion widget to screen which is needed and shuld stay just needs to be alid out properly.
+
+Steps: 
+Refactor execution screen splitting into widgets.
+Fix issues
 
 project structure: 
 
@@ -35,6 +41,7 @@ project structure:
 │   │   │           ├── duration_selection_step.dart
 │   │   │           ├── equipment_selection_step.dart
 │   │   │           ├── generating_step.dart
+│   │   │           ├── parameter_summary_sheet.dart
 │   │   │           ├── refinement_result.dart
 │   │   │           ├── refinement_step.dart
 │   │   │           ├── welcome_step.dart

@@ -44,9 +44,24 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
   @override
   void didUpdateWidget(ExerciseDemoWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Handle exercise change
     if (oldWidget.exercise.id != widget.exercise.id) {
       _disposeVideo();
       _initializeVideo();
+    }
+
+    // Handle autoPlay change
+    if (oldWidget.autoPlay != widget.autoPlay && _videoController != null) {
+      if (widget.autoPlay) {
+        _videoController!.play();
+        _isPlaying = true;
+      } else {
+        _videoController!.pause();
+        _isPlaying = false;
+      }
+      // Refresh UI to show correct play/pause state
+      setState(() {});
     }
   }
 
@@ -83,6 +98,10 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
       _videoController = VideoPlayerController.asset(videoPath);
       await _videoController!.initialize();
 
+      // Set video to loop automatically
+      _videoController!.setLooping(true);
+
+      // Add listener before setting state
       _videoController!.addListener(_videoListener);
 
       if (mounted) {
@@ -91,7 +110,7 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
           _hasVideoError = false;
         });
 
-        // Auto-play if enabled
+        // Start playing if autoPlay is enabled
         if (widget.autoPlay) {
           _videoController!.play();
           _isPlaying = true;
@@ -117,11 +136,19 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
         });
       }
 
-      // Loop the video when it completes
+      // Handle video completion without stopping
       if (_videoController!.value.position >=
           _videoController!.value.duration) {
-        _videoController!.seekTo(Duration.zero);
-        _videoController!.play();
+        // If autoplay is enabled, just continue looping
+        if (widget.autoPlay) {
+          // Video will loop automatically since we set looping to true
+        } else {
+          // For manual mode, pause and show play button
+          setState(() {
+            _isPlaying = false;
+          });
+          _videoController!.seekTo(Duration.zero);
+        }
       }
     }
   }
@@ -160,294 +187,95 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
         widget.exercise.imagePath != null &&
         widget.exercise.imagePath!.isNotEmpty;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Main demo container
-        Container(
-          height: widget.height,
-          width: widget.width,
-          decoration: BoxDecoration(
-            color: AppColors.paleGrey,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.paleGrey, width: 1),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Local video player (highest priority)
-                if (hasVideo)
-                  AspectRatio(
-                    aspectRatio: _videoController!.value.aspectRatio,
-                    child: VideoPlayer(_videoController!),
-                  )
-                // Image fallback (second priority)
-                else if (hasImagePath)
-                  Image.asset(
-                    widget.exercise.imagePath!,
-                    fit: BoxFit.cover,
-                    height: widget.height,
-                    width: widget.width,
-                  )
-                // Generic fallback based on difficulty (lowest priority)
-                else
-                  ExerciseMediaService.workoutImage(
-                    difficulty: difficulty,
-                    height: widget.height,
-                    width: widget.width,
-                    fit: BoxFit.cover,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double effectiveHeight = constraints.maxHeight;
+        final double effectiveWidth = constraints.maxWidth;
 
-                // Video controls overlay
-                if (hasVideo && widget.showControls)
-                  GestureDetector(
-                    onTap: _togglePlay,
-                    child: Container(
-                      color: Colors.transparent,
-                      child: Center(
-                        child: AnimatedOpacity(
-                          opacity: _isPlaying ? 0.0 : 0.7,
-                          duration: const Duration(milliseconds: 300),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              _isPlaying ? Icons.pause : Icons.play_arrow,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                // YouTube video play button overlay (fallback)
-                if (!hasVideo && hasYoutubeVideo && widget.showControls)
-                  Positioned.fill(
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          // Launch YouTube video in dialog
-                          _showVideoDialog(context);
-                        },
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.play_arrow,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                // Video error overlay
-                if (_hasVideoError && !hasImagePath)
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.black.withOpacity(0.5),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.error_outline,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Video unavailable',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                // Exercise name overlay
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.7),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                    child: Text(
-                      widget.exercise.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        return Stack(
+          fit: StackFit.expand,
           children: [
-            if (!hasVideo && hasYoutubeVideo)
-              Flexible(
-                child: ElevatedButton.icon(
-                  onPressed: () => _showVideoDialog(context),
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text('Watch Video'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.popBlue,
-                    foregroundColor: Colors.white,
+            // Local video player (highest priority)
+            if (hasVideo)
+              Center(
+                child: AspectRatio(
+                  aspectRatio: _videoController!.value.aspectRatio,
+                  child: VideoPlayer(_videoController!),
+                ),
+              )
+            // Image fallback (second priority)
+            else if (hasImagePath)
+              Image.asset(
+                widget.exercise.imagePath!,
+                fit: BoxFit.contain,
+                width: effectiveWidth,
+                height: effectiveHeight,
+              )
+            // Generic fallback based on difficulty (lowest priority)
+            else
+              ExerciseMediaService.workoutImage(
+                difficulty: difficulty,
+                height: effectiveHeight,
+                width: effectiveWidth,
+                fit: BoxFit.contain,
+              ),
+
+            // Video controls overlay - only show when NOT in autoPlay mode and when controls are enabled
+            if (hasVideo && widget.showControls && !widget.autoPlay)
+              GestureDetector(
+                onTap: _togglePlay,
+                child: Container(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: AnimatedOpacity(
+                      opacity: _isPlaying ? 0.0 : 0.7,
+                      duration: const Duration(milliseconds: 300),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _isPlaying ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
 
-            if (!hasVideo && hasYoutubeVideo) const SizedBox(width: 8),
-
-            Flexible(
-              child: TextButton.icon(
-                onPressed: () => _showInstructionsDialog(context),
-                icon: const Icon(Icons.info_outline),
-                label: const Text('View Instructions'),
-                style: TextButton.styleFrom(foregroundColor: AppColors.salmon),
+            // Exercise name overlay at bottom
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                  ),
+                ),
+                child: Text(
+                  widget.exercise.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 
-  // Show YouTube video in dialog
-  void _showVideoDialog(BuildContext context) {
-    // Note: In a real implementation, you would integrate YouTube player
-    // For this implementation, we'll just show a placeholder
-    showDialog(
-      context: context,
-      builder:
-          (context) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: const Text(
-                    'YouTube player would be integrated here',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
-              ],
-            ),
-          ),
-    );
-  }
-
-  // Show exercise instructions dialog
-  void _showInstructionsDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.exercise.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Instructions:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(widget.exercise.description),
-                  const SizedBox(height: 12),
-                  if (widget.exercise.formTips.isNotEmpty) ...[
-                    const Text(
-                      'Form Tips:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    ...widget.exercise.formTips.map(
-                      (tip) => Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              Icons.check,
-                              size: 16,
-                              color: AppColors.popGreen,
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(child: Text(tip)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Close'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-    );
-  }
 }

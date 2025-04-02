@@ -1,4 +1,6 @@
-// lib/features/workouts/widgets/execution/exercise_timer.dart
+// In exercise_timer.dart
+// Completely revamp the widget for better appearance and stability
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -20,14 +22,34 @@ class ExerciseTimer extends StatefulWidget {
   State<ExerciseTimer> createState() => _ExerciseTimerState();
 }
 
-class _ExerciseTimerState extends State<ExerciseTimer> {
+class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProviderStateMixin {
   late int _secondsRemaining;
   Timer? _timer;
+  late AnimationController _controller;
+  
+  final List<String> _messages = [
+    'Keep going!',
+    'You\'ve got this!',
+    'Stay strong!',
+    'Almost there!',
+    'Final push!',
+  ];
 
   @override
   void initState() {
     super.initState();
     _secondsRemaining = widget.durationSeconds;
+    
+    // Initialize animation controller
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: widget.durationSeconds),
+    );
+    
+    if (!widget.isPaused) {
+      _controller.forward();
+    }
+    
     _startTimer();
   }
 
@@ -35,17 +57,25 @@ class _ExerciseTimerState extends State<ExerciseTimer> {
   void didUpdateWidget(ExerciseTimer oldWidget) {
     super.didUpdateWidget(oldWidget);
     
-    // Reset timer if duration changed
+    // Handle duration changes
     if (oldWidget.durationSeconds != widget.durationSeconds) {
       _secondsRemaining = widget.durationSeconds;
+      _controller.duration = Duration(seconds: widget.durationSeconds);
+      _controller.reset();
+      if (!widget.isPaused) {
+        _controller.forward();
+      }
     }
     
     // Handle pause/resume
     if (oldWidget.isPaused != widget.isPaused) {
       if (widget.isPaused) {
         _timer?.cancel();
+        _controller.stop();
       } else {
         _startTimer();
+        final progress = 1.0 - (_secondsRemaining / widget.durationSeconds);
+        _controller.forward(from: progress);
       }
     }
   }
@@ -53,13 +83,14 @@ class _ExerciseTimerState extends State<ExerciseTimer> {
   @override
   void dispose() {
     _timer?.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!widget.isPaused) {
+      if (!widget.isPaused && mounted) {
         setState(() {
           if (_secondsRemaining > 0) {
             _secondsRemaining--;
@@ -78,54 +109,123 @@ class _ExerciseTimerState extends State<ExerciseTimer> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final progress = 1 - (_secondsRemaining / widget.durationSeconds);
+  Color _getTimerColor() {
+    final progress = _secondsRemaining / widget.durationSeconds;
     
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            SizedBox(
-              width: 180,
-              height: 180,
-              child: CircularProgressIndicator(
-                value: progress,
-                strokeWidth: 10,
-                backgroundColor: AppColors.paleGrey,
-                color: AppColors.salmon,
-              ),
-            ),
-            Column(
-              children: [
-                Text(
-                  _formatTime(_secondsRemaining),
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'seconds left',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
+    if (progress <= 0.3) {
+      return AppColors.popCoral;
+    } else if (progress <= 0.6) {
+      return AppColors.popYellow;
+    } else {
+      return AppColors.salmon;
+    }
   }
 
-  String _formatTime(int seconds) {
-    if (seconds < 60) {
-      return seconds.toString();
+  String _getMotivationalMessage() {
+    final progress = _secondsRemaining / widget.durationSeconds;
+    
+    if (_secondsRemaining <= 3) {
+      return 'Almost done!';
+    } else if (progress <= 0.2) {
+      return _messages[4];
+    } else if (progress <= 0.4) {
+      return _messages[3];
+    } else if (progress <= 0.6) {
+      return _messages[2];
+    } else if (progress <= 0.8) {
+      return _messages[1];
     } else {
-      final minutes = seconds ~/ 60;
-      final remainingSeconds = seconds % 60;
-      return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
+      return _messages[0];
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final progress = 1.0 - _controller.value;
+        
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Timer circle
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Background circle
+                  Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      color: AppColors.paleGrey,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  
+                  // Progress circle
+                  SizedBox(
+                    width: 150,
+                    height: 150,
+                    child: CircularProgressIndicator(
+                      value: progress,
+                      strokeWidth: 12,
+                      backgroundColor: Colors.transparent,
+                      color: _getTimerColor(),
+                    ),
+                  ),
+                  
+                  // Time text
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Seconds count
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 200),
+                        style: TextStyle(
+                          fontSize: _secondsRemaining <= 3 ? 48 : 42,
+                          fontWeight: FontWeight.bold,
+                          color: _secondsRemaining <= 3 
+                              ? AppColors.popCoral 
+                              : AppColors.darkGrey,
+                        ),
+                        child: Text('$_secondsRemaining'),
+                      ),
+                      
+                      // "seconds left" text
+                      Text(
+                        'seconds left',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.mediumGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // Motivational message
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  _getMotivationalMessage(),
+                  key: ValueKey<String>(_getMotivationalMessage()),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.popBlue,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
