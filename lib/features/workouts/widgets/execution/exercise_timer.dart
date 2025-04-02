@@ -20,11 +20,12 @@ class ExerciseTimer extends StatefulWidget {
   State<ExerciseTimer> createState() => _ExerciseTimerState();
 }
 
-class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProviderStateMixin {
+class _ExerciseTimerState extends State<ExerciseTimer>
+    with SingleTickerProviderStateMixin {
   late int _secondsRemaining;
   Timer? _timer;
   late AnimationController _controller;
-  
+
   final List<String> _messages = [
     'Keep going!',
     'You\'ve got this!',
@@ -37,24 +38,24 @@ class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProvider
   void initState() {
     super.initState();
     _secondsRemaining = widget.durationSeconds;
-    
+
     // Initialize animation controller
     _controller = AnimationController(
       vsync: this,
       duration: Duration(seconds: widget.durationSeconds),
     );
-    
+
     if (!widget.isPaused) {
       _controller.forward();
     }
-    
+
     _startTimer();
   }
 
   @override
   void didUpdateWidget(ExerciseTimer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Handle duration changes
     if (oldWidget.durationSeconds != widget.durationSeconds) {
       _secondsRemaining = widget.durationSeconds;
@@ -64,7 +65,7 @@ class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProvider
         _controller.forward();
       }
     }
-    
+
     // Handle pause/resume
     if (oldWidget.isPaused != widget.isPaused) {
       if (widget.isPaused) {
@@ -92,7 +93,7 @@ class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProvider
         setState(() {
           if (_secondsRemaining > 0) {
             _secondsRemaining--;
-            
+
             // Vibrate at specific intervals
             if (_secondsRemaining <= 3 && _secondsRemaining > 0) {
               HapticFeedback.lightImpact();
@@ -109,7 +110,7 @@ class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProvider
 
   Color _getTimerColor() {
     final progress = _secondsRemaining / widget.durationSeconds;
-    
+
     if (progress <= 0.3) {
       return AppColors.popCoral;
     } else if (progress <= 0.6) {
@@ -121,7 +122,7 @@ class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProvider
 
   String _getMotivationalMessage() {
     final progress = _secondsRemaining / widget.durationSeconds;
-    
+
     if (_secondsRemaining <= 3) {
       return 'Almost done!';
     } else if (progress <= 0.2) {
@@ -140,16 +141,18 @@ class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 180,
-      constraints: const BoxConstraints(maxHeight: 180),
+      // Use padding instead of fixed height
+      padding: const EdgeInsets.only(bottom: 10),
       child: Center(
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
             final progress = 1.0 - _controller.value;
-            
+
             return Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize:
+                  MainAxisSize
+                      .min, // This ensures the column takes minimum space
               children: [
                 // Timer circle
                 Stack(
@@ -164,7 +167,7 @@ class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProvider
                         shape: BoxShape.circle,
                       ),
                     ),
-                    
+
                     // Progress circle
                     SizedBox(
                       width: 120,
@@ -176,7 +179,7 @@ class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProvider
                         color: _getTimerColor(),
                       ),
                     ),
-                    
+
                     // Time text
                     Column(
                       mainAxisSize: MainAxisSize.min,
@@ -187,13 +190,14 @@ class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProvider
                           style: TextStyle(
                             fontSize: _secondsRemaining <= 3 ? 38 : 34,
                             fontWeight: FontWeight.bold,
-                            color: _secondsRemaining <= 3 
-                                ? AppColors.popCoral 
-                                : AppColors.darkGrey,
+                            color:
+                                _secondsRemaining <= 3
+                                    ? AppColors.popCoral
+                                    : AppColors.darkGrey,
                           ),
                           child: Text('$_secondsRemaining'),
                         ),
-                        
+
                         // "seconds left" text
                         Text(
                           'seconds left',
@@ -206,21 +210,25 @@ class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProvider
                     ),
                   ],
                 ),
-                
-                const SizedBox(height: 16),
-                
-                // Motivational message
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: Text(
-                    _getMotivationalMessage(),
-                    key: ValueKey<String>(_getMotivationalMessage()),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.popBlue,
+
+                const SizedBox(height: 8), // Reduced space
+                // Motivational message - make this widget smaller
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxHeight: 20,
+                  ), // Constrain height
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      _getMotivationalMessage(),
+                      key: ValueKey<String>(_getMotivationalMessage()),
+                      style: TextStyle(
+                        fontSize: 14, // Slightly smaller font
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.popBlue,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ),
               ],

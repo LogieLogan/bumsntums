@@ -16,6 +16,7 @@ class ExerciseContentWidget extends StatelessWidget {
   final VoidCallback onExerciseComplete;
   final void Function(Exercise) showExerciseInfoSheet;
   final int repCountdownSeconds;
+  final bool showCompleteButton;
 
   const ExerciseContentWidget({
     super.key,
@@ -26,11 +27,11 @@ class ExerciseContentWidget extends StatelessWidget {
     required this.onExerciseComplete,
     required this.showExerciseInfoSheet,
     required this.repCountdownSeconds,
+    this.showCompleteButton = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Check if this is a timed exercise
     final bool isTimedExercise = exercise.durationSeconds != null;
 
     return Padding(
@@ -42,24 +43,31 @@ class ExerciseContentWidget extends StatelessWidget {
           const SizedBox(height: 12),
           _buildExerciseDemo(context),
           _buildFormTip(context),
-          const SizedBox(height: 12),
-          
+
           // Timer or rep counter with fixed height
           isTimedExercise
               ? ExerciseTimer(
-                  durationSeconds: exercise.durationSeconds!,
-                  isPaused: isPaused,
-                  onComplete: onExerciseComplete,
-                )
+                durationSeconds: exercise.durationSeconds!,
+                isPaused: isPaused,
+                onComplete: onExerciseComplete,
+              )
               : RepBasedExerciseContent(
-                  reps: exercise.reps,
-                  repCountdownSeconds: repCountdownSeconds,
-                ),
-          
-          const SizedBox(height: 12),
-          _buildSetProgressIndicators(),
-          const SizedBox(height: 16),
-          _buildCompleteSetButton(),
+                reps: exercise.reps,
+                repCountdownSeconds: repCountdownSeconds,
+              ),
+
+          // Add Expanded widget to push content to top and prevent overflow
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 12),
+                _buildSetProgressIndicators(),
+              ],
+            ),
+          ),
+
+          if (showCompleteButton) _buildCompleteSetButton(),
         ],
       ),
     );
@@ -105,10 +113,7 @@ class ExerciseContentWidget extends StatelessWidget {
 
         // Set indicator pill
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 6,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: AppColors.salmon,
             borderRadius: BorderRadius.circular(16),
@@ -144,7 +149,7 @@ class ExerciseContentWidget extends StatelessWidget {
 
   Widget _buildFormTip(BuildContext context) {
     if (exercise.formTips.isEmpty) return const SizedBox.shrink();
-    
+
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Container(
@@ -183,7 +188,11 @@ class ExerciseContentWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List<Widget>.generate(exercise.sets, (index) {
         final isCompleted =
-            index < (state.completedExercises[state.currentExerciseIndex]?.setsCompleted ?? 0);
+            index <
+            (state
+                    .completedExercises[state.currentExerciseIndex]
+                    ?.setsCompleted ??
+                0);
         final isCurrent = index == state.currentSet - 1;
 
         return Container(
@@ -192,17 +201,16 @@ class ExerciseContentWidget extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isCompleted
-                ? AppColors.popGreen
-                : isCurrent
+            color:
+                isCompleted
+                    ? AppColors.popGreen
+                    : isCurrent
                     ? AppColors.salmon
                     : AppColors.paleGrey,
-            border: isCurrent
-                ? Border.all(
-                    color: AppColors.salmon,
-                    width: 2,
-                  )
-                : null,
+            border:
+                isCurrent
+                    ? Border.all(color: AppColors.salmon, width: 2)
+                    : null,
           ),
         );
       }),
@@ -210,9 +218,10 @@ class ExerciseContentWidget extends StatelessWidget {
   }
 
   Widget _buildCompleteSetButton() {
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: 50,
+      margin: const EdgeInsets.only(bottom: 8), // Add bottom margin
       child: ElevatedButton(
         onPressed: completeSet,
         style: ElevatedButton.styleFrom(

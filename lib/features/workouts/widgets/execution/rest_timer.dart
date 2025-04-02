@@ -225,18 +225,6 @@ class _RestTimerState extends State<RestTimer>
             ],
           ),
 
-          const SizedBox(height: 24),
-
-          Text(
-            'Coming up: ${widget.nextExerciseName}',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.darkGrey,
-            ),
-            textAlign: TextAlign.center,
-          ),
-
           const SizedBox(height: 16),
 
           // Skip button

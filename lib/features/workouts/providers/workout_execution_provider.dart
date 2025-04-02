@@ -113,14 +113,18 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
     bool showRestTimers = true,
     bool showCountdowns = true,
   }) {
-    // Ensure exercises are in the correct order
+    // Make sure we get exercises in the right order
+    final exercises = workout.getAllExercises();
+
     state = WorkoutExecutionState(
-      workout: workout,
+      workout: workout.copyWith(
+        exercises: exercises,
+      ), // Ensure we have the right order
       startTime: DateTime.now(),
       voiceGuidanceEnabled: voiceGuidanceEnabled,
       showRestTimers: showRestTimers,
       showCountdowns: showCountdowns,
-      currentExerciseIndex: 0, // Explicitly start with the first exercise
+      currentExerciseIndex: 0,
     );
 
     // Announce first exercise with a small delay to allow UI to build

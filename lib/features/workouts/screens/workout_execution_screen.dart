@@ -1,10 +1,10 @@
 // lib/features/workouts/screens/workout_execution_screen.dart
 import 'dart:async';
+import 'package:bums_n_tums/features/workouts/widgets/execution/between_sets_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../models/workout_log.dart';
 import '../providers/workout_execution_provider.dart';
@@ -12,7 +12,6 @@ import '../widgets/execution/exercise_completion_animation.dart';
 import '../widgets/execution/workout_top_bar.dart';
 import '../widgets/execution/exercise_content_widget.dart';
 import '../widgets/execution/rest_period_widget.dart';
-import '../widgets/execution/set_rest_period_widget.dart';
 import '../widgets/execution/workout_bottom_controls.dart';
 import '../widgets/execution/workout_progress_indicator.dart';
 import '../services/workout_execution_helper_service.dart';
@@ -191,7 +190,7 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
                                 showExerciseInfoSheet: _showExerciseInfoSheet,
                               )
                               : executionState.isInSetRestPeriod
-                              ? SetRestPeriodWidget(state: executionState)
+                              ? BetweenSetsScreen(state: executionState)
                               : ExerciseContentWidget(
                                 exercise: currentExercise,
                                 isPaused: isPaused,
@@ -200,6 +199,7 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
                                 onExerciseComplete: _onExerciseComplete,
                                 showExerciseInfoSheet: _showExerciseInfoSheet,
                                 repCountdownSeconds: _repCountdownSeconds,
+                                showCompleteButton: false,
                               ),
                     ),
 
@@ -209,6 +209,7 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
                       onPause: _pauseWorkout,
                       onResume: _resumeWorkout,
                       onNext: _nextExercise,
+                      onCompleteSet: _completeSet,
                     ),
                   ],
                 ),

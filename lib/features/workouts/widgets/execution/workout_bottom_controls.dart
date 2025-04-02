@@ -8,6 +8,7 @@ class WorkoutBottomControls extends StatelessWidget {
   final VoidCallback onPause;
   final VoidCallback onResume;
   final VoidCallback onNext;
+  final VoidCallback onCompleteSet;
 
   const WorkoutBottomControls({
     super.key,
@@ -15,16 +16,17 @@ class WorkoutBottomControls extends StatelessWidget {
     required this.onPause,
     required this.onResume,
     required this.onNext,
+    required this.onCompleteSet,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Play/Pause button (no background)
+          // Play/Pause button
           GestureDetector(
             onTap: state.isPaused ? onResume : onPause,
             child: Container(
@@ -49,31 +51,50 @@ class WorkoutBottomControls extends StatelessWidget {
             ),
           ),
 
-          // Next button if not the last exercise
+          // Complete Set button
+          if (!state.isInRestPeriod)
+            GestureDetector(
+              onTap: onCompleteSet, // Use the new parameter here
+              child: Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.salmon,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.salmon.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.check, color: Colors.white, size: 32),
+              ),
+            ),
+
+          // Next exercise button if not the last exercise
           if (!state.isLastExercise)
-            Padding(
-              padding: const EdgeInsets.only(left: 32),
-              child: GestureDetector(
-                onTap: onNext,
-                child: Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: AppColors.popBlue,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.popBlue.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.skip_next,
-                    color: Colors.white,
-                    size: 32,
-                  ),
+            GestureDetector(
+              onTap: onNext,
+              child: Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.popBlue,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.popBlue.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.skip_next,
+                  color: Colors.white,
+                  size: 32,
                 ),
               ),
             ),

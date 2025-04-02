@@ -1,13 +1,7 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-workout execution
-first exercise in exercise list is done last, secdn exercise is doen first. why? 
-Time based exercises have overflow isue on the timer. Timer is too large should be half the size it currently is. Should be a static element not scrollable as it is a ver important aspect. layout is good just needs to be prportioned correctly. Issues started when adding inforamtion widget to screen which is needed and shuld stay just needs to be alid out properly.
-
-Steps: 
-Refactor execution screen splitting into widgets.
-Fix issues
+workout execution rest_period_widget coming up next section is cut off. Can the layout be improved to show all the information? 
 
 project structure: 
 
@@ -192,6 +186,7 @@ project structure:
 │       │   ├── exercise_db_service.dart
 │       │   ├── exercise_service.dart
 │       │   ├── voice_guidance_service.dart
+│       │   ├── workout_execution_helper_service.dart
 │       │   ├── workout_service.dart
 │       │   └── workout_stats_service.dart
 │       └── widgets
@@ -201,12 +196,20 @@ project structure:
 │           │   ├── section_card.dart
 │           │   └── workout_basic_info_form.dart
 │           ├── execution
+│           │   ├── between_sets_screen.dart
+│           │   ├── between_sets_timer.dart
 │           │   ├── exercise_completion_animation.dart
+│           │   ├── exercise_content_widget.dart
+│           │   ├── exercise_info_sheet.dart
 │           │   ├── exercise_settings_modal.dart
 │           │   ├── exercise_timer.dart
+│           │   ├── exit_confirmation_dialog.dart
+│           │   ├── rep_based_exercise_content.dart
+│           │   ├── rest_period_widget.dart
 │           │   ├── rest_timer.dart
-│           │   ├── set_rest_timer.dart
-│           │   └── workout_progress_indicator.dart
+│           │   ├── workout_bottom_controls.dart
+│           │   ├── workout_progress_indicator.dart
+│           │   └── workout_top_bar.dart
 │           ├── exercise_demo_widget.dart
 │           ├── exercise_filter_bar.dart
 │           ├── exercise_image_widget.dart
@@ -246,6 +249,7 @@ project structure:
 │   │   └── navigation.dart
 │   ├── providers
 │   │   ├── analytics_provider.dart
+│   │   ├── crash_reporting_provider.dart
 │   │   ├── environment_provider.dart
 │   │   ├── feedback_provider.dart
 │   │   └── firebase_providers.dart
@@ -303,7 +307,6 @@ project structure:
     ├── 14a_workouts.md
     ├── 14b_workout_tracking_analytics.md
     └── 14c_workout_map.md
-
 
 Which of these files do you want to review? 
 
