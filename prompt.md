@@ -304,7 +304,7 @@ project structure:
     ├── 14b_workout_tracking_analytics.md
     └── 14c_workout_map.md
 
-review the relevant spec files
+
 Which of these files do you want to review? 
 
 

@@ -1,6 +1,4 @@
-// In exercise_timer.dart
-// Completely revamp the widget for better appearance and stability
-
+// lib/features/workouts/widgets/execution/exercise_timer.dart (updated)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -141,91 +139,95 @@ class _ExerciseTimerState extends State<ExerciseTimer> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final progress = 1.0 - _controller.value;
-        
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Timer circle
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Background circle
-                  Container(
-                    width: 150,
-                    height: 150,
-                    decoration: BoxDecoration(
-                      color: AppColors.paleGrey,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  
-                  // Progress circle
-                  SizedBox(
-                    width: 150,
-                    height: 150,
-                    child: CircularProgressIndicator(
-                      value: progress,
-                      strokeWidth: 12,
-                      backgroundColor: Colors.transparent,
-                      color: _getTimerColor(),
-                    ),
-                  ),
-                  
-                  // Time text
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Seconds count
-                      AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 200),
-                        style: TextStyle(
-                          fontSize: _secondsRemaining <= 3 ? 48 : 42,
-                          fontWeight: FontWeight.bold,
-                          color: _secondsRemaining <= 3 
-                              ? AppColors.popCoral 
-                              : AppColors.darkGrey,
-                        ),
-                        child: Text('$_secondsRemaining'),
+    return Container(
+      height: 180,
+      constraints: const BoxConstraints(maxHeight: 180),
+      child: Center(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            final progress = 1.0 - _controller.value;
+            
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Timer circle
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Background circle
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: AppColors.paleGrey,
+                        shape: BoxShape.circle,
                       ),
-                      
-                      // "seconds left" text
-                      Text(
-                        'seconds left',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.mediumGrey,
-                        ),
+                    ),
+                    
+                    // Progress circle
+                    SizedBox(
+                      width: 120,
+                      height: 120,
+                      child: CircularProgressIndicator(
+                        value: progress,
+                        strokeWidth: 10,
+                        backgroundColor: Colors.transparent,
+                        color: _getTimerColor(),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Motivational message
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Text(
-                  _getMotivationalMessage(),
-                  key: ValueKey<String>(_getMotivationalMessage()),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.popBlue,
-                  ),
-                  textAlign: TextAlign.center,
+                    ),
+                    
+                    // Time text
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Seconds count
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: TextStyle(
+                            fontSize: _secondsRemaining <= 3 ? 38 : 34,
+                            fontWeight: FontWeight.bold,
+                            color: _secondsRemaining <= 3 
+                                ? AppColors.popCoral 
+                                : AppColors.darkGrey,
+                          ),
+                          child: Text('$_secondsRemaining'),
+                        ),
+                        
+                        // "seconds left" text
+                        Text(
+                          'seconds left',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.mediumGrey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+                
+                const SizedBox(height: 16),
+                
+                // Motivational message
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: Text(
+                    _getMotivationalMessage(),
+                    key: ValueKey<String>(_getMotivationalMessage()),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.popBlue,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 }

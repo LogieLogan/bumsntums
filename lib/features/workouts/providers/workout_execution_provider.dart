@@ -113,18 +113,20 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
     bool showRestTimers = true,
     bool showCountdowns = true,
   }) {
+    // Ensure exercises are in the correct order
     state = WorkoutExecutionState(
       workout: workout,
       startTime: DateTime.now(),
       voiceGuidanceEnabled: voiceGuidanceEnabled,
       showRestTimers: showRestTimers,
       showCountdowns: showCountdowns,
+      currentExerciseIndex: 0, // Explicitly start with the first exercise
     );
 
     // Announce first exercise with a small delay to allow UI to build
     if (voiceGuidanceEnabled) {
       Future.delayed(const Duration(milliseconds: 500), () {
-        final exercise = workout.exercises.first;
+        final exercise = state!.currentExercise;
         if (exercise.durationSeconds != null) {
           _voiceGuidance.announceTimedExercise(
             exercise.name,
@@ -403,7 +405,8 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
 
   Future<void> completeWorkout({
     required UserFeedback feedback,
-    int? estimatedCaloriesBurned, required String userId,
+    int? estimatedCaloriesBurned,
+    required String userId,
   }) async {
     if (state == null) return;
 
@@ -431,7 +434,6 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
     // Reset state after completion
     state = null;
   }
-  
 }
 
 // Update provider
