@@ -424,7 +424,6 @@ DO NOT nest the workout under another object. Respond with the direct workout JS
     }
   }
 
-  // Update enhancedChat method
   Future<String> enhancedChat({
     required String userId,
     required String message,
@@ -507,7 +506,6 @@ DO NOT nest the workout under another object. Respond with the direct workout JS
     }
   }
 
-  // Add helper method for intent-to-template mapping
   String _getTemplateForIntent(String intent) {
     switch (intent) {
       case 'workout_advice':
@@ -523,74 +521,125 @@ DO NOT nest the workout under another object. Respond with the direct workout JS
     }
   }
 
-  // Implement a plan generation method if needed
-  Future<String> generatePlan({
+  Future<Map<String, dynamic>> generatePlan({
     required String userId,
     required int durationDays,
     required List<String> focusAreas,
     int? daysPerWeek,
+    String? fitnessLevel,
+    String? variationType,
     String? specialRequest,
+    Map<String, dynamic>? userProfileData,
   }) async {
     try {
-      List<Map<String, dynamic>> messages;
+      // Default to 3 days per week if not specified
+      final workoutDays = daysPerWeek ?? 3;
 
-      // Use our enhanced components if available
-      if (_promptEngine != null &&
-          _contextService != null &&
-          _personalityEngine != null) {
-        // Build context with user profile and feature-specific data
-        final context = await _contextService.buildContext(
-          userId: userId,
-          featureData: {
-            'duration': durationDays.toString(),
-            'focusAreas': focusAreas.join(', '),
-            'daysPerWeek': (daysPerWeek ?? 3).toString(),
-            'specialRequest': specialRequest ?? '',
-          },
-        );
+      // Default to beginner if not specified
+      final userLevel = fitnessLevel ?? 'beginner';
 
-        // Get personality settings for this user
-        final personality = _personalityEngine.getPersonalityForUser(userId);
-
-        // Build system prompt
-        final systemPrompt = _promptEngine.buildPrompt(
-          templateId: 'plan_creation',
-          context: context.getAllContext(),
-          customVars: {
-            'personalityModifier': _personalityEngine.getPromptModifier(
-              personality,
-            ),
-          },
-        );
-
-        messages = [
-          {"role": "system", "content": systemPrompt},
-          {"role": "user", "content": "Create a workout plan for me."},
-        ];
-
-        // Analyze user message if one was provided
-        if (specialRequest != null && specialRequest.isNotEmpty) {
-          _personalityEngine.analyzeUserMessage(userId, specialRequest);
+      // Convert variation type to a description
+      String variationDescription = '';
+      if (variationType != null) {
+        switch (variationType) {
+          case 'balanced':
+            variationDescription = 'balanced mix of different workout types';
+            break;
+          case 'progressive':
+            variationDescription =
+                'gradually increasing intensity throughout the week';
+            break;
+          case 'alternating':
+            variationDescription =
+                'alternating between harder and easier workouts';
+            break;
+          case 'focused':
+            variationDescription = 'focused primarily on specific body areas';
+            break;
+          default:
+            variationDescription = 'balanced mix of different workout types';
         }
-      } else {
-        // Fallback implementation
-        messages = [
-          {
-            "role": "system",
-            "content":
-                "You are a professional fitness coach creating a personalized workout plan.",
-          },
-          {
-            "role": "user",
-            "content":
-                "Create a ${durationDays}-day workout plan focusing on ${focusAreas.join(', ')}. " +
-                (daysPerWeek != null
-                    ? "I want to work out $daysPerWeek days per week. "
-                    : "") +
-                (specialRequest ?? ""),
-          },
-        ];
       }
+
+      // Extract additional profile information if available
+      final age = userProfileData?['age'];
+      final userGoals = userProfileData?['goals'] as List<String>? ?? [];
+      final preferredLocation = userProfileData?['preferredLocation'];
+      final availableEquipment =
+          userProfileData?['availableEquipment'] as List<String>? ?? [];
+      final healthConditions =
+          userProfileData?['healthConditions'] as List<String>? ?? [];
+
+      // Build an enhanced system prompt with all the context
+      final systemPrompt = '''
+You are an expert fitness trainer creating a personalized ${durationDays}-day workout plan.
+ 
+USER PROFILE:
+- Fitness level: $userLevel
+${age != null ? "- Age: $age\n" : ""}${userGoals.isNotEmpty ? "- Goals: ${userGoals.join(', ')}\n" : ""}
+- Focus areas: ${focusAreas.join(', ')}
+${healthConditions.isNotEmpty ? "- Health considerations: ${healthConditions.join(', ')}\n" : ""}
+${availableEquipment.isNotEmpty ? "- Available equipment: ${availableEquipment.join(', ')}\n" : "- Equipment: Bodyweight exercises primarily\n"}
+${preferredLocation != null ? "- Preferred workout location: $preferredLocation\n" : ""}
+
+PLAN PARAMETERS:
+- Duration: $durationDays days
+- Workout frequency: $workoutDays days per week
+- Plan type: $variationDescription
+${specialRequest != null && specialRequest.isNotEmpty ? "- Special request: $specialRequest\n" : ""}
+
+DESIGN PRINCIPLES:
+1. Create a cohesive plan that feels like a professionally designed program
+2. Balance workout intensity and recovery - don't schedule difficult workouts on consecutive days
+3. Ensure proper progression and variety
+4. Include a mix of workout types appropriate for the user's goals and focus areas
+5. Specify exact workouts for each training day (not generic descriptions)
+6. Include 1-2 rest days per week (depending on frequency)
+
+SCHEDULING LOGIC:
+1. Each workout day should specify: day number, workout name, category, difficulty, duration, and brief description
+2. For a $workoutDays-day training week, space workouts evenly throughout the $durationDays days
+3. Never schedule more than 2 intense workouts in a row without a rest or light day
+4. If focusing on specific body areas, ensure sufficient recovery between sessions targeting the same area
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "planName": "Name of the workout plan (be creative)",
+  "planDescription": "Brief overview of the plan, goals and approach",
+  "focusAreas": ["Primary focus area", "Secondary focus area"],
+  "durationDays": $durationDays,
+  "daysPerWeek": $workoutDays,
+  "fitnessLevel": "$userLevel",
+  "scheduledWorkouts": [
+    {
+      "dayNumber": 1,
+      "isRestDay": false,
+      "workoutName": "Name of the workout",
+      "category": "bums/tums/fullBody/cardio/quickWorkout",
+      "difficulty": "beginner/intermediate/advanced",
+      "durationMinutes": 30,
+      "description": "Brief description of this workout",
+      "targetAreas": ["Primary area", "Secondary area"]
+    },
+    // Additional days...
+  ],
+  "recommendedEquipment": ["Equipment needed across all workouts"],
+  "weeklyProgressionStrategy": "How the plan progresses over time",
+  "successTips": ["2-3 tips for successfully completing this plan"]
+}
+''';
+
+      debugPrint(
+        'Generate plan prompt: ${systemPrompt.substring(0, min(200, systemPrompt.length))}...',
+      );
+
+      final messages = [
+        {"role": "system", "content": systemPrompt},
+        {
+          "role": "user",
+          "content": "Create a workout plan based on these specifications",
+        },
+      ];
 
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -602,7 +651,8 @@ DO NOT nest the workout under another object. Respond with the direct workout JS
           'model': _model,
           'messages': messages,
           'temperature': 0.7,
-          'max_tokens': 1500,
+          'max_tokens': 2000,
+          'response_format': {"type": "json_object"},
         }),
       );
 
@@ -611,14 +661,34 @@ DO NOT nest the workout under another object. Respond with the direct workout JS
       }
 
       final data = jsonDecode(response.body);
-      return data['choices'][0]['message']['content'];
+      final content = data['choices'][0]['message']['content'];
+
+      debugPrint(
+        'Raw plan response: ${content.substring(0, min(200, content.length))}...',
+      );
+
+      // Parse the response
+      try {
+        final Map<String, dynamic> planData = jsonDecode(content);
+
+        // Add metadata
+        planData['id'] = 'plan-${DateTime.now().millisecondsSinceEpoch}';
+        planData['isAiGenerated'] = true;
+        planData['createdAt'] = DateTime.now().toIso8601String();
+        planData['createdBy'] = 'ai';
+        planData['userId'] = userId;
+
+        return planData;
+      } catch (e) {
+        debugPrint('Error parsing plan response: $e');
+        throw Exception('Failed to parse AI response into plan format');
+      }
     } catch (e) {
       debugPrint('Error generating plan: $e');
       throw Exception('Failed to generate plan: ${e.toString()}');
     }
   }
 
-  // Used in ai_chat_provider.dart
   String detectMessageCategory(String message) {
     message = message.toLowerCase();
 
@@ -633,7 +703,6 @@ DO NOT nest the workout under another object. Respond with the direct workout JS
     return 'general';
   }
 
-  // Private helper for parsing workout responses
   Map<String, dynamic> _parseWorkoutResponse(String response) {
     try {
       // First try to parse the entire response as JSON
@@ -694,7 +763,6 @@ DO NOT nest the workout under another object. Respond with the direct workout JS
     }
   }
 
-  // Helper method to extract exercises from text when JSON parsing fails
   List<Map<String, dynamic>> extractExercisesFromText(String text) {
     final exercises = <Map<String, dynamic>>[];
 

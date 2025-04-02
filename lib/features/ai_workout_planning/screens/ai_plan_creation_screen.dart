@@ -1,489 +1,463 @@
 // lib/features/ai_workout_planning/screens/ai_plan_creation_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../provider/ai_planning_provider.dart';
-import '../../../shared/components/buttons/primary_button.dart';
-import '../../../shared/components/buttons/secondary_button.dart';
-import '../../../shared/components/indicators/loading_indicator.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../models/plan_generation_parameters.dart';
+import '../providers/plan_generation_provider.dart';
+import '../widgets/steps/welcome_step.dart';
+import '../widgets/steps/duration_frequency_step.dart';
+import '../widgets/steps/focus_variation_step.dart';
+import '../widgets/steps/special_request_step.dart';
+import '../widgets/steps/generating_step.dart';
+import '../widgets/steps/parameters_summary_sheet.dart';
+import '../widgets/visualization/plan_preview.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
+import '../../auth/providers/user_provider.dart';
+import '../../../shared/providers/environment_provider.dart';
+
+enum PlanCreationStep {
+  welcome,
+  durationFrequency,
+  focusVariation,
+  specialRequest,
+  generating,
+  result,
+  refinement,
+  refinementResult,
+}
 
 class AIPlanCreationScreen extends ConsumerStatefulWidget {
   final String userId;
 
-  const AIPlanCreationScreen({Key? key, required this.userId}) : super(key: key);
+  const AIPlanCreationScreen({Key? key, required this.userId})
+    : super(key: key);
 
   @override
-  ConsumerState<AIPlanCreationScreen> createState() => _AIPlanCreationScreenState();
+  ConsumerState<AIPlanCreationScreen> createState() =>
+      _AIPlanCreationScreenState();
 }
 
-class _AIPlanCreationScreenState extends ConsumerState<AIPlanCreationScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _planNameController = TextEditingController();
-  final _planRequestController = TextEditingController(); 
-  final _analytics = AnalyticsService();
-  
-  int _numberOfDays = 3; // Default to 3 days
-  String _fitnessLevel = 'beginner';
-  final List<String> _selectedFocusAreas = ['Bums', 'Tums'];
-  bool _useSimpleMode = true; // Default to simple text input mode
-  
-  final List<String> _availableFocusAreas = [
-    'Bums',
-    'Tums',
-    'Full Body',
-    'Cardio',
-    'Arms',
-    'Legs',
-    'Core',
-  ];
-  
-  final Map<String, String> _fitnessLevels = {
-    'beginner': 'Beginner',
-    'intermediate': 'Intermediate',
-    'advanced': 'Advanced',
-  };
+class _AIPlanCreationScreenState extends ConsumerState<AIPlanCreationScreen>
+    with SingleTickerProviderStateMixin {
+  PlanCreationStep _currentStep = PlanCreationStep.welcome;
+  int _durationDays = 7;
+  int _daysPerWeek = 3;
+  List<String> _focusAreas = ['Full Body'];
+  String _variationType = 'balanced';
+  final TextEditingController _specialRequestController =
+      TextEditingController();
+  final TextEditingController _refinementController = TextEditingController();
+  final AnalyticsService _analytics = AnalyticsService();
+
+  // Animation controller for transitions
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late ScrollController _scrollController;
+
+  // Forward declarations to avoid reference-before-declaration errors
+  Widget _buildCurrentStep() => const SizedBox();
+  Widget _buildBottomSheet() => const SizedBox();
 
   @override
   void initState() {
     super.initState();
-    _planNameController.text = '';
+
+    _scrollController = ScrollController();
+
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+    _animationController.forward();
+
     _analytics.logScreenView(screenName: 'ai_plan_creation_screen');
   }
 
   @override
   void dispose() {
-    _planNameController.dispose();
-    _planRequestController.dispose();
+    _specialRequestController.dispose();
+    _refinementController.dispose();
+    _animationController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  void _toggleFocusArea(String area) {
-    setState(() {
-      if (_selectedFocusAreas.contains(area)) {
-        if (_selectedFocusAreas.length > 1) {
-          _selectedFocusAreas.remove(area);
-        }
-      } else {
-        _selectedFocusAreas.add(area);
-      }
+  void _goToNextStep() {
+    // Add haptic feedback
+    HapticFeedback.selectionClick();
+
+    // Animate out current step
+    _animationController.reverse().then((_) {
+      setState(() {
+        _currentStep =
+            PlanCreationStep.values[(_currentStep.index + 1) %
+                PlanCreationStep.values.length];
+      });
+
+      // Scroll to top and animate in new step
+      _scrollToTop();
+      _animationController.forward();
     });
-    
-    _analytics.logEvent(
-      name: 'ai_plan_focus_area_toggled',
-      parameters: {'area': area, 'selected': _selectedFocusAreas.contains(area)},
-    );
   }
 
-  void _toggleInputMode() {
-    setState(() {
-      _useSimpleMode = !_useSimpleMode;
-    });
-    
-    _analytics.logEvent(
-      name: 'ai_plan_toggle_input_mode',
-      parameters: {'simple_mode': _useSimpleMode},
-    );
-  }
+  void _goToPreviousStep() {
+    // Add haptic feedback
+    HapticFeedback.selectionClick();
 
-  void _generatePlan() {
-    if (_formKey.currentState!.validate()) {
-      _analytics.logEvent(
-        name: 'ai_plan_generate_tapped',
-        parameters: {
-          'days': _numberOfDays,
-          'focus_areas': _selectedFocusAreas.join(','),
-          'simple_mode': _useSimpleMode,
-        },
-      );
-      
-      // Calculate dates based on today and number of days
-      final startDate = DateTime.now();
-      final endDate = startDate.add(Duration(days: _numberOfDays - 1));
-
-      // When using simple mode, we'll send the text as extra context
-      final Map<String, dynamic> additionalParams = _useSimpleMode 
-          ? {'textRequest': _planRequestController.text}
-          : {};
-      
-      ref.read(aiPlanNotifierProvider.notifier).generatePlan(
-        userId: widget.userId,
-        startDate: startDate,
-        endDate: endDate,
-        daysPerWeek: _numberOfDays, // In simple mode, days = workouts
-        focusAreas: _useSimpleMode ? _selectedFocusAreas : _selectedFocusAreas,
-        fitnessLevel: _fitnessLevel,
-        planName: _planNameController.text,
-        additionalParams: additionalParams,
-      ).then((success) {
-        if (success && mounted) {
-          // Navigate back to the planning screen
-          Navigator.pop(context, true);
+    // Animate out current step
+    _animationController.reverse().then((_) {
+      setState(() {
+        if (_currentStep.index > 0) {
+          _currentStep = PlanCreationStep.values[_currentStep.index - 1];
         }
       });
+
+      // Scroll to top and animate in new step
+      _scrollToTop();
+      _animationController.forward();
+    });
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     }
+  }
+
+  void _updateDuration(int days) {
+    setState(() {
+      _durationDays = days;
+    });
+
+    _analytics.logEvent(
+      name: 'plan_duration_selected',
+      parameters: {'days': days},
+    );
+  }
+
+  void _updateFrequency(int daysPerWeek) {
+    setState(() {
+      _daysPerWeek = daysPerWeek;
+    });
+
+    _analytics.logEvent(
+      name: 'plan_frequency_selected',
+      parameters: {'days_per_week': daysPerWeek},
+    );
+  }
+
+  void _updateFocusAreas(List<String> areas) {
+    setState(() {
+      _focusAreas = areas;
+    });
+
+    _analytics.logEvent(
+      name: 'plan_focus_areas_updated',
+      parameters: {'areas': areas.join(',')},
+    );
+  }
+
+  void _updateVariationType(String type) {
+    setState(() {
+      _variationType = type;
+    });
+
+    _analytics.logEvent(
+      name: 'plan_variation_type_selected',
+      parameters: {'type': type},
+    );
+  }
+
+  Future<void> _generatePlan() async {
+    try {
+      // First, ensure environment service is initialized
+      try {
+        await ref.read(environmentServiceInitProvider.future);
+      } catch (e) {
+        debugPrint('Error ensuring environment service is initialized: $e');
+        // Continue anyway, as we'll handle potential errors later
+      }
+
+      final userProfile = await ref.read(userProfileProvider.future);
+      if (userProfile == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unable to load user profile')),
+          );
+          setState(() {
+            _currentStep = PlanCreationStep.specialRequest;
+          });
+        }
+        return;
+      }
+
+      // Extract user profile data
+      final userProfileData = {
+        'fitnessLevel': userProfile.fitnessLevel.name,
+        'age': userProfile.age,
+        'goals': userProfile.goals.map((g) => g.name).toList(),
+        'preferredLocation': userProfile.preferredLocation?.name,
+        'availableEquipment': userProfile.availableEquipment,
+        'healthConditions': userProfile.healthConditions,
+      };
+
+      // Set parameters then generate
+      final notifier = ref.read(planGenerationProvider.notifier);
+
+      // Reset any previous parameters
+      notifier.reset();
+
+      // Set new parameters
+      notifier.setParameters(
+        durationDays: _durationDays,
+        daysPerWeek: _daysPerWeek,
+        focusAreas: _focusAreas,
+        variationType: _variationType,
+        fitnessLevel: userProfile.fitnessLevel.name,
+        specialRequest:
+            _specialRequestController.text.trim().isNotEmpty
+                ? _specialRequestController.text.trim()
+                : null,
+        equipment:
+            userProfile.availableEquipment.isNotEmpty
+                ? userProfile.availableEquipment
+                : null,
+      );
+
+      await notifier.generatePlan(
+        userId: userProfile.userId,
+        userProfileData: userProfileData,
+      );
+
+      if (mounted) {
+        _animationController.reverse().then((_) {
+          setState(() {
+            _currentStep = PlanCreationStep.result;
+          });
+          _scrollToTop();
+          _animationController.forward();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error generating plan: ${e.toString()}')),
+        );
+        setState(() {
+          _currentStep = PlanCreationStep.specialRequest;
+        });
+      }
+    }
+  }
+
+  void _startGeneration() {
+    // Add haptic feedback
+    HapticFeedback.mediumImpact();
+
+    _animationController.reverse().then((_) {
+      setState(() {
+        _currentStep = PlanCreationStep.generating;
+      });
+
+      _scrollToTop();
+      _animationController.forward();
+      _generatePlan();
+    });
+
+    _analytics.logEvent(name: 'plan_generation_started');
+  }
+
+  void _startRefinement() {
+    // Reset any previous changes summary
+    ref.read(planGenerationProvider.notifier).state = ref
+        .read(planGenerationProvider.notifier)
+        .state
+        .copyWith(changesSummary: null);
+
+    // Clear the refinement controller
+    _refinementController.clear();
+
+    _animationController.reverse().then((_) {
+      setState(() {
+        _currentStep = PlanCreationStep.refinement;
+      });
+      _scrollToTop();
+      _animationController.forward();
+    });
+
+    _analytics.logEvent(name: 'plan_refinement_started');
+  }
+
+  void _startOver() {
+    ref.read(planGenerationProvider.notifier).reset();
+
+    _animationController.reverse().then((_) {
+      setState(() {
+        _specialRequestController.clear();
+        _refinementController.clear();
+        _currentStep = PlanCreationStep.durationFrequency;
+      });
+      _scrollToTop();
+      _animationController.forward();
+    });
+
+    _analytics.logEvent(name: 'plan_creation_restarted');
+  }
+
+  bool _shouldShowBottomSheet() {
+    // Don't show for welcome, generating, or result steps
+    return !([
+      PlanCreationStep.welcome,
+      PlanCreationStep.generating,
+      PlanCreationStep.result,
+      PlanCreationStep.refinementResult,
+    ].contains(_currentStep));
   }
 
   @override
   Widget build(BuildContext context) {
-    final generationState = ref.watch(aiPlanNotifierProvider);
-    final isGenerating = generationState.isLoading;
-    final hasError = generationState.error != null;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create AI Workout Plan'),
+        title: const Text('AI Workout Plan Creator'),
         actions: [
-          TextButton.icon(
-            icon: Icon(
-              _useSimpleMode ? Icons.tune : Icons.chat_bubble_outline, 
-              color: Colors.white
+          if (_currentStep == PlanCreationStep.result ||
+              _currentStep == PlanCreationStep.refinementResult)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _startOver,
+              tooltip: 'Create new plan',
             ),
-            label: Text(
-              _useSimpleMode ? 'Advanced' : 'Simple',
-              style: const TextStyle(color: Colors.white),
-            ),
-            onPressed: _toggleInputMode,
-          ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Plan Name - required for both modes
-              TextFormField(
-                controller: _planNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Plan Name',
-                  hintText: 'Enter a name for your plan',
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Main content area with fade animation
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: _buildCurrentStepImpl(),
+                  ),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a name for your plan';
-                  }
-                  return null;
-                },
               ),
-              const SizedBox(height: 24),
+            ),
 
-              // Simple mode vs Advanced mode UI
-              if (_useSimpleMode) _buildSimpleModeUI() else _buildAdvancedModeUI(),
-              
-              const SizedBox(height: 24),
-              
-              // Error message if there is one
-              if (hasError)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, color: AppColors.error),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Error: ${generationState.error}',
-                          style: TextStyle(color: AppColors.error),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-              const SizedBox(height: 32),
-              
-              // Generate button
-              if (isGenerating)
-                const LoadingIndicator(message: 'Creating your personalized workout plan...')
-              else
-                Column(
-                  children: [
-                    PrimaryButton(
-                      text: 'Generate Plan',
-                      onPressed: _generatePlan,
-                      isLoading: isGenerating,
-                    ),
-                    const SizedBox(height: 16),
-                    SecondaryButton(
-                      text: 'Cancel',
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-            ],
-          ),
+            // Parameter summary sheet (only shown for certain steps)
+            if (_shouldShowBottomSheet()) _buildBottomSheetImpl(),
+          ],
         ),
       ),
     );
   }
 
-  // Simple mode UI with just text input and days selector
-  Widget _buildSimpleModeUI() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Tell me what you want:',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _planRequestController,
-          maxLength: 200,
-          maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'e.g., "Create a 5-day plan focused on legs and cardio for a beginner"',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 24),
-        
-        Text(
-          'Number of Days',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(7, (index) {
-            final dayCount = index + 1;
-            final isSelected = _numberOfDays == dayCount;
-            
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _numberOfDays = dayCount;
-                });
-              },
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isSelected ? AppColors.pink : Colors.grey.withOpacity(0.2),
-                ),
-                child: Center(
-                  child: Text(
-                    '$dayCount',
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 16),
-        
-        // Preview card
-        Card(
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Plan Preview',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.calendar_today, size: 16, color: AppColors.pink),
-                    const SizedBox(width: 8),
-                    Text('$_numberOfDays days'),
-                  ],
-                ),
-                if (_planRequestController.text.isNotEmpty) ...[
-                  const Divider(height: 24),
-                  Text(
-                    'Your request:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.mediumGrey,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(_planRequestController.text),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
+  Widget _buildCurrentStepImpl() {
+    final planGenerationState = ref.watch(planGenerationProvider);
+
+    switch (_currentStep) {
+      case PlanCreationStep.welcome:
+        return PlanWelcomeStep(onGetStarted: _goToNextStep);
+
+      case PlanCreationStep.durationFrequency:
+        return DurationFrequencyStep(
+          selectedDuration: _durationDays,
+          selectedFrequency: _daysPerWeek,
+          onDurationSelected: _updateDuration,
+          onFrequencySelected: _updateFrequency,
+          onContinue: _goToNextStep,
+          onBack: _goToPreviousStep,
+        );
+
+      case PlanCreationStep.focusVariation:
+        return FocusVariationStep(
+          selectedFocusAreas: _focusAreas,
+          selectedVariationType: _variationType,
+          onFocusAreasChanged: _updateFocusAreas,
+          onVariationTypeChanged: _updateVariationType,
+          onContinue: _goToNextStep,
+          onBack: _goToPreviousStep,
+        );
+
+      case PlanCreationStep.specialRequest:
+        return SpecialRequestStep(
+          controller: _specialRequestController,
+          selectedFocusAreas: _focusAreas,
+          selectedDuration: _durationDays,
+          selectedFrequency: _daysPerWeek,
+          selectedVariationType: _variationType,
+          onGenerate: _startGeneration,
+          onBack: _goToPreviousStep,
+        );
+
+      case PlanCreationStep.generating:
+        return const PlanGeneratingStep();
+
+      case PlanCreationStep.result:
+        if (planGenerationState.planData != null) {
+          return PlanPreview(
+            planData: planGenerationState.planData!,
+            onRefine: _startRefinement,
+          );
+        }
+        return const Center(child: Text("No plan data available"));
+
+      case PlanCreationStep.refinement:
+      case PlanCreationStep.refinementResult:
+        // These will be implemented later
+        return const Center(
+          child: Text("Refinement functionality coming soon"),
+        );
+    }
   }
-  
-  // Advanced mode UI with detailed options
-  Widget _buildAdvancedModeUI() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Number of Days
-        Text(
-          'Number of Days',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(7, (index) {
-            final dayCount = index + 1;
-            final isSelected = _numberOfDays == dayCount;
-            
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _numberOfDays = dayCount;
-                });
-              },
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isSelected ? AppColors.pink : Colors.grey.withOpacity(0.2),
-                ),
-                child: Center(
-                  child: Text(
-                    '$dayCount',
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 24),
-        
-        // Fitness Level
-        Text(
-          'Fitness Level',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 12,
-          children: _fitnessLevels.entries.map((entry) {
-            final isSelected = _fitnessLevel == entry.key;
-            return ChoiceChip(
-              label: Text(entry.value),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) {
-                  setState(() {
-                    _fitnessLevel = entry.key;
-                  });
-                  
-                  _analytics.logEvent(
-                    name: 'ai_plan_fitness_level_changed',
-                    parameters: {'level': entry.key},
-                  );
-                }
-              },
-              backgroundColor: Colors.grey[200],
-              selectedColor: AppColors.pink.withOpacity(0.7),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 24),
-        
-        // Focus Areas
-        Text(
-          'Focus Areas',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _availableFocusAreas.map((area) {
-            final isSelected = _selectedFocusAreas.contains(area);
-            return FilterChip(
-              label: Text(area),
-              selected: isSelected,
-              onSelected: (_) => _toggleFocusArea(area),
-              backgroundColor: Colors.grey[200],
-              selectedColor: AppColors.pink.withOpacity(0.7),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 24),
-        
-        // Plan overview card
-        Card(
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Plan Overview',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _buildInfoRow(
-                  'Duration',
-                  '$_numberOfDays days',
-                  Icons.calendar_today,
-                ),
-                const Divider(),
-                _buildInfoRow(
-                  'Focus',
-                  _selectedFocusAreas.join(', '),
-                  Icons.track_changes,
-                ),
-                const Divider(),
-                _buildInfoRow(
-                  'Level',
-                  _fitnessLevels[_fitnessLevel] ?? 'Beginner',
-                  Icons.fitness_center,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildInfoRow(String label, String value, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppColors.pink),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(color: Colors.grey),
-          ),
-        ],
-      ),
+
+  Widget _buildBottomSheetImpl() {
+    String continueText = 'Continue';
+    VoidCallback? onContinue;
+    VoidCallback? onBack;
+
+    switch (_currentStep) {
+      case PlanCreationStep.durationFrequency:
+        onContinue = _goToNextStep;
+        onBack = _goToPreviousStep;
+        break;
+      case PlanCreationStep.focusVariation:
+        onContinue = _goToNextStep;
+        onBack = _goToPreviousStep;
+        break;
+      case PlanCreationStep.specialRequest:
+        continueText = 'Generate Plan';
+        onContinue = _startGeneration;
+        onBack = _goToPreviousStep;
+        break;
+      default:
+        break;
+    }
+
+    return ParametersSummarySheet(
+      durationDays: _durationDays,
+      daysPerWeek: _daysPerWeek,
+      focusAreas: _focusAreas,
+      variationType: _variationType,
+      specialRequest:
+          _specialRequestController.text.trim().isNotEmpty
+              ? _specialRequestController.text.trim()
+              : null,
+      onBack: onBack,
+      onContinue: onContinue,
+      showBackButton: _currentStep != PlanCreationStep.welcome,
+      showContinueButton: true,
+      continueButtonText: continueText,
     );
   }
 }
