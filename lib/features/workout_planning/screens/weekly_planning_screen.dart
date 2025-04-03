@@ -1,4 +1,5 @@
 // lib/features/workout_planning/screens/weekly_planning_screen.dart
+import 'package:bums_n_tums/features/ai_workout_planning/screens/saved_plans_screen.dart';
 import 'package:bums_n_tums/features/workout_planning/models/workout_plan.dart';
 import 'package:bums_n_tums/features/workout_planning/providers/workout_planning_provider.dart';
 import 'package:bums_n_tums/features/ai_workout_planning/screens/ai_plan_creation_screen.dart';
@@ -103,9 +104,21 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
 
     return Column(
       children: [
-        // TabBar without AppBar dependency
+        // App bar with actions
+        AppBar(
+          title: const Text('Plan'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.save_alt),
+              onPressed: _navigateToSavedPlans,
+              tooltip: 'Saved Plans',
+            ),
+          ],
+        ),
+
+        // TabBar
         Container(
-          color: AppColors.pink, // Match the app's primary color
+          color: AppColors.pink,
           child: TabBar(
             controller: _tabController,
             tabs: const [
@@ -357,6 +370,16 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
           ],
         );
       },
+    );
+  }
+
+  void _navigateToSavedPlans() {
+    _analyticsService.logEvent(name: 'view_saved_plans_from_appbar');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SavedPlansScreen(userId: widget.userId),
+      ),
     );
   }
 }

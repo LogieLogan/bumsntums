@@ -2,25 +2,9 @@ Using the Project Knowledge AND the SPECS provided as your core instructions ple
 
 MAIN FOCUS AREA:
 Ai planning service. 
-align the current plan feature wih the ai workout generation only for planning up to a weeks of workouts 
-Tailore the set up steps and questions and generation prompt to guide the generation to make an excellent weekly workout plan. 
-
-intial thoughts are:
-- variation (bums one day, arms another, harder days, easier days, etc etc)
-- tailored vairation (bums, bums, bums, or a bit of everyhting)
-- options to take complete control over very aspect to being able to say you decide for varied levels of people
-- make it super configurabel yet only show options when needed
-- Design a beuatiful plan overview screen at the end to display the pan on a bespoke weekly laid out screen
-- allow for indicvduals to refine the plan using ai (similar to workout generation)
-- leverage other app features were needed that are made already to ensure a consistent experience with the rest of the app
-- for example once the plan is made there should be an option to save workouts should be saved as individula woerkouts in my workouts screen and then have the same configurability as if  the workout was made using other methods.
-- workouts should be configurable manually in the panning workflow before saving a plan using the modals to set reps, set,s weights, times resitence etc. 
-- a way to save the plan with a name description (pre made with AI but can be edited) 
-- a my plans screen where the plan will be viewd, set and edited.
-
-Steps: 
-
-
+plans are not saved properly to the saved workout plans
+plans are not configurable 
+workouts in plans are not configurable 
 
 project structure: 
 
@@ -65,14 +49,32 @@ project structure:
 │   │       └── workout_result.dart
 │   ├── ai_workout_planning
 │   │   ├── models
-│   │   ├── provider
+│   │   │   ├── ai_workout_plan_model.dart
+│   │   │   └── plan_generation_parameters.dart
+│   │   ├── providers
 │   │   │   ├── ai_planning_provider.dart
-│   │   │   └── plan_creation_provider.dart
+│   │   │   ├── ai_workout_plan_provider.dart
+│   │   │   └── plan_generation_provider.dart
+│   │   ├── repositories
+│   │   │   └── ai_workout_plan_repository.dart
 │   │   ├── screens
-│   │   │   └── ai_plan_creation_screen.dart
+│   │   │   ├── ai_plan_creation_screen.dart
+│   │   │   └── saved_plans_screen.dart
 │   │   ├── services
 │   │   │   └── ai_planning_service.dart
 │   │   └── widgets
+│   │       ├── plan_detail_bottom_sheet.dart
+│   │       ├── steps
+│   │       │   ├── duration_frequency_step.dart
+│   │       │   ├── focus_variation_step.dart
+│   │       │   ├── generating_step.dart
+│   │       │   ├── parameters_summary_sheet.dart
+│   │       │   ├── special_request_step.dart
+│   │       │   └── welcome_step.dart
+│   │       └── visualization
+│   │           ├── plan_calendar_view.dart
+│   │           ├── plan_preview.dart
+│   │           └── workout_distribution_chart.dart
 │   ├── auth
 │   │   ├── models
 │   │   │   └── user_profile.dart
@@ -147,8 +149,6 @@ project structure:
 │   ├── splash
 │   │   └── screens
 │   │       └── splash_screen.dart
-│   ├── workout_creation
-│   │   └── ai_workout_screen.dart
 │   ├── workout_planning
 │   │   ├── index.dart
 │   │   ├── models
