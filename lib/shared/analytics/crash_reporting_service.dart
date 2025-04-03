@@ -1,31 +1,42 @@
-// lib/shared/analytics/crash_reporting_service.dart
+// lib/shared/analytics/crash_reporting_service.dart - updated code
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 
 class CrashReportingService {
-  // Make it late so it's initialized only when needed
-  late final FirebaseCrashlytics _crashlytics;
+  // Change to nullable to avoid late initialization errors
+  FirebaseCrashlytics? _crashlytics;
+  bool _isInitialized = false;
 
   Future<void> initialize() async {
-    // Initialize crashlytics
-    _crashlytics = FirebaseCrashlytics.instance;
+    if (_isInitialized) return;
     
-    // Pass all uncaught errors to Crashlytics
-    FlutterError.onError = _crashlytics.recordFlutterError;
-    
-    // Pass all uncaught asynchronous errors to Crashlytics
-    PlatformDispatcher.instance.onError = (error, stack) {
-      _crashlytics.recordError(error, stack, fatal: true);
-      return true;
-    };
+    try {
+      _crashlytics = FirebaseCrashlytics.instance;
+      
+      // Pass all uncaught errors to Crashlytics
+      FlutterError.onError = _crashlytics!.recordFlutterError;
+      
+      // Pass all uncaught asynchronous errors to Crashlytics
+      PlatformDispatcher.instance.onError = (error, stack) {
+        _crashlytics!.recordError(error, stack, fatal: true);
+        return true;
+      };
+      
+      _isInitialized = true;
+      debugPrint('Firebase Crashlytics initialized successfully');
+    } catch (e) {
+      debugPrint('Error initializing Firebase Crashlytics: $e');
+    }
   }
 
   Future<void> setUserIdentifier(String userId) async {
-    await _crashlytics.setUserIdentifier(userId);
+    if (!_ensureInitialized()) return;
+    await _crashlytics!.setUserIdentifier(userId);
   }
 
   Future<void> log(String message) async {
-    await _crashlytics.log(message);
+    if (!_ensureInitialized()) return;
+    await _crashlytics!.log(message);
   }
 
   Future<void> recordError(
@@ -35,12 +46,28 @@ class CrashReportingService {
     Iterable<DiagnosticsNode> information = const [],
     bool fatal = false,
   }) async {
-    await _crashlytics.recordError(
+    if (!_ensureInitialized()) {
+      // Fall back to debug print if Crashlytics isn't initialized
+      debugPrint('ERROR (Crashlytics not initialized): $exception');
+      debugPrint('Stack trace: $stack');
+      return;
+    }
+    
+    await _crashlytics!.recordError(
       exception,
       stack,
       reason: reason,
       information: information,
       fatal: fatal,
     );
+  }
+  
+  // Helper method to check initialization
+  bool _ensureInitialized() {
+    if (!_isInitialized || _crashlytics == null) {
+      debugPrint('Warning: Trying to use CrashReportingService before initialization');
+      return false;
+    }
+    return true;
   }
 }

@@ -1,10 +1,10 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-Ai planning service. 
-plans are not saved properly to the saved workout plans
-plans are not configurable 
-workouts in plans are not configurable 
+Ai planning saved plans have no workouts. 
+Ai planning doesnt make workouts only makes plan skeletons
+Review and improve the AI planning system into a complete system that creates not only plans of workouts but also the workouts themselves that can be interacted with like any other workout. (the ai workout generation does this well already)
+
 
 project structure: 
 

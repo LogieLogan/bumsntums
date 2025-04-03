@@ -593,15 +593,10 @@ DESIGN PRINCIPLES:
 2. Balance workout intensity and recovery - don't schedule difficult workouts on consecutive days
 3. Ensure proper progression and variety
 4. Include a mix of workout types appropriate for the user's goals and focus areas
-5. Specify exact workouts for each training day (not generic descriptions)
+5. For EACH workout in the plan, create a COMPLETE workout with specific exercises, sets, reps, and rest periods
 6. Include 1-2 rest days per week (depending on frequency)
 
-SCHEDULING LOGIC:
-1. Each workout day should specify: day number, workout name, category, difficulty, duration, and brief description
-2. For a $workoutDays-day training week, space workouts evenly throughout the $durationDays days
-3. Never schedule more than 2 intense workouts in a row without a rest or light day
-4. If focusing on specific body areas, ensure sufficient recovery between sessions targeting the same area
-
+RESPONSE FORMAT:
 Respond ONLY with valid JSON in this exact format:
 {
   "planName": "Name of the workout plan (be creative)",
@@ -619,7 +614,19 @@ Respond ONLY with valid JSON in this exact format:
       "difficulty": "beginner/intermediate/advanced",
       "durationMinutes": 30,
       "description": "Brief description of this workout",
-      "targetAreas": ["Primary area", "Secondary area"]
+      "targetAreas": ["Primary area", "Secondary area"],
+      "exercises": [
+        {
+          "name": "Exercise Name",
+          "description": "Exercise instructions",
+          "sets": 3,
+          "reps": 12,
+          "durationSeconds": null,
+          "restBetweenSeconds": 30,
+          "targetArea": "Specific muscle group"
+        }
+      ],
+      "equipment": ["Equipment needed for this workout"]
     },
     // Additional days...
   ],
@@ -671,14 +678,10 @@ Respond ONLY with valid JSON in this exact format:
       try {
         final Map<String, dynamic> planData = jsonDecode(content);
 
-        // Add metadata
-        planData['id'] = 'plan-${DateTime.now().millisecondsSinceEpoch}';
-        planData['isAiGenerated'] = true;
-        planData['createdAt'] = DateTime.now().toIso8601String();
-        planData['createdBy'] = 'ai';
-        planData['userId'] = userId;
+        // Process the received data to create actual workouts
+        final processedPlanData = await _processGeneratedPlan(planData, userId);
 
-        return planData;
+        return processedPlanData;
       } catch (e) {
         debugPrint('Error parsing plan response: $e');
         throw Exception('Failed to parse AI response into plan format');
@@ -687,6 +690,116 @@ Respond ONLY with valid JSON in this exact format:
       debugPrint('Error generating plan: $e');
       throw Exception('Failed to generate plan: ${e.toString()}');
     }
+  }
+
+  Future<Map<String, dynamic>> _processGeneratedPlan(
+    Map<String, dynamic> planData,
+    String userId,
+  ) async {
+    // Create a copy of the plan data to modify
+    final processedPlan = Map<String, dynamic>.from(planData);
+
+    // Add metadata
+    processedPlan['id'] = 'plan-${DateTime.now().millisecondsSinceEpoch}';
+    processedPlan['isAiGenerated'] = true;
+    processedPlan['createdAt'] = DateTime.now().toIso8601String();
+    processedPlan['createdBy'] = 'ai';
+    processedPlan['userId'] = userId;
+
+    // Convert the scheduled workouts into actual workout entities with IDs
+    final scheduledWorkouts =
+        (planData['scheduledWorkouts'] as List<dynamic>?) ?? [];
+    final processedWorkouts = <Map<String, dynamic>>[];
+
+    for (int i = 0; i < scheduledWorkouts.length; i++) {
+      final workoutData = scheduledWorkouts[i] as Map<String, dynamic>;
+
+      // Skip rest days
+      if (workoutData['isRestDay'] == true) {
+        processedWorkouts.add(workoutData);
+        continue;
+      }
+
+      // Create a unique ID for this workout
+      final workoutId = 'workout-${DateTime.now().millisecondsSinceEpoch}-$i';
+
+      // Create the workout entity
+      final workout = {
+        'id': workoutId,
+        'title':
+            workoutData['workoutName'] ??
+            'Day ${workoutData['dayNumber']} Workout',
+        'description':
+            workoutData['description'] ??
+            'Generated workout for day ${workoutData['dayNumber']}',
+        'category': workoutData['category'] ?? 'fullBody',
+        'difficulty': workoutData['difficulty'] ?? 'beginner',
+        'durationMinutes': workoutData['durationMinutes'] ?? 30,
+        'estimatedCaloriesBurn': _estimateCalories(workoutData),
+        'isAiGenerated': true,
+        'createdAt': DateTime.now().toIso8601String(),
+        'createdBy': 'ai',
+        'exercises': workoutData['exercises'] ?? [],
+        'equipment': workoutData['equipment'] ?? [],
+        'tags': ['ai-generated', 'plan-workout'],
+        'imageUrl': '', // Default empty image URL
+      };
+
+      // Update the workout data with the ID reference and remove exercises field
+      // (exercises will be stored in the workout document)
+      final updatedWorkoutData = Map<String, dynamic>.from(workoutData);
+      updatedWorkoutData['workoutId'] = workoutId;
+      updatedWorkoutData.remove(
+        'exercises',
+      ); // Exercises are now in the workout entity
+
+      processedWorkouts.add(updatedWorkoutData);
+
+      // Add this workout to a new field that will hold the complete workout objects
+      if (!processedPlan.containsKey('workouts')) {
+        processedPlan['workouts'] = [];
+      }
+      (processedPlan['workouts'] as List).add(workout);
+    }
+
+    // Update the scheduledWorkouts field with our processed data
+    processedPlan['scheduledWorkouts'] = processedWorkouts;
+
+    return processedPlan;
+  }
+
+  // Helper method to estimate calories based on workout data
+  int _estimateCalories(Map<String, dynamic> workoutData) {
+    // Default base calories
+    int baseCalories = 200;
+
+    // Adjust based on duration
+    final durationMinutes = workoutData['durationMinutes'] as int? ?? 30;
+    baseCalories = (baseCalories * durationMinutes / 30).round();
+
+    // Adjust based on difficulty
+    final difficulty = workoutData['difficulty'] as String? ?? 'beginner';
+    switch (difficulty.toLowerCase()) {
+      case 'intermediate':
+        baseCalories = (baseCalories * 1.2).round();
+        break;
+      case 'advanced':
+        baseCalories = (baseCalories * 1.4).round();
+        break;
+    }
+
+    // Adjust based on workout type
+    final category = workoutData['category'] as String? ?? 'fullBody';
+    switch (category.toLowerCase()) {
+      case 'cardio':
+        baseCalories = (baseCalories * 1.3).round();
+        break;
+      case 'fullbody':
+        baseCalories = (baseCalories * 1.2).round();
+        break;
+    }
+
+    return baseCalories;
   }
 
   String detectMessageCategory(String message) {
@@ -804,5 +917,25 @@ Respond ONLY with valid JSON in this exact format:
     }
 
     return exercises;
+  }
+
+  WorkoutCategory? _categoryFromString(String category) {
+    switch (category.toLowerCase()) {
+      case 'bums':
+        return WorkoutCategory.bums;
+      case 'tums':
+        return WorkoutCategory.tums;
+      case 'fullbody':
+      case 'full body':
+        return WorkoutCategory.fullBody;
+      case 'cardio':
+        return WorkoutCategory.cardio;
+      case 'quickworkout':
+      case 'quick workout':
+      case 'quick':
+        return WorkoutCategory.quickWorkout;
+      default:
+        return WorkoutCategory.fullBody;
+    }
   }
 }

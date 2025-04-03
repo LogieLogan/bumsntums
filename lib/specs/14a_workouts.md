@@ -171,7 +171,7 @@ Community trend insights that highlight popular workouts
 - [x] Expanded exercise database with 100+ exercises
 - [ ] User ratings for exercises
 - [ ] Exercise favorites system
-- [ ] Exercise history tracking by user
+- [x] Exercise history tracking by user
 
 ### Workout Library
 - [x] Basic workout model with exercises, difficulty, and category
@@ -181,9 +181,9 @@ Community trend insights that highlight popular workouts
 - [x] Circuit and superset workout support
 - [x] Estimated duration and calorie calculation
 - [x] Basic stock workout library
-- [ ] Expanded stock workout library (50+ workouts)
-- [ ] Workout series with progressive difficulty
-- [ ] Featured workout collections
+- [x] Expanded stock workout library (50+ workouts)
+- [x] Workout series with progressive difficulty
+- [x] Featured workout collections
 - [ ] Equipment-based workout collections
 - [ ] Goal-specific workout collections
 - [ ] Workout preview with detailed breakdown
@@ -262,6 +262,9 @@ Community trend insights that highlight popular workouts
 - [ ] Plan visualization dashboard
 - [ ] Vacation mode planning
 - [ ] Quick plan adjustment tools
+- [ ] Drag and drop workouts on weekly view
+- [ ] Delete, and open workouts on calendar screen
+- [ ] 
 
 ### Social & Community
 - [ ] Workout sharing functionality
@@ -280,6 +283,7 @@ Community trend insights that highlight popular workouts
 - [x] Personalized workout parameters
 - [x] AI workout customization interface
 - [ ] AI-powered exercise recommendations
+- [ ] Generated workouts include same amout of details as stock workouts when made 
 - [ ] Form guidance enhancement with AI
 - [ ] Intelligent workout scheduling
 - [ ] Performance insights generation
@@ -287,7 +291,6 @@ Community trend insights that highlight popular workouts
 - [ ] Predictive progress analysis
 - [ ] Personalized motivation messages
 - [ ] Habit formation assistance
-- [ ] Recovery optimization
 
 ### Bugs 
 - [x] Execution screen buggy, sometime demos and ui components move and overlap 

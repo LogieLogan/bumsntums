@@ -1,8 +1,6 @@
 // lib/features/workout_planning/screens/weekly_planning_screen.dart
-import 'package:bums_n_tums/features/ai_workout_planning/screens/saved_plans_screen.dart';
 import 'package:bums_n_tums/features/workout_planning/models/workout_plan.dart';
 import 'package:bums_n_tums/features/workout_planning/providers/workout_planning_provider.dart';
-import 'package:bums_n_tums/features/ai_workout_planning/screens/ai_plan_creation_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -105,16 +103,16 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
     return Column(
       children: [
         // App bar with actions
-        AppBar(
-          title: const Text('Plan'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.save_alt),
-              onPressed: _navigateToSavedPlans,
-              tooltip: 'Saved Plans',
-            ),
-          ],
-        ),
+        // AppBar(
+        //   title: const Text('Plan'),
+        //   actions: [
+        //     IconButton(
+        //       icon: const Icon(Icons.save_alt),
+        //       onPressed: _navigateToSavedPlans,
+        //       tooltip: 'Saved Plans',
+        //     ),
+        //   ],
+        // ),
 
         // TabBar
         Container(
@@ -183,77 +181,77 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
         ),
 
         // AI Plan Card
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
-          child: Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: InkWell(
-              onTap: () {
-                _analyticsService.logEvent(name: 'create_ai_plan_tapped');
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            AIPlanCreationScreen(userId: widget.userId),
-                  ),
-                ).then((_) {
-                  final _ = ref.refresh(
-                    workoutPlanningNotifierProvider(widget.userId),
-                  );
-                });
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        color: AppColors.popBlue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Icons.auto_awesome,
-                        color: AppColors.popBlue,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'AI Workout Plan',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            'Let AI create a personalized workout schedule for you',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: AppColors.mediumGrey),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: AppColors.mediumGrey,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
+        // Padding(
+        //   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+        //   child: Card(
+        //     elevation: 2,
+        //     shape: RoundedRectangleBorder(
+        //       borderRadius: BorderRadius.circular(12),
+        //     ),
+        //     child: InkWell(
+        //       onTap: () {
+        //         _analyticsService.logEvent(name: 'create_ai_plan_tapped');
+        //         Navigator.push(
+        //           context,
+        //           MaterialPageRoute(
+        //             builder:
+        //                 (context) =>
+        //                     AIPlanCreationScreen(userId: widget.userId),
+        //           ),
+        //         ).then((_) {
+        //           final _ = ref.refresh(
+        //             workoutPlanningNotifierProvider(widget.userId),
+        //           );
+        //         });
+        //       },
+        //       borderRadius: BorderRadius.circular(12),
+        //       child: Padding(
+        //         padding: const EdgeInsets.all(16.0),
+        //         child: Row(
+        //           children: [
+        //             Container(
+        //               padding: const EdgeInsets.all(10.0),
+        //               decoration: BoxDecoration(
+        //                 color: AppColors.popBlue.withOpacity(0.1),
+        //                 borderRadius: BorderRadius.circular(8),
+        //               ),
+        //               child: Icon(
+        //                 Icons.auto_awesome,
+        //                 color: AppColors.popBlue,
+        //                 size: 22,
+        //               ),
+        //             ),
+        //             const SizedBox(width: 16),
+        //             Expanded(
+        //               child: Column(
+        //                 crossAxisAlignment: CrossAxisAlignment.start,
+        //                 children: [
+        //                   Text(
+        //                     'AI Workout Plan',
+        //                     style: Theme.of(context).textTheme.titleMedium
+        //                         ?.copyWith(fontWeight: FontWeight.bold),
+        //                   ),
+        //                   Text(
+        //                     'Let AI create a personalized workout schedule for you',
+        //                     style: Theme.of(context).textTheme.bodySmall
+        //                         ?.copyWith(color: AppColors.mediumGrey),
+        //                   ),
+        //                 ],
+        //               ),
+        //             ),
+        //             Icon(
+        //               Icons.arrow_forward_ios,
+        //               size: 16,
+        //               color: AppColors.mediumGrey,
+        //             ),
+        //           ],
+        //         ),
+        //       ),
+        //     ),
+        //   ),
+        // ),
 
-        const SizedBox(height: 12),
+        // const SizedBox(height: 12),
 
         // Main content
         Expanded(
@@ -373,13 +371,13 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
     );
   }
 
-  void _navigateToSavedPlans() {
-    _analyticsService.logEvent(name: 'view_saved_plans_from_appbar');
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SavedPlansScreen(userId: widget.userId),
-      ),
-    );
-  }
+  // void _navigateToSavedPlans() {
+  //   _analyticsService.logEvent(name: 'view_saved_plans_from_appbar');
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => SavedPlansScreen(userId: widget.userId),
+  //     ),
+  //   );
+  // }
 }
