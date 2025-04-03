@@ -252,19 +252,11 @@ Community trend insights that highlight popular workouts
 - [x] Basic calendar for workout scheduling
 - [x] Recurring workout setup
 - [x] Rest day recommendations
-- [ ] Advanced program builder
 - [ ] Pre-designed plan templates
-- [ ] Workout conflict detection
-- [ ] Balance analysis for scheduled workouts
-- [ ] Schedule flexibility tools
-- [ ] Custom notification preferences
-- [ ] Recovery optimization suggestions
-- [ ] Plan visualization dashboard
 - [ ] Vacation mode planning
 - [ ] Quick plan adjustment tools
 - [ ] Drag and drop workouts on weekly view
 - [ ] Delete, and open workouts on calendar screen
-- [ ] 
 
 ### Social & Community
 - [ ] Workout sharing functionality

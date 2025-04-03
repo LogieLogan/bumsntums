@@ -1,10 +1,7 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-Ai planning saved plans have no workouts. 
-Ai planning doesnt make workouts only makes plan skeletons
-Review and improve the AI planning system into a complete system that creates not only plans of workouts but also the workouts themselves that can be interacted with like any other workout. (the ai workout generation does this well already)
-
+Workout planning
 
 project structure: 
 
@@ -47,34 +44,6 @@ project structure:
 │   │       ├── refinement_step.dart
 │   │       ├── welcome_step.dart
 │   │       └── workout_result.dart
-│   ├── ai_workout_planning
-│   │   ├── models
-│   │   │   ├── ai_workout_plan_model.dart
-│   │   │   └── plan_generation_parameters.dart
-│   │   ├── providers
-│   │   │   ├── ai_planning_provider.dart
-│   │   │   ├── ai_workout_plan_provider.dart
-│   │   │   └── plan_generation_provider.dart
-│   │   ├── repositories
-│   │   │   └── ai_workout_plan_repository.dart
-│   │   ├── screens
-│   │   │   ├── ai_plan_creation_screen.dart
-│   │   │   └── saved_plans_screen.dart
-│   │   ├── services
-│   │   │   └── ai_planning_service.dart
-│   │   └── widgets
-│   │       ├── plan_detail_bottom_sheet.dart
-│   │       ├── steps
-│   │       │   ├── duration_frequency_step.dart
-│   │       │   ├── focus_variation_step.dart
-│   │       │   ├── generating_step.dart
-│   │       │   ├── parameters_summary_sheet.dart
-│   │       │   ├── special_request_step.dart
-│   │       │   └── welcome_step.dart
-│   │       └── visualization
-│   │           ├── plan_calendar_view.dart
-│   │           ├── plan_preview.dart
-│   │           └── workout_distribution_chart.dart
 │   ├── auth
 │   │   ├── models
 │   │   │   └── user_profile.dart
@@ -316,7 +285,6 @@ project structure:
     ├── 03_technical_architecture.md
     ├── 04_firebase_architecture.md
     ├── 05a_ai_integration.md
-    ├── 05b_ai_prompting.md
     ├── 06a_auth_system.md
     ├── 06b_food_scanning.md
     ├── 06d_social_features.md
