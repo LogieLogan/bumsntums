@@ -854,8 +854,11 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
                           icon: const Icon(Icons.add),
                           label: const Text('Add to Workout'),
                           onPressed: () {
-                            Navigator.pop(context);
-                            _selectExercise(exercise);
+                            Navigator.pop(context); // Close the bottom sheet
+                            Navigator.pop(
+                              context,
+                              exercise,
+                            ); // Return the exercise to the parent, using the parameter
                           },
                         ),
                       ],
@@ -902,19 +905,8 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
   }
 
   void _selectExercise(Exercise exercise) {
-    // Navigate to the exercise configuration screen
-    Navigator.push<Exercise>(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) =>
-                ExerciseEditorScreen(exercise: exercise, isNewExercise: false),
-      ),
-    ).then((configuredExercise) {
-      if (configuredExercise != null) {
-        Navigator.pop(context, configuredExercise);
-      }
-    });
+    // Instead of navigating to the editor, directly return the selected exercise
+    Navigator.pop(context, exercise);
   }
 
   Future<void> _showCreateExerciseDialog() async {

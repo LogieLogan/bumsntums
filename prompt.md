@@ -1,7 +1,10 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-Workout planning
+Workout execution
+renderlfex issues on some workouts near the bottom where the progress indicators are. 
+One workout has a bug where it only does the first xercise and then every subsequesnt on completes as it starts (i.e. it doesnt run through the exercise it just says well done complete and then does the next exercise where it does the sam thing)
+this only happens on one workout so far but i cant test all of them as there are many to test. Either we need to figure out what is happening to that one exercise and prevent it from happening again. Mayeb we can add some more error handling, checks in the flow to make sure we stay on rack if edge cases rise up. 
 
 project structure: 
 
@@ -131,7 +134,6 @@ project structure:
 │   │   │   ├── weekly_planning_screen.dart
 │   │   │   └── workout_scheduling_screen.dart
 │   │   └── widgets
-│   │       ├── calendar_view.dart
 │   │       ├── day_schedule_card.dart
 │   │       ├── scheduled_workout_item.dart
 │   │       └── workout_day_header.dart

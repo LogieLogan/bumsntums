@@ -11,6 +11,7 @@ import 'app.dart';
 import 'flavors.dart';
 import 'shared/analytics/crash_reporting_service.dart';
 import 'features/nutrition/services/ml_kit_service.dart';
+import 'shared/utils/exercise_reference_utils.dart';
 
 FutureOr<void> main() async {
   // Ensure Flutter is initialized
@@ -60,6 +61,8 @@ FutureOr<void> main() async {
     CrashReportingService().recordError(e, StackTrace.current);
   }
 
+  await initializeExerciseCache();
+  print("Exercise cache initialized successfully");
   // Run the app
   runApp(
     ProviderScope(

@@ -23,10 +23,16 @@ class WorkoutService {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    // Initialize the exercise cache
-    await initializeExerciseCache();
+    try {
+      // Initialize the exercise cache
+      await initializeExerciseCache();
 
-    _isInitialized = true;
+      _isInitialized = true;
+      print("Workout service initialization complete");
+    } catch (e) {
+      print("Error initializing workout service: $e");
+      // Don't set _isInitialized to true if there was an error
+    }
   }
 
   // Get all workouts
@@ -47,7 +53,7 @@ class WorkoutService {
         ...tumsWorkouts,
         ...fullBodyWorkouts,
         ...quickWorkouts,
-        ...cardioWorkouts
+        ...cardioWorkouts,
       ];
     } catch (e) {
       _analytics.logError(error: 'Error fetching workouts: $e');

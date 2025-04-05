@@ -68,7 +68,6 @@ class ExerciseMediaService {
         levelImageMap[WorkoutDifficulty.beginner]!;
   }
 
-  // Widget to display a workout image based on difficulty level with proper error handling
   static Widget workoutImage({
     required WorkoutDifficulty difficulty,
     double? height,
@@ -94,11 +93,11 @@ class ExerciseMediaService {
     );
   }
 
-  // Build a fallback widget with level indication
   static Widget _buildFallbackWidget(
     WorkoutDifficulty difficulty, {
     double? height,
     double? width,
+    BorderRadius? borderRadius,
   }) {
     final Color bgColor;
     final String levelText;
@@ -118,33 +117,36 @@ class ExerciseMediaService {
         break;
     }
 
-    return Container(
-      height: height,
-      width: width,
-      color: bgColor,
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.fitness_center, color: AppColors.darkGrey, size: 48),
-              const SizedBox(height: 8),
-              Text(
-                levelText,
-                style: const TextStyle(
-                  color: AppColors.darkGrey,
-                  fontWeight: FontWeight.bold,
+    return ClipRRect(
+      borderRadius: borderRadius ?? BorderRadius.circular(16),
+      child: Container(
+        height: height,
+        width: width,
+        color: bgColor,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.fitness_center, color: AppColors.darkGrey, size: 48),
+                const SizedBox(height: 8),
+                Text(
+                  levelText,
+                  style: const TextStyle(
+                    color: AppColors.darkGrey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // Display an exercise image with proper fallback
+  // Update exerciseImage to skip asset loading
   static Widget exerciseImage({
     required String exerciseName,
     double? height,
@@ -153,28 +155,12 @@ class ExerciseMediaService {
     BorderRadius? borderRadius,
     WorkoutDifficulty difficulty = WorkoutDifficulty.beginner,
   }) {
-    final String imagePath = getExerciseImagePath(exerciseName);
-    developer.log('Loading exercise image: $imagePath for $exerciseName');
-
-    return ClipRRect(
-      borderRadius: borderRadius ?? BorderRadius.circular(16),
-      child: Image.asset(
-        imagePath,
-        height: height,
-        width: width,
-        fit: fit,
-        errorBuilder: (context, error, stackTrace) {
-          developer.log('Error loading exercise image: $imagePath, $error');
-          // Fall back to difficulty-based workout image
-          return workoutImage(
-            difficulty: difficulty,
-            height: height,
-            width: width,
-            fit: fit,
-            borderRadius: borderRadius,
-          );
-        },
-      ),
+    // Skip trying to load image assets and use the fallback directly
+    return _buildFallbackWidget(
+      difficulty,
+      height: height,
+      width: width,
+      borderRadius: borderRadius,
     );
   }
 

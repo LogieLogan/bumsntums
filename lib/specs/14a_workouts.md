@@ -204,14 +204,12 @@ Community trend insights that highlight popular workouts
 - [ ] Default voice guidance off
 - [ ] Explore using gpt-4o-mini-tts api for voice guidance
 - [ ] Haptic feedback integration
-- [ ] On-the-fly exercise modification
-- [ ] Form tips display during exercises
 - [ ] Alternative exercise suggestions
-- [ ] Real-time difficulty adjustment
 - [ ] Exercise-specific feedback collection
 - [ ] Enhanced completion celebration
-- [ ] Background music integration
 - [ ] Screen-off audio guidance
+- [ ] Fix renderflex issues
+- [ ] 
 
 ### Workout Customization
 - [x] Basic workout editor functionality

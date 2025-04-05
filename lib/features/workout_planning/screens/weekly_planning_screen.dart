@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../widgets/day_schedule_card.dart';
 import '../widgets/workout_day_header.dart';
-import '../widgets/calendar_view.dart';
 import '../models/scheduled_workout.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
@@ -35,7 +34,7 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 1, vsync: this);
     _tabController.addListener(_handleTabChange);
 
     // Initialize the week to the current week (starting on Monday)
@@ -58,7 +57,7 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
 
   void _handleTabChange() {
     setState(() {
-      _showCalendarView = _tabController.index == 1;
+      _showCalendarView = false;
     });
 
     _analyticsService.logEvent(
@@ -102,27 +101,12 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
 
     return Column(
       children: [
-        // App bar with actions
-        // AppBar(
-        //   title: const Text('Plan'),
-        //   actions: [
-        //     IconButton(
-        //       icon: const Icon(Icons.save_alt),
-        //       onPressed: _navigateToSavedPlans,
-        //       tooltip: 'Saved Plans',
-        //     ),
-        //   ],
-        // ),
-
         // TabBar
         Container(
           color: AppColors.pink,
           child: TabBar(
             controller: _tabController,
-            tabs: const [
-              Tab(icon: Icon(Icons.view_week), text: 'Weekly Plan'),
-              Tab(icon: Icon(Icons.calendar_today), text: 'Calendar'),
-            ],
+            tabs: const [Tab(icon: Icon(Icons.view_week), text: 'Weekly Plan')],
             indicatorColor: Colors.white,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white.withOpacity(0.7),
@@ -133,15 +117,7 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: [
-              _buildWeeklyView(planState),
-              CalendarView(
-                userId: widget.userId,
-                onDaySelected: (selectedDay) {
-                  // Handle day selection
-                },
-              ),
-            ],
+            children: [_buildWeeklyView(planState)],
           ),
         ),
       ],
@@ -179,79 +155,6 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
             ],
           ),
         ),
-
-        // AI Plan Card
-        // Padding(
-        //   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
-        //   child: Card(
-        //     elevation: 2,
-        //     shape: RoundedRectangleBorder(
-        //       borderRadius: BorderRadius.circular(12),
-        //     ),
-        //     child: InkWell(
-        //       onTap: () {
-        //         _analyticsService.logEvent(name: 'create_ai_plan_tapped');
-        //         Navigator.push(
-        //           context,
-        //           MaterialPageRoute(
-        //             builder:
-        //                 (context) =>
-        //                     AIPlanCreationScreen(userId: widget.userId),
-        //           ),
-        //         ).then((_) {
-        //           final _ = ref.refresh(
-        //             workoutPlanningNotifierProvider(widget.userId),
-        //           );
-        //         });
-        //       },
-        //       borderRadius: BorderRadius.circular(12),
-        //       child: Padding(
-        //         padding: const EdgeInsets.all(16.0),
-        //         child: Row(
-        //           children: [
-        //             Container(
-        //               padding: const EdgeInsets.all(10.0),
-        //               decoration: BoxDecoration(
-        //                 color: AppColors.popBlue.withOpacity(0.1),
-        //                 borderRadius: BorderRadius.circular(8),
-        //               ),
-        //               child: Icon(
-        //                 Icons.auto_awesome,
-        //                 color: AppColors.popBlue,
-        //                 size: 22,
-        //               ),
-        //             ),
-        //             const SizedBox(width: 16),
-        //             Expanded(
-        //               child: Column(
-        //                 crossAxisAlignment: CrossAxisAlignment.start,
-        //                 children: [
-        //                   Text(
-        //                     'AI Workout Plan',
-        //                     style: Theme.of(context).textTheme.titleMedium
-        //                         ?.copyWith(fontWeight: FontWeight.bold),
-        //                   ),
-        //                   Text(
-        //                     'Let AI create a personalized workout schedule for you',
-        //                     style: Theme.of(context).textTheme.bodySmall
-        //                         ?.copyWith(color: AppColors.mediumGrey),
-        //                   ),
-        //                 ],
-        //               ),
-        //             ),
-        //             Icon(
-        //               Icons.arrow_forward_ios,
-        //               size: 16,
-        //               color: AppColors.mediumGrey,
-        //             ),
-        //           ],
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        // ),
-
-        // const SizedBox(height: 12),
 
         // Main content
         Expanded(
@@ -300,7 +203,6 @@ class _WeeklyPlanningScreenState extends ConsumerState<WeeklyPlanningScreen>
               isToday: isToday,
               workoutCount: workouts.length,
             ),
-            // lib/features/workout_planning/screens/weekly_planning_screen.dart (continued)
             if (workouts.isEmpty)
               DayScheduleCard(
                 day: day,

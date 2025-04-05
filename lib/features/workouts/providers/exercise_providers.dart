@@ -21,7 +21,18 @@ final exerciseRepositoryProvider = Provider<ExerciseRepository>((ref) {
 // Service provider
 final exerciseServiceProvider = Provider<ExerciseService>((ref) {
   final repository = ref.watch(exerciseRepositoryProvider);
-  return ExerciseService(repository);
+  final service = ExerciseService(repository);
+
+  // Immediately start initialization in the background
+  Future.microtask(() async {
+    try {
+      await service.initialize();
+    } catch (e) {
+      print('Error initializing exercise service: $e');
+    }
+  });
+
+  return service;
 });
 
 // Various provider for accessing exercise data
@@ -54,50 +65,53 @@ class FilterParams {
     this.difficultyLevel,
     this.searchQuery,
   });
-  
+
   // For proper object comparison
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is FilterParams &&
-      other.targetArea == targetArea &&
-      other.equipment == equipment &&
-      other.difficultyLevel == difficultyLevel &&
-      other.searchQuery == searchQuery;
+        other.targetArea == targetArea &&
+        other.equipment == equipment &&
+        other.difficultyLevel == difficultyLevel &&
+        other.searchQuery == searchQuery;
   }
-  
+
   @override
   int get hashCode {
     return targetArea.hashCode ^
-      equipment.hashCode ^
-      difficultyLevel.hashCode ^
-      searchQuery.hashCode;
+        equipment.hashCode ^
+        difficultyLevel.hashCode ^
+        searchQuery.hashCode;
   }
 }
 
 // Provider for filtered exercises
 final filteredExercisesProvider =
     FutureProvider.family<List<Exercise>, FilterParams>((ref, params) async {
-  final service = ref.watch(exerciseServiceProvider);
-  
-  // Make sure the service is initialized
-  await service.initialize();
-  
-  if (params.searchQuery != null && params.searchQuery!.isNotEmpty) {
-    // If there's a search query, prioritize search results
-    return service.searchExercises(params.searchQuery!);
-  }
-  
-  // Otherwise use advanced filtering
-  return service.filterExercises(
-    targetArea: params.targetArea,
-    equipment: params.equipment,
-    difficultyLevel: params.difficultyLevel,
-  );
-});
+      final service = ref.watch(exerciseServiceProvider);
+
+      // Make sure the service is initialized
+      await service.initialize();
+
+      if (params.searchQuery != null && params.searchQuery!.isNotEmpty) {
+        // If there's a search query, prioritize search results
+        return service.searchExercises(params.searchQuery!);
+      }
+
+      // Otherwise use advanced filtering
+      return service.filterExercises(
+        targetArea: params.targetArea,
+        equipment: params.equipment,
+        difficultyLevel: params.difficultyLevel,
+      );
+    });
 
 // Provider for exercise details
-final exerciseDetailProvider = FutureProvider.family<Exercise, String>((ref, id) async {
+final exerciseDetailProvider = FutureProvider.family<Exercise, String>((
+  ref,
+  id,
+) async {
   final service = ref.watch(exerciseServiceProvider);
   final exercise = await service.getExerciseById(id);
   if (exercise == null) {
@@ -107,7 +121,8 @@ final exerciseDetailProvider = FutureProvider.family<Exercise, String>((ref, id)
 });
 
 // Provider for similar exercises
-final similarExercisesProvider = FutureProvider.family<List<Exercise>, Exercise>((ref, exercise) async {
-  final service = ref.watch(exerciseServiceProvider);
-  return service.getSimilarExercises(exercise);
-});
+final similarExercisesProvider =
+    FutureProvider.family<List<Exercise>, Exercise>((ref, exercise) async {
+      final service = ref.watch(exerciseServiceProvider);
+      return service.getSimilarExercises(exercise);
+    });

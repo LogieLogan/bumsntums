@@ -4,7 +4,6 @@ import 'package:video_player/video_player.dart';
 import '../models/exercise.dart';
 import '../models/workout.dart';
 import '../../../shared/services/exercise_media_service.dart';
-import '../../../shared/theme/color_palette.dart';
 
 class ExerciseDemoWidget extends StatefulWidget {
   final Exercise exercise;
@@ -168,7 +167,7 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Map exercise difficulty level to WorkoutDifficulty enum
+  
     final WorkoutDifficulty difficulty =
         widget.exercise.difficultyLevel <= 2
             ? WorkoutDifficulty.beginner
@@ -187,95 +186,100 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
         widget.exercise.imagePath != null &&
         widget.exercise.imagePath!.isNotEmpty;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double effectiveHeight = constraints.maxHeight;
-        final double effectiveWidth = constraints.maxWidth;
+    return Container(
+      height: widget.height,
+      width: widget.width,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final double effectiveHeight = constraints.maxHeight;
+          final double effectiveWidth = constraints.maxWidth;
 
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            // Local video player (highest priority)
-            if (hasVideo)
-              Center(
-                child: AspectRatio(
-                  aspectRatio: _videoController!.value.aspectRatio,
-                  child: VideoPlayer(_videoController!),
+          return Stack(
+            children: [
+              // Local video player (highest priority)
+              if (hasVideo)
+                Center(
+                  child: AspectRatio(
+                    aspectRatio: _videoController!.value.aspectRatio,
+                    child: VideoPlayer(_videoController!),
+                  ),
+                )
+              // Image fallback (second priority)
+              else if (hasImagePath)
+                Image.asset(
+                  widget.exercise.imagePath!,
+                  fit: BoxFit.contain,
+                  width: effectiveWidth,
+                  height: effectiveHeight,
+                )
+              // Generic fallback based on difficulty (lowest priority)
+              else
+                ExerciseMediaService.workoutImage(
+                  difficulty: difficulty,
+                  height: effectiveHeight,
+                  width: effectiveWidth,
+                  fit: BoxFit.contain,
                 ),
-              )
-            // Image fallback (second priority)
-            else if (hasImagePath)
-              Image.asset(
-                widget.exercise.imagePath!,
-                fit: BoxFit.contain,
-                width: effectiveWidth,
-                height: effectiveHeight,
-              )
-            // Generic fallback based on difficulty (lowest priority)
-            else
-              ExerciseMediaService.workoutImage(
-                difficulty: difficulty,
-                height: effectiveHeight,
-                width: effectiveWidth,
-                fit: BoxFit.contain,
-              ),
 
-            // Video controls overlay - only show when NOT in autoPlay mode and when controls are enabled
-            if (hasVideo && widget.showControls && !widget.autoPlay)
-              GestureDetector(
-                onTap: _togglePlay,
-                child: Container(
-                  color: Colors.transparent,
-                  child: Center(
-                    child: AnimatedOpacity(
-                      opacity: _isPlaying ? 0.0 : 0.7,
-                      duration: const Duration(milliseconds: 300),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          _isPlaying ? Icons.pause : Icons.play_arrow,
-                          color: Colors.white,
-                          size: 32,
+              // Video controls overlay - only show when NOT in autoPlay mode and when controls are enabled
+              if (hasVideo && widget.showControls && !widget.autoPlay)
+                GestureDetector(
+                  onTap: _togglePlay,
+                  child: Container(
+                    color: Colors.transparent,
+                    child: Center(
+                      child: AnimatedOpacity(
+                        opacity: _isPlaying ? 0.0 : 0.7,
+                        duration: const Duration(milliseconds: 300),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _isPlaying ? Icons.pause : Icons.play_arrow,
+                            color: Colors.white,
+                            size: 32,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-            // Exercise name overlay at bottom
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+              // Exercise name overlay at bottom
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.7),
+                        Colors.transparent,
+                      ],
+                    ),
                   ),
-                ),
-                child: Text(
-                  widget.exercise.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                  child: Text(
+                    widget.exercise.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     );
   }
-
 }

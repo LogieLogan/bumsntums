@@ -59,9 +59,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/exercise-detail/:id',
-        builder:
-            (context, state) =>
-                ExerciseDetailScreen(exerciseId: state.pathParameters['id']!),
+        builder: (context, state) {
+          final exerciseId = state.pathParameters['id']!;
+          // Log analytics event for exercise detail view
+          firebaseService.analytics.logEvent(
+            name: 'view_exercise_detail',
+            parameters: {'exercise_id': exerciseId},
+          );
+          return ExerciseDetailScreen(exerciseId: exerciseId);
+        },
       ),
       GoRoute(
         path: '/workout-planning',

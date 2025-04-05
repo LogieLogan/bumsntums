@@ -13,10 +13,9 @@ class WorkoutPlanningRepository {
   final WorkoutService _workoutService;
   final _uuid = const Uuid();
 
-  WorkoutPlanningRepository({WorkoutService? workoutService}) 
+  WorkoutPlanningRepository({WorkoutService? workoutService})
     : _workoutService = workoutService ?? WorkoutService(AnalyticsService());
 
-  // Get active workout plan for a user
   Future<WorkoutPlan?> getActiveWorkoutPlan(String userId) async {
     try {
       final planSnapshot =
@@ -48,12 +47,19 @@ class WorkoutPlanningRepository {
           final data = doc.data();
           final workoutId = data['workoutId'];
 
-          // Fetch the workout details
+          // Fetch only basic workout info (no exercises)
           Workout? workout;
           try {
-            workout = await _workoutService.getWorkoutById(workoutId);
+            // Get lightweight workout data from "workouts" collection
+            final workoutDoc =
+                await _firestore.collection('workouts').doc(workoutId).get();
+            if (workoutDoc.exists) {
+              final workoutData = workoutDoc.data()!;
+              // Create a lightweight workout object
+              workout = _createLightweightWorkout(workoutId, workoutData);
+            }
           } catch (e) {
-            print('Error fetching workout: $e');
+            print('Error fetching workout basic info: $e');
           }
 
           return ScheduledWorkout.fromMap({
@@ -102,9 +108,9 @@ class WorkoutPlanningRepository {
     String planId,
     String workoutId,
     String userId,
-    DateTime scheduledDate,
-    {TimeOfDay? preferredTime}
-  ) async {
+    DateTime scheduledDate, {
+    TimeOfDay? preferredTime,
+  }) async {
     final scheduledWorkoutId = _uuid.v4();
     final scheduledWorkoutData = {
       'workoutId': workoutId,
@@ -122,7 +128,7 @@ class WorkoutPlanningRepository {
         .collection('scheduled_workouts')
         .doc(scheduledWorkoutId)
         .set(scheduledWorkoutData);
-    
+
     // Get the workout details
     Workout? workout;
     try {
@@ -130,11 +136,11 @@ class WorkoutPlanningRepository {
     } catch (e) {
       print('Error fetching workout: $e');
     }
-    
-    return ScheduledWorkout.fromMap(
-      {...scheduledWorkoutData, 'id': scheduledWorkoutId},
-      workout: workout
-    );
+
+    return ScheduledWorkout.fromMap({
+      ...scheduledWorkoutData,
+      'id': scheduledWorkoutId,
+    }, workout: workout);
   }
 
   // Mark workout as completed
@@ -240,7 +246,6 @@ class WorkoutPlanningRepository {
     }
   }
 
-  // Get workouts scheduled for a specific date range
   Future<List<ScheduledWorkout>> getScheduledWorkouts(
     String userId,
     DateTime start,
@@ -283,12 +288,17 @@ class WorkoutPlanningRepository {
             final data = doc.data();
             final workoutId = data['workoutId'];
 
-            // Fetch the workout details
+            // Fetch only basic workout info
             Workout? workout;
             try {
-              workout = await _workoutService.getWorkoutById(workoutId);
+              final workoutDoc =
+                  await _firestore.collection('workouts').doc(workoutId).get();
+              if (workoutDoc.exists) {
+                final workoutData = workoutDoc.data()!;
+                workout = _createLightweightWorkout(workoutId, workoutData);
+              }
             } catch (e) {
-              print('Error fetching workout: $e');
+              print('Error fetching workout basic info: $e');
             }
 
             return ScheduledWorkout.fromMap({
@@ -306,5 +316,59 @@ class WorkoutPlanningRepository {
       print('Error fetching scheduled workouts: $e');
       return [];
     }
+  }
+}
+
+Workout _createLightweightWorkout(String workoutId, Map<String, dynamic> data) {
+  return Workout(
+    id: workoutId,
+    title: data['title'] ?? 'Unknown Workout',
+    description: data['description'] ?? '',
+    imageUrl: data['imageUrl'] ?? '',
+    category: _parseCategory(data['category']),
+    difficulty: _parseDifficulty(data['difficulty']),
+    durationMinutes: data['durationMinutes'] ?? 30,
+    estimatedCaloriesBurn: data['estimatedCaloriesBurn'] ?? 0,
+    createdAt:
+        data['createdAt'] is Timestamp
+            ? (data['createdAt'] as Timestamp).toDate()
+            : (data['createdAt'] is int
+                ? DateTime.fromMillisecondsSinceEpoch(data['createdAt'])
+                : DateTime.now()),
+    createdBy: data['createdBy'] ?? 'system',
+    exercises: [], // No exercises loaded
+    equipment: List<String>.from(data['equipment'] ?? []),
+    tags: List<String>.from(data['tags'] ?? []),
+  );
+}
+
+// Helper methods to parse category and difficulty
+WorkoutCategory _parseCategory(String? categoryStr) {
+  switch (categoryStr) {
+    case 'bums':
+      return WorkoutCategory.bums;
+    case 'tums':
+      return WorkoutCategory.tums;
+    case 'fullBody':
+      return WorkoutCategory.fullBody;
+    case 'cardio':
+      return WorkoutCategory.cardio;
+    case 'quickWorkout':
+      return WorkoutCategory.quickWorkout;
+    default:
+      return WorkoutCategory.fullBody;
+  }
+}
+
+WorkoutDifficulty _parseDifficulty(String? difficultyStr) {
+  switch (difficultyStr) {
+    case 'beginner':
+      return WorkoutDifficulty.beginner;
+    case 'intermediate':
+      return WorkoutDifficulty.intermediate;
+    case 'advanced':
+      return WorkoutDifficulty.advanced;
+    default:
+      return WorkoutDifficulty.beginner;
   }
 }
