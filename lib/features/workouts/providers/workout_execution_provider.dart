@@ -217,27 +217,74 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
   void startRestPeriod(int seconds) {
     if (state == null) return;
 
+    print(
+      "Starting rest period for ${seconds} seconds. Current exercise: ${state!.currentExercise.name}, index: ${state!.currentExerciseIndex}",
+    );
+
+    // Sanity check to ensure we don't accidentally skip exercises
+    if (state!.completedExercises.length >= state!.workout.exercises.length) {
+      print(
+        "WARNING: All exercises appear to be completed already. This may indicate a bug.",
+      );
+    }
+
     state = state!.copyWith(isInRestPeriod: true, restTimeRemaining: seconds);
+
+    print(
+      "Rest period started. isInRestPeriod=${state!.isInRestPeriod}, restTimeRemaining=${state!.restTimeRemaining}",
+    );
   }
 
-  // Add method to end rest period
   void endRestPeriod() {
     if (state == null) return;
 
+    print(
+      "Ending rest period. Current exercise: ${state!.currentExercise.name}, index: ${state!.currentExerciseIndex}",
+    );
+
+    // This flag will help us prevent recursive rest periods
+    final wasInRestPeriod = state!.isInRestPeriod;
+
+    // First set the rest period to false and reset rest time
     state = state!.copyWith(
       isInRestPeriod: false,
       restTimeRemaining: 0,
-      currentSet:
-          1, // Reset to first set when starting a new exercise after rest
+      currentSet: 1, // Reset to first set for the next exercise
     );
 
+    print("Rest period ended. Moving to next exercise if not last");
+
     // If not the last exercise, move to the next exercise
-    if (!state!.isLastExercise) {
-      nextExercise();
+    if (!state!.isLastExercise && wasInRestPeriod) {
+      final nextIndex = state!.currentExerciseIndex + 1;
+      print("Moving to next exercise index: $nextIndex");
+
+      // Update the current exercise index
+      state = state!.copyWith(currentExerciseIndex: nextIndex);
+
+      // Announce the new exercise
+      if (state!.voiceGuidanceEnabled) {
+        final exercise = state!.currentExercise;
+        if (exercise.durationSeconds != null) {
+          _voiceGuidance.announceTimedExercise(
+            exercise.name,
+            exercise.durationSeconds!,
+          );
+        } else {
+          _voiceGuidance.announceExerciseStart(
+            exercise.name,
+            exercise.sets,
+            exercise.reps,
+          );
+        }
+      }
+
+      print(
+        "Moved to next exercise: ${state!.currentExercise.name}, index: ${state!.currentExerciseIndex}",
+      );
     }
   }
 
-  // Update next exercise method to announce the exercise
   void nextExercise() {
     if (state == null || state!.isLastExercise) return;
 
@@ -269,61 +316,86 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
   void completeSet() {
     if (state == null) return;
 
-    final currentExercise = state!.currentExercise;
-    final currentExerciseIndex = state!.currentExerciseIndex;
-    final currentSet = state!.currentSet;
+    try {
+      final currentExercise = state!.currentExercise;
+      final currentExerciseIndex = state!.currentExerciseIndex;
+      final currentSet = state!.currentSet;
 
-    // Update the completed sets in the exercise log
-    final existingLog = state!.completedExercises[currentExerciseIndex];
-    final completedSets = (existingLog?.setsCompleted ?? 0) + 1;
+      print(
+        "CompleteSet called: Exercise: ${currentExercise.name}, Set: $currentSet/${currentExercise.sets}",
+      );
 
-    logExerciseCompletion(
-      currentExerciseIndex,
-      ExerciseLog(
-        exerciseName: currentExercise.name,
-        setsCompleted:
-            completedSets > currentExercise.sets
-                ? currentExercise.sets
-                : completedSets,
-        repsCompleted: currentExercise.reps,
-        difficultyRating: existingLog?.difficultyRating ?? 3,
-        notes: existingLog?.notes ?? '',
-      ),
-    );
+      // Edge case check - don't proceed if somehow already completed all sets
+      if (currentSet > currentExercise.sets) {
+        print(
+          "Warning: Attempted to complete set beyond maximum (${currentExercise.sets})",
+        );
+        return;
+      }
 
-    // Provide haptic and audio feedback
-    // (This will be handled in the UI layer)
+      // Update the completed sets in the exercise log
+      final existingLog = state!.completedExercises[currentExerciseIndex];
+      final completedSets = (existingLog?.setsCompleted ?? 0) + 1;
 
-    // If there are more sets to do
-    if (currentSet < currentExercise.sets) {
-      // Start rest between sets if rest time > 0
-      if (currentExercise.restBetweenSeconds > 0) {
-        startSetRestPeriod(currentExercise.restBetweenSeconds);
+      logExerciseCompletion(
+        currentExerciseIndex,
+        ExerciseLog(
+          exerciseName: currentExercise.name,
+          setsCompleted:
+              completedSets > currentExercise.sets
+                  ? currentExercise.sets
+                  : completedSets,
+          repsCompleted: currentExercise.reps,
+          difficultyRating: existingLog?.difficultyRating ?? 3,
+          notes: existingLog?.notes ?? '',
+        ),
+      );
+
+      // If there are more sets to do
+      if (currentSet < currentExercise.sets) {
+        // Start rest between sets if rest time > 0
+        if (currentExercise.restBetweenSeconds > 0) {
+          startSetRestPeriod(currentExercise.restBetweenSeconds);
+        } else {
+          // No rest between sets, just increment the set counter
+          state = state!.copyWith(currentSet: currentSet + 1);
+
+          // Announce next set if voice guidance is enabled
+          if (state!.voiceGuidanceEnabled) {
+            _voiceGuidance.speak(
+              "Set ${currentSet + 1} of ${currentExercise.sets}",
+            );
+          }
+        }
       } else {
-        // No rest between sets, just increment the set counter
-        state = state!.copyWith(currentSet: currentSet + 1);
+        // All sets completed for this exercise
+        print("All sets completed for ${currentExercise.name}");
 
-        // Announce next set if voice guidance is enabled
-        if (state!.voiceGuidanceEnabled) {
-          _voiceGuidance.speak(
-            "Set ${currentSet + 1} of ${currentExercise.sets}",
-          );
+        // If this is the last exercise, complete the workout
+        if (state!.isLastExercise) {
+          print("Last exercise completed - workout finished");
+          // The completion will be handled by the UI layer
+        } else {
+          // Add some CRITICAL checks to prevent multiple rest periods
+          if (state!.isInRestPeriod) {
+            print("WARNING: Already in rest period, not starting another one");
+            return;
+          }
+
+          // Start rest period before next exercise
+          print("Starting rest period before next exercise");
+          int restTime =
+              currentExercise.restBetweenSeconds > 0
+                  ? currentExercise.restBetweenSeconds
+                  : 30; // Default rest period if not specified
+
+          startRestPeriod(restTime);
         }
       }
-    } else {
-      // All sets completed for this exercise
-
-      // If this is the last exercise, complete the workout
-      if (state!.isLastExercise) {
-        // The completion will be handled by the UI layer
-      } else {
-        // Otherwise start rest period before next exercise
-        startRestPeriod(
-          currentExercise.restBetweenSeconds > 0
-              ? currentExercise.restBetweenSeconds
-              : 30, // Default rest period if not specified
-        );
-      }
+    } catch (e, stackTrace) {
+      print("Error in completeSet: $e");
+      print(stackTrace);
+      // Prevent crashing and ensure we can continue with the workout
     }
   }
 

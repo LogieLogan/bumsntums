@@ -97,19 +97,32 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     final state = ref.read(workoutExecutionProvider);
     if (state == null) return;
 
+    // Cancel any existing timer first
+    _repCountdownTimer?.cancel();
+
     // Only start countdown for rep-based exercises (not timed)
     if (state.currentExercise.durationSeconds == null &&
         !state.isInRestPeriod &&
         !state.isInSetRestPeriod) {
-      _repCountdownTimer?.cancel();
+      print(
+        "Starting rep countdown for ${state.currentExercise.name}, Set ${state.currentSet}/${state.currentExercise.sets}",
+      );
 
       setState(() {
         _repCountdownSeconds = _defaultRepCountdown;
       });
 
       _repCountdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!mounted) {
+          timer.cancel();
+          return;
+        }
+
         final currentState = ref.read(workoutExecutionProvider);
-        if (currentState == null) return;
+        if (currentState == null) {
+          timer.cancel();
+          return;
+        }
 
         if (!currentState.isPaused && _repCountdownSeconds > 0) {
           setState(() {
@@ -117,12 +130,19 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
           });
         }
 
-        // Auto-complete when countdown reaches 0
-        if (_repCountdownSeconds <= 0) {
+        // Auto-complete when countdown reaches 0, but only if we're not in rest already
+        if (_repCountdownSeconds <= 0 &&
+            !currentState.isInRestPeriod &&
+            !currentState.isInSetRestPeriod) {
+          print("Rep countdown reached 0, completing set");
           _completeSet();
           timer.cancel();
         }
       });
+    } else {
+      print(
+        "Not starting rep countdown: timed=${state.currentExercise.durationSeconds != null}, inRest=${state.isInRestPeriod}, inSetRest=${state.isInSetRestPeriod}",
+      );
     }
   }
 
@@ -144,18 +164,18 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        body: Stack(
-          children: [
-            // Main content
-            Container(
-              width: double.infinity,
-              height: double.infinity,
-              color: Colors.white,
-              child: SafeArea(
+        body: SafeArea(
+          bottom: true, // Ensure bottom is properly handled
+          child: Stack(
+            children: [
+              // Main content
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.white,
                 child: Column(
                   children: [
                     // Top navigation bar
-                    // lib/features/workouts/screens/workout_execution_screen.dart (continued)
                     WorkoutTopBar(
                       workout: workout,
                       state: executionState,
@@ -203,29 +223,32 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
                               ),
                     ),
 
-                    // Bottom controls
-                    WorkoutBottomControls(
-                      state: executionState,
-                      onPause: _pauseWorkout,
-                      onResume: _resumeWorkout,
-                      onNext: _nextExercise,
-                      onCompleteSet: _completeSet,
+                    // Bottom controls - ensure these have fixed height
+                    SizedBox(
+                      height: 96, // Provide a fixed height to prevent overflow
+                      child: WorkoutBottomControls(
+                        state: executionState,
+                        onPause: _pauseWorkout,
+                        onResume: _resumeWorkout,
+                        onNext: _nextExercise,
+                        onCompleteSet: _completeSet,
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
 
-            // Completion animation overlay
-            if (_showCompletionAnimation)
-              ExerciseCompletionAnimation(
-                onAnimationComplete: () {
-                  setState(() {
-                    _showCompletionAnimation = false;
-                  });
-                },
-              ),
-          ],
+              // Completion animation overlay
+              if (_showCompletionAnimation)
+                ExerciseCompletionAnimation(
+                  onAnimationComplete: () {
+                    setState(() {
+                      _showCompletionAnimation = false;
+                    });
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -322,6 +345,12 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
 
     final currentExercise = state.currentExercise;
     final currentSet = state.currentSet;
+    final totalSets = currentExercise.sets;
+
+    // Additional debug logging
+    print(
+      "UI _completeSet: Exercise: ${currentExercise.name}, Current Set: $currentSet/$totalSets",
+    );
 
     // Track set completion
     _analytics.logEvent(
@@ -331,24 +360,51 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
         'exercise_name': currentExercise.name,
         'exercise_index': state.currentExerciseIndex,
         'set_number': currentSet,
-        'total_sets': currentExercise.sets,
+        'total_sets': totalSets,
+        'is_last_set':
+            (currentSet >= totalSets)
+                ? "true"
+                : "false", // Convert boolean to string
+        'has_next_exercise':
+            !state.isLastExercise
+                ? "true"
+                : "false", // Convert boolean to string
+        'exercise_type':
+            currentExercise.durationSeconds != null ? 'timed' : 'reps',
       },
     );
 
-    ref.read(workoutExecutionProvider.notifier).completeSet();
+    try {
+      ref.read(workoutExecutionProvider.notifier).completeSet();
 
-    if (currentSet >= currentExercise.sets) {
-      setState(() {
-        _showCompletionAnimation = true;
-      });
+      // Re-check state after completeSet call
+      final updatedState = ref.read(workoutExecutionProvider);
+      if (updatedState != null) {
+        print(
+          "After completeSet - Current set: ${updatedState.currentSet}, In rest: ${updatedState.isInRestPeriod}",
+        );
+      }
 
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() {
-            _showCompletionAnimation = false;
-          });
-        }
-      });
+      if (currentSet >= totalSets) {
+        setState(() {
+          _showCompletionAnimation = true;
+        });
+
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            setState(() {
+              _showCompletionAnimation = false;
+            });
+          }
+        });
+      }
+    } catch (e, stackTrace) {
+      print("Error in _completeSet: $e");
+      // Log error to analytics and crash reporting
+      _analytics.logError(error: 'Error during set completion: $e');
+      ref
+          .read(crashReportingProvider)
+          .recordError(e, stackTrace, reason: 'Error during set completion');
     }
   }
 

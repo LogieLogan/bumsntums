@@ -39,34 +39,42 @@ class ExerciseContentWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Fixed-height elements at the top
           _buildExerciseHeader(context),
           const SizedBox(height: 12),
-          _buildExerciseDemo(context),
-          _buildFormTip(context),
 
-          // Timer or rep counter with fixed height
-          isTimedExercise
-              ? ExerciseTimer(
-                durationSeconds: exercise.durationSeconds!,
-                isPaused: isPaused,
-                onComplete: onExerciseComplete,
-              )
-              : RepBasedExerciseContent(
-                reps: exercise.reps,
-                repCountdownSeconds: repCountdownSeconds,
-              ),
-
-          // Add Expanded widget to push content to top and prevent overflow
+          // Put the main content in an Expanded to ensure it doesn't overflow
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 12),
-                _buildSetProgressIndicators(),
-              ],
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildExerciseDemo(context),
+                  _buildFormTip(context),
+
+                  // Timer or rep counter
+                  isTimedExercise
+                      ? ExerciseTimer(
+                        durationSeconds: exercise.durationSeconds!,
+                        isPaused: isPaused,
+                        onComplete: onExerciseComplete,
+                      )
+                      : RepBasedExerciseContent(
+                        reps: exercise.reps,
+                        repCountdownSeconds: repCountdownSeconds,
+                      ),
+
+                  // Set progress indicators
+                  Center(child: _buildSetProgressIndicators()),
+
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
 
+          // Bottom button always at the bottom with safe spacing
           if (showCompleteButton) _buildCompleteSetButton(),
         ],
       ),

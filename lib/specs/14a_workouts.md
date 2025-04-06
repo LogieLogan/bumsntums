@@ -172,6 +172,7 @@ Community trend insights that highlight popular workouts
 - [ ] User ratings for exercises
 - [ ] Exercise favorites system
 - [x] Exercise history tracking by user
+- [ ] simliar exercses dont load properly and cant leave exercise screen using the back button
 
 ### Workout Library
 - [x] Basic workout model with exercises, difficulty, and category

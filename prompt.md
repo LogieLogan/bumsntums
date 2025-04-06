@@ -2,9 +2,8 @@ Using the Project Knowledge AND the SPECS provided as your core instructions ple
 
 MAIN FOCUS AREA:
 Workout execution
-renderlfex issues on some workouts near the bottom where the progress indicators are. 
-One workout has a bug where it only does the first xercise and then every subsequesnt on completes as it starts (i.e. it doesnt run through the exercise it just says well done complete and then does the next exercise where it does the sam thing)
-this only happens on one workout so far but i cant test all of them as there are many to test. Either we need to figure out what is happening to that one exercise and prevent it from happening again. Mayeb we can add some more error handling, checks in the flow to make sure we stay on rack if edge cases rise up. 
+Some exercises in workouts are completed before the exercise sets can be completed in the workout and the next exercise is started. This only happens in sepcific exercises (noticed i single leg deadlift and dubbell jumping squat so far)
+I want to know why these exercises are buggy, I want to then check for other exercises that could casue similart issues, and then fix them all
 
 project structure: 
 

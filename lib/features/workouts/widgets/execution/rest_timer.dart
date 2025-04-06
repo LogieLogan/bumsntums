@@ -87,8 +87,15 @@ class _RestTimerState extends State<RestTimer>
           if (_secondsRemaining > 0) {
             _secondsRemaining--;
           } else {
+            print("RestTimer: Rest period complete. Calling onComplete...");
             _timer.cancel();
-            widget.onComplete();
+            // Add a small delay before calling onComplete to ensure state transitions properly
+            Future.delayed(Duration(milliseconds: 50), () {
+              if (mounted) {
+                widget.onComplete();
+                print("RestTimer: onComplete callback executed");
+              }
+            });
           }
         });
       }
@@ -143,7 +150,7 @@ class _RestTimerState extends State<RestTimer>
                   shape: BoxShape.circle,
                 ),
               ),
-              
+
               SizedBox(
                 width: 220,
                 height: 220,
@@ -161,7 +168,7 @@ class _RestTimerState extends State<RestTimer>
                   },
                 ),
               ),
-              
+
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -175,10 +182,7 @@ class _RestTimerState extends State<RestTimer>
                   ),
                   Text(
                     'seconds',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: AppColors.mediumGrey,
-                    ),
+                    style: TextStyle(fontSize: 16, color: AppColors.mediumGrey),
                   ),
                 ],
               ),
@@ -199,11 +203,7 @@ class _RestTimerState extends State<RestTimer>
                     color: AppColors.popBlue.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.remove,
-                    color: AppColors.popBlue,
-                    size: 24,
-                  ),
+                  child: Icon(Icons.remove, color: AppColors.popBlue, size: 24),
                 ),
               ),
               const SizedBox(width: 32),
@@ -215,11 +215,7 @@ class _RestTimerState extends State<RestTimer>
                     color: AppColors.popBlue,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 24),
                 ),
               ),
             ],
