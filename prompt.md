@@ -1,9 +1,8 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-Workout execution
-Some exercises in workouts are completed before the exercise sets can be completed in the workout and the next exercise is started. This only happens in sepcific exercises (noticed i single leg deadlift and dubbell jumping squat so far)
-I want to know why these exercises are buggy, I want to then check for other exercises that could casue similart issues, and then fix them all
+Workout execution doesnt complete.
+ever since splitting the logic into seperate widgets the executions dont complete properly
 
 project structure: 
 

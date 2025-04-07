@@ -22,8 +22,6 @@ class RestPeriodWidget extends ConsumerStatefulWidget {
 }
 
 class _RestPeriodWidgetState extends ConsumerState<RestPeriodWidget> {
-  // State for sheet visibility
-  bool _showSheet = true;
 
   @override
   Widget build(BuildContext context) {

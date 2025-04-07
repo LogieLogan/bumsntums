@@ -1,4 +1,6 @@
 // lib/features/workouts/screens/workout_completion_screen.dart
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:confetti/confetti.dart';
@@ -35,6 +37,8 @@ class _WorkoutCompletionScreenState
   bool _feltEasy = false;
   bool _feltTooHard = false;
   final TextEditingController _feedbackController = TextEditingController();
+  bool _isAnimationScheduled = false;
+  Timer? _animationTimer;
 
   @override
   void initState() {
@@ -56,14 +60,23 @@ class _WorkoutCompletionScreenState
       duration: const Duration(seconds: 3),
     );
 
-    // Play celebration animation
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _confettiController.play();
+    // Play celebration animation with safety check
+    _isAnimationScheduled = true;
+    _animationTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted && _isAnimationScheduled) {
+        try {
+          _confettiController.play();
+        } catch (e) {
+          print("Error playing confetti animation: $e");
+        }
+      }
     });
   }
 
   @override
   void dispose() {
+    _isAnimationScheduled = false;
+    _animationTimer?.cancel();
     _confettiController.dispose();
     _feedbackController.dispose();
     super.dispose();

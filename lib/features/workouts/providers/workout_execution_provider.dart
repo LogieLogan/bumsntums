@@ -24,6 +24,7 @@ class WorkoutExecutionState {
   final int currentSet;
   final bool isInSetRestPeriod;
   final int setRestTimeRemaining;
+  final bool isWorkoutComplete;
 
   WorkoutExecutionState({
     required this.workout,
@@ -40,6 +41,7 @@ class WorkoutExecutionState {
     this.currentSet = 1,
     this.isInSetRestPeriod = false,
     this.setRestTimeRemaining = 0,
+    this.isWorkoutComplete = false,
   });
 
   bool get isFirstExercise => currentExerciseIndex == 0;
@@ -74,6 +76,7 @@ class WorkoutExecutionState {
     int? currentSet,
     bool? isInSetRestPeriod,
     int? setRestTimeRemaining,
+    bool? isWorkoutComplete,
   }) {
     return WorkoutExecutionState(
       workout: workout ?? this.workout,
@@ -90,6 +93,7 @@ class WorkoutExecutionState {
       currentSet: currentSet ?? this.currentSet,
       isInSetRestPeriod: isInSetRestPeriod ?? this.isInSetRestPeriod,
       setRestTimeRemaining: setRestTimeRemaining ?? this.setRestTimeRemaining,
+      isWorkoutComplete: isWorkoutComplete ?? this.isWorkoutComplete,
     );
   }
 }
@@ -153,14 +157,12 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
     state = state!.copyWith(elapsedTimeSeconds: seconds);
   }
 
-  // Pause workout
   void pauseWorkout() {
     if (state == null) return;
 
     state = state!.copyWith(isPaused: true);
   }
 
-  // Resume workout
   void resumeWorkout() {
     if (state == null) return;
 
@@ -201,7 +203,6 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
     state = state!.copyWith(setRestTimeRemaining: newRestTime);
   }
 
-  // Log exercise completion
   void logExerciseCompletion(int exerciseIndex, ExerciseLog log) {
     if (state == null) return;
 
@@ -213,7 +214,6 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
     state = state!.copyWith(completedExercises: updatedCompleted);
   }
 
-  // Add method to start rest period
   void startRestPeriod(int seconds) {
     if (state == null) return;
 
@@ -371,10 +371,12 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
         // All sets completed for this exercise
         print("All sets completed for ${currentExercise.name}");
 
-        // If this is the last exercise, complete the workout
+        // Check if this is the last exercise and mark workout as complete if it is
         if (state!.isLastExercise) {
           print("Last exercise completed - workout finished");
-          // The completion will be handled by the UI layer
+
+          // Don't try to do multiple things at once - ONLY mark as complete here
+          markWorkoutAsCompleted();
         } else {
           // Add some CRITICAL checks to prevent multiple rest periods
           if (state!.isInRestPeriod) {
@@ -395,11 +397,9 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
     } catch (e, stackTrace) {
       print("Error in completeSet: $e");
       print(stackTrace);
-      // Prevent crashing and ensure we can continue with the workout
     }
   }
 
-  // Start rest period between sets
   void startSetRestPeriod(int seconds) {
     if (state == null) return;
 
@@ -418,7 +418,6 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
     }
   }
 
-  // End rest period between sets
   void endSetRestPeriod() {
     if (state == null) return;
 
@@ -467,7 +466,6 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
     );
   }
 
-  // Add method to toggle voice guidance
   void toggleVoiceGuidance(bool enabled) {
     if (state == null) return;
 
@@ -477,6 +475,17 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
 
   void cancelWorkout() {
     state = null;
+  }
+
+  Future<void> markWorkoutAsCompleted() async {
+    if (state == null) return;
+
+    print("Explicitly marking workout as complete");
+
+    // Set the flag
+    state = state!.copyWith(isWorkoutComplete: true);
+
+    print("Workout marked as complete: ${state!.isWorkoutComplete}");
   }
 
   Future<void> completeWorkout({

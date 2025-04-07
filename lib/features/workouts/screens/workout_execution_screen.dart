@@ -33,11 +33,13 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
   Timer? _timer;
   int _secondsElapsed = 0;
   bool _showCompletionAnimation = false;
+  late ProviderSubscription<WorkoutExecutionState?> _stateSubscription;
+  bool _isNavigatingToCompletion = false;
 
   // Countdown timer for reps-based exercises
   Timer? _repCountdownTimer;
   int _repCountdownSeconds = 0;
-  final int _defaultRepCountdown = 45; // Default 45 seconds per set
+  final int _defaultRepCountdown = 45;
 
   @override
   void initState() {
@@ -50,6 +52,19 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
       screenClass: 'WorkoutExecutionScreen',
     );
 
+    // Setup a listener for state changes
+    _stateSubscription = ref.listenManual(workoutExecutionProvider, (
+      previous,
+      next,
+    ) {
+      if (next != null &&
+          next.isWorkoutComplete &&
+          !_isNavigatingToCompletion) {
+        print("State listener detected workout completion");
+        _navigateToCompletionScreen(next);
+      }
+    });
+
     // Prevent screen from sleeping during workout
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
@@ -58,7 +73,24 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
   }
 
   @override
+  void didUpdateWidget(WorkoutExecutionScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Check for workout completion state
+    final state = ref.read(workoutExecutionProvider);
+    if (state?.isWorkoutComplete == true && !_isNavigatingToCompletion) {
+      // Use Future.microtask to avoid navigation during build
+      Future.microtask(() {
+        if (mounted) {
+          _navigateToCompletionScreen(state!);
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
+    _stateSubscription.close();
     _timer?.cancel();
     _repCountdownTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
@@ -146,17 +178,90 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
     }
   }
 
+  void _navigateToCompletionScreen(WorkoutExecutionState state) async {
+    if (_isNavigatingToCompletion) {
+      print("Already navigating to completion screen, ignoring duplicate call");
+      return;
+    }
+
+    _isNavigatingToCompletion = true;
+    print("Initiating navigation to completion screen");
+
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        print("Error: No user ID available");
+        _isNavigatingToCompletion = false;
+        return;
+      }
+
+      // Create feedback object
+      final defaultFeedback = UserFeedback(rating: 4);
+
+      // Log workout completion
+      _analytics.logWorkoutCompleted(
+        workoutId: state.workout.id,
+        workoutName: state.workout.title,
+        durationSeconds: _secondsElapsed,
+      );
+
+      // Save the workout before clearing state
+      final completedWorkout = state.workout;
+      final totalTimeSeconds = _secondsElapsed;
+
+      // Complete the workout in the provider
+      await ref
+          .read(workoutExecutionProvider.notifier)
+          .completeWorkout(userId: userId, feedback: defaultFeedback);
+
+      if (mounted) {
+        print(
+          "Successfully completed workout, navigating to completion screen",
+        );
+
+        // Use a simpler navigation approach
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder:
+                (context) => WorkoutCompletionScreen(
+                  workout: completedWorkout,
+                  elapsedTimeSeconds: totalTimeSeconds,
+                ),
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      print("Error during completion navigation: $e");
+      print(stackTrace);
+
+      _analytics.logError(error: 'Workout completion navigation error: $e');
+      ref
+          .read(crashReportingProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: 'Workout completion navigation error',
+          );
+
+      _isNavigatingToCompletion = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final executionState = ref.watch(workoutExecutionProvider);
 
     if (executionState == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pop();
+      // Use Future.microtask to avoid navigation during build
+      Future.microtask(() {
+        if (mounted && Navigator.canPop(context)) {
+          Navigator.of(context).pop();
+        }
       });
       return const SizedBox.shrink();
     }
 
+    // The rest of your build method stays the same
     final currentExercise = executionState.currentExercise;
     final workout = executionState.workout;
     final isPaused = executionState.isPaused;
@@ -165,7 +270,7 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
       onWillPop: _onWillPop,
       child: Scaffold(
         body: SafeArea(
-          bottom: true, // Ensure bottom is properly handled
+          bottom: true,
           child: Stack(
             children: [
               // Main content
@@ -232,6 +337,15 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
                         onResume: _resumeWorkout,
                         onNext: _nextExercise,
                         onCompleteSet: _completeSet,
+                        onCompleteWorkout:
+                            _isLastExerciseAndSetCompleted(executionState)
+                                ? () {
+                                  print("Manual workout completion requested");
+                                  ref
+                                      .read(workoutExecutionProvider.notifier)
+                                      .markWorkoutAsCompleted();
+                                }
+                                : null,
                       ),
                     ),
                   ],
@@ -252,6 +366,17 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
         ),
       ),
     );
+  }
+
+  bool _isLastExerciseAndSetCompleted(WorkoutExecutionState state) {
+    if (!state.isLastExercise) return false;
+
+    final currentExercise = state.currentExercise;
+    final exerciseLog = state.completedExercises[state.currentExerciseIndex];
+
+    // Show completion button when all sets of the last exercise are done
+    return exerciseLog != null &&
+        exerciseLog.setsCompleted >= currentExercise.sets;
   }
 
   // Helper methods
@@ -419,7 +544,9 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
           _showCompletionAnimation = value;
         });
       },
-      completeWorkout: _completeWorkout,
+      completeWorkout: () {
+        ref.read(workoutExecutionProvider.notifier).markWorkoutAsCompleted();
+      },
     );
   }
 
@@ -442,65 +569,6 @@ class _WorkoutExecutionScreenState extends ConsumerState<WorkoutExecutionScreen>
               difficultyRating: 3,
             ),
           );
-    }
-  }
-
-  Future<void> _completeWorkout() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You must be logged in to save workout progress'),
-        ),
-      );
-      return;
-    }
-
-    try {
-      await ref
-          .read(workoutExecutionProvider.notifier)
-          .completeWorkout(userId: userId, feedback: UserFeedback(rating: 4));
-
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder:
-                (context) => WorkoutCompletionScreen(
-                  workout: ref.read(workoutExecutionProvider)!.workout,
-                  elapsedTimeSeconds: _secondsElapsed,
-                ),
-          ),
-        );
-      }
-
-      _analytics.logWorkoutCompleted(
-        workoutId: ref.read(workoutExecutionProvider)!.workout.id,
-        workoutName: ref.read(workoutExecutionProvider)!.workout.title,
-        durationSeconds: _secondsElapsed,
-      );
-    } catch (e, stackTrace) {
-      print('Error completing workout: $e');
-
-      // Log error to analytics
-      _analytics.logError(error: 'Failed to complete workout: ${e.toString()}');
-
-      // Log error to crash reporting
-      ref
-          .read(crashReportingProvider)
-          .recordError(
-            e,
-            stackTrace,
-            reason: 'Error during workout completion',
-          );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to save workout progress'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
     }
   }
 }

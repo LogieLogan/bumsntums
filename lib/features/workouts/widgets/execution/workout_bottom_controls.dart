@@ -9,6 +9,7 @@ class WorkoutBottomControls extends StatelessWidget {
   final VoidCallback onResume;
   final VoidCallback onNext;
   final VoidCallback onCompleteSet;
+  final VoidCallback? onCompleteWorkout;
 
   const WorkoutBottomControls({
     super.key,
@@ -17,6 +18,7 @@ class WorkoutBottomControls extends StatelessWidget {
     required this.onResume,
     required this.onNext,
     required this.onCompleteSet,
+    this.onCompleteWorkout,
   });
 
   @override
@@ -51,10 +53,34 @@ class WorkoutBottomControls extends StatelessWidget {
             ),
           ),
 
-          // Complete Set button
-          if (!state.isInRestPeriod)
+          // Complete Set button or Complete Workout button
+          if (onCompleteWorkout != null && state.isLastExercise)
             GestureDetector(
-              onTap: onCompleteSet, // Use the new parameter here
+              onTap: onCompleteWorkout,
+              child: Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.popGreen,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.popGreen.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.done_all,
+                  color: Colors.white,
+                  size: 32,
+                ),
+              ),
+            )
+          else if (!state.isInRestPeriod)
+            GestureDetector(
+              onTap: onCompleteSet,
               child: Container(
                 width: 64,
                 height: 64,

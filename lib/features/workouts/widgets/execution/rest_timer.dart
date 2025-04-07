@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import '../../../../shared/theme/color_palette.dart';
-import '../../../../shared/theme/text_styles.dart';
 
 class RestTimer extends StatefulWidget {
   final int durationSeconds;

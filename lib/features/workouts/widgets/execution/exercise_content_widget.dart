@@ -229,7 +229,7 @@ class ExerciseContentWidget extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: 50,
-      margin: const EdgeInsets.only(bottom: 8), // Add bottom margin
+      margin: const EdgeInsets.symmetric(vertical: 8), // Add vertical margin
       child: ElevatedButton(
         onPressed: completeSet,
         style: ElevatedButton.styleFrom(
