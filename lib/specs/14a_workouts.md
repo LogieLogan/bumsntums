@@ -193,15 +193,14 @@ Community trend insights that highlight popular workouts
 - [ ] Weekly featured workouts
 
 ### Workout Execution
-- [x] Basic workout execution flow
-- [x] Exercise timers for timed exercises
-- [x] Rest period timers between exercises
-- [x] Set tracking during workout
-- [x] Basic voice guidance
-- [x] Pause and resume functionality
-- [x] Workout progress indicator
-- [x] Pre-workout setup screen
-- [x] Exercise video playback during workout
+- [ ] Basic workout execution flow
+- [ ] Exercise timers for timed exercises
+- [ ] Rest period timers between exercises
+- [ ] Set tracking during workout
+- [ ] Basic voice guidance
+- [ ] Pause and resume functionality
+- [ ] Workout progress indicator
+- [ ] Pre-workout setup screen
 - [ ] Default voice guidance off
 - [ ] Explore using gpt-4o-mini-tts api for voice guidance
 - [ ] Haptic feedback integration
