@@ -62,7 +62,7 @@
 //     showModalBottomSheet(
 //       context: context,
 //       isScrollControlled: true,
-//       backgroundColor: Colors.transparent,
+//       backgroundColor: Colors.white,
 //       builder:
 //           (context) => PlanDetailBottomSheet(plan: plan, userId: widget.userId),
 //     );

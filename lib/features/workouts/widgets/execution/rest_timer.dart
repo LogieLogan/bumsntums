@@ -159,7 +159,7 @@ class _RestTimerState extends State<RestTimer>
                     return CircularProgressIndicator(
                       value: 1 - _controller.value,
                       strokeWidth: 15,
-                      backgroundColor: Colors.transparent,
+                      backgroundColor: Colors.white,
                       valueColor: AlwaysStoppedAnimation<Color>(
                         AppColors.popBlue,
                       ),
@@ -218,28 +218,6 @@ class _RestTimerState extends State<RestTimer>
                 ),
               ),
             ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Skip button
-          GestureDetector(
-            onTap: widget.onComplete,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-              decoration: BoxDecoration(
-                color: AppColors.popBlue,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: const Text(
-                'Skip Rest',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ),
           ),
         ],
       ),

@@ -1,8 +1,8 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-Workout execution doesnt complete.
-ever since splitting the logic into seperate widgets the executions dont complete properly
+Workout execution file need completing
+I have a bunch of widgets and a pre workout scren plus other files that are related but not the actual workout execution screen. can we first review what we have and based on those files make a plan. With that plan in mind make any adjustments to the files and make any additional files before we make the execution screen. If you are unsure about the final end result aim then please ask me questions to resolve any mysteries. 
 
 project structure: 
 
@@ -177,8 +177,7 @@ project structure:
 │       │   ├── workout_execution_screen.dart
 │       │   ├── workout_history_screen.dart
 │       │   ├── workout_search_screen.dart
-│       │   ├── workout_templates_screen.dart
-│       │   └── workout_version_history_screen.dart
+│       │   └── workout_templates_screen.dart
 │       ├── services
 │       │   ├── exercise_db_service.dart
 │       │   ├── exercise_service.dart

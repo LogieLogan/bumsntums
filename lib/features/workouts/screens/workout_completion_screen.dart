@@ -1,500 +1,399 @@
 // lib/features/workouts/screens/workout_completion_screen.dart
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:confetti/confetti.dart';
-import '../models/workout.dart';
-import '../models/workout_log.dart';
-import '../providers/workout_provider.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../../shared/components/buttons/primary_button.dart';
+import '../../../shared/components/buttons/secondary_button.dart';
 import '../../../shared/theme/color_palette.dart';
-import 'dart:math';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../../../shared/providers/feedback_provider.dart';
+import '../models/workout.dart';
+import '../models/workout_log.dart';
+import '../services/workout_service.dart';
+import '../providers/workout_stats_provider.dart';
 
 class WorkoutCompletionScreen extends ConsumerStatefulWidget {
   final Workout workout;
-  final int elapsedTimeSeconds;
+  final Duration elapsedTime;
+  final List<ExerciseLog> exercisesCompleted;
 
   const WorkoutCompletionScreen({
-    super.key,
+    Key? key,
     required this.workout,
-    required this.elapsedTimeSeconds,
-  });
+    required this.elapsedTime,
+    required this.exercisesCompleted,
+  }) : super(key: key);
 
   @override
-  ConsumerState<WorkoutCompletionScreen> createState() =>
-      _WorkoutCompletionScreenState();
+  ConsumerState<WorkoutCompletionScreen> createState() => _WorkoutCompletionScreenState();
 }
 
-class _WorkoutCompletionScreenState
-    extends ConsumerState<WorkoutCompletionScreen> {
-  final AnalyticsService _analytics = AnalyticsService();
-  late ConfettiController _confettiController;
-  int _rating = 4; // Default rating
+class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScreen> {
+  final _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+  final _analyticsService = AnalyticsService();
+  int _rating = 3;
   bool _feltEasy = false;
   bool _feltTooHard = false;
-  final TextEditingController _feedbackController = TextEditingController();
-  bool _isAnimationScheduled = false;
-  Timer? _animationTimer;
+  final _commentsController = TextEditingController();
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _analytics.logScreenView(
-      screenName: 'workout_completion',
-      screenClass: 'WorkoutCompletionScreen',
-    );
-
-    // Log workout completed
-    _analytics.logWorkoutCompleted(
-      workoutId: widget.workout.id,
-      workoutName: widget.workout.title,
-      durationSeconds: widget.elapsedTimeSeconds,
-    );
-
-    // Initialize confetti controller
-    _confettiController = ConfettiController(
-      duration: const Duration(seconds: 3),
-    );
-
-    // Play celebration animation with safety check
-    _isAnimationScheduled = true;
-    _animationTimer = Timer(const Duration(milliseconds: 500), () {
-      if (mounted && _isAnimationScheduled) {
-        try {
-          _confettiController.play();
-        } catch (e) {
-          print("Error playing confetti animation: $e");
-        }
-      }
-    });
+    // Start the confetti animation
+    _confettiController.play();
+    
+    // Log screen view
+    _analyticsService.logScreenView(screenName: 'workout_completion');
   }
-
+  
   @override
   void dispose() {
-    _isAnimationScheduled = false;
-    _animationTimer?.cancel();
     _confettiController.dispose();
-    _feedbackController.dispose();
+    _commentsController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final caloriesBurned = _calculateCaloriesBurned();
-
+    final minutes = widget.elapsedTime.inMinutes;
+    final seconds = widget.elapsedTime.inSeconds % 60;
+    final formattedTime = '$minutes:${seconds.toString().padLeft(2, '0')}';
+    
+    // Calculate estimated calories burned
+    final calorieMultiplier = _getCalorieMultiplier(widget.workout.difficulty);
+    final estimatedCalories = (widget.elapsedTime.inMinutes * calorieMultiplier).round();
+    
     return Scaffold(
       body: Stack(
         children: [
-          // Scrollable content
-          CustomScrollView(
-            slivers: [
-              // App bar with confetti
-              SliverAppBar(
-                expandedHeight: 200,
-                pinned: true,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    children: [
-                      // Background gradient
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [AppColors.salmon, AppColors.popCoral],
-                          ),
-                        ),
-                      ),
-
-                      // Confetti
-                      Align(
-                        alignment: Alignment.topCenter,
-                        child: ConfettiWidget(
-                          confettiController: _confettiController,
-                          blastDirection:
-                              -pi / 2, // Straight up (using dart:math pi)
-                          emissionFrequency: 0.05,
-                          numberOfParticles: 20,
-                          maxBlastForce: 20,
-                          minBlastForce: 5,
-                          gravity: 0.1,
-                        ),
-                      ),
-
-                      // Title text
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Workout Complete!',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Great job finishing ${widget.workout.title}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Workout summary
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Workout Summary',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Stats cards
-                      Row(
-                        children: [
-                          _buildStatCard(
-                            'Duration',
-                            _formatTime(widget.elapsedTimeSeconds),
-                            Icons.timer,
-                            AppColors.popBlue,
-                          ),
-                          _buildStatCard(
-                            'Calories',
-                            '$caloriesBurned',
-                            Icons.local_fire_department,
-                            AppColors.popCoral,
-                          ),
-                          _buildStatCard(
-                            'Exercises',
-                            '${widget.workout.exercises.length}',
-                            Icons.fitness_center,
-                            AppColors.popGreen,
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Rate your workout
-                      Text(
-                        'How was your workout?',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Star rating
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(5, (index) {
-                          return IconButton(
-                            icon: Icon(
-                              index < _rating ? Icons.star : Icons.star_border,
-                              color:
-                                  index < _rating
-                                      ? AppColors.popYellow
-                                      : Colors.grey,
-                              size: 36,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _rating = index + 1;
-                              });
-                            },
-                          );
-                        }),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Difficulty feedback
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildFeedbackChip('Too Easy', _feltEasy, () {
-                            setState(() {
-                              _feltEasy = !_feltEasy;
-                              if (_feltEasy) _feltTooHard = false;
-                            });
-                          }),
-                          const SizedBox(width: 16),
-                          _buildFeedbackChip('Too Hard', _feltTooHard, () {
-                            setState(() {
-                              _feltTooHard = !_feltTooHard;
-                              if (_feltTooHard) _feltEasy = false;
-                            });
-                          }),
-                        ],
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Comments
-                      Text(
-                        'Additional Comments (Optional)',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _feedbackController,
-                        maxLines: 3,
-                        decoration: InputDecoration(
-                          hintText: 'Tell us more about your experience...',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // What's next section
-                      Text(
-                        'What\'s Next?',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Suggested actions
-                      _buildActionCard(
-                        'Share Your Achievement',
-                        'Let your friends know about your workout progress',
-                        Icons.share,
-                        AppColors.popBlue,
-                        () {
-                          // TODO: Implement sharing functionality
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Sharing coming soon!'),
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      _buildActionCard(
-                        'Explore Similar Workouts',
-                        'Find more workouts like this one',
-                        Icons.fitness_center,
-                        AppColors.salmon,
-                        () {
-                          // TODO: Navigate to similar workouts
-                          Navigator.pop(context);
-                        },
-                      ),
-
-                      const SizedBox(height: 24),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          // Confetti overlay
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              particleDrag: 0.05,
+              emissionFrequency: 0.05,
+              numberOfParticles: 20,
+              gravity: 0.2,
+              colors: const [
+                AppColors.salmon,
+                AppColors.popCoral,
+                AppColors.popBlue,
+                AppColors.popGreen,
+                AppColors.popYellow,
+                AppColors.popTurquoise,
+              ],
+            ),
           ),
-
-          // Save feedback button
-          Positioned(
-            bottom: 16,
-            left: 16,
-            right: 16,
-            child: PrimaryButton(
-              text: 'Save & Continue',
-              onPressed: _saveWorkoutFeedback,
+          
+          // Main content
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 40),
+                    
+                    // Celebration heading
+                    const Text(
+                      'Workout Complete!',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkGrey,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    
+                    const SizedBox(height: 8),
+                    
+                    Text(
+                      widget.workout.title,
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: AppColors.salmon,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    
+                    const SizedBox(height: 40),
+                    
+                    // Stats cards
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildStatCard(
+                          'Time',
+                          formattedTime,
+                          Icons.timer,
+                          AppColors.popBlue,
+                        ),
+                        _buildStatCard(
+                          'Exercises',
+                          widget.exercisesCompleted.length.toString(),
+                          Icons.fitness_center,
+                          AppColors.popGreen,
+                        ),
+                        _buildStatCard(
+                          'Calories',
+                          estimatedCalories.toString(),
+                          Icons.local_fire_department,
+                          AppColors.popCoral,
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 40),
+                    
+                    // Feedback section
+                    const Text(
+                      'How was your workout?',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkGrey,
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Rating
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        return GestureDetector(
+                          onTap: () => setState(() => _rating = index + 1),
+                          child: Icon(
+                            index < _rating ? Icons.star : Icons.star_border,
+                            color: index < _rating ? AppColors.popYellow : AppColors.lightGrey,
+                            size: 36,
+                          ),
+                        );
+                      }),
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Difficulty feedback
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildFeedbackChip(
+                          'Too Easy',
+                          _feltEasy,
+                          AppColors.popGreen,
+                          () => setState(() {
+                            _feltEasy = !_feltEasy;
+                            if (_feltEasy) _feltTooHard = false;
+                          }),
+                        ),
+                        const SizedBox(width: 16),
+                        _buildFeedbackChip(
+                          'Too Hard',
+                          _feltTooHard,
+                          AppColors.popCoral,
+                          () => setState(() {
+                            _feltTooHard = !_feltTooHard;
+                            if (_feltTooHard) _feltEasy = false;
+                          }),
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Comments field
+                    TextField(
+                      controller: _commentsController,
+                      decoration: InputDecoration(
+                        hintText: 'Any comments about the workout?',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        filled: true,
+                        fillColor: AppColors.paleGrey,
+                      ),
+                      maxLines: 3,
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Save button
+                    _isSaving
+                        ? const CircularProgressIndicator(color: AppColors.salmon)
+                        : PrimaryButton(
+                            text: 'Save & Continue',
+                            onPressed: _saveWorkoutLog,
+                            width: double.infinity,
+                          ),
+                        
+                    const SizedBox(height: 16),
+                    
+                    // Skip button
+                    if (!_isSaving)
+                      SecondaryButton(
+                        text: 'Skip Feedback',
+                        onPressed: _navigateHome,
+                        width: double.infinity,
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-
-  Widget _buildStatCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Expanded(
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(height: 8),
-              Text(
-                value,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                title,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: Colors.grey),
-              ),
-            ],
+  
+  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-        ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 32),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: AppColors.darkGrey,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.mediumGrey,
+            ),
+          ),
+        ],
       ),
     );
   }
-
-  Widget _buildFeedbackChip(String label, bool isSelected, VoidCallback onTap) {
+  
+  Widget _buildFeedbackChip(
+    String label,
+    bool isSelected,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.salmon.withOpacity(0.2) : Colors.white,
+          color: isSelected ? color.withOpacity(0.2) : AppColors.paleGrey,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppColors.salmon : Colors.grey.shade300,
+            color: isSelected ? color : AppColors.lightGrey,
             width: 2,
           ),
         ),
-        child: Row(
-          children: [
-            Icon(
-              isSelected ? Icons.check_circle : Icons.circle_outlined,
-              color: isSelected ? AppColors.salmon : Colors.grey,
-              size: 18,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? AppColors.salmon : Colors.black,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionCard(
-    String title,
-    String description,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      description,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-            ],
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? color : AppColors.mediumGrey,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ),
     );
   }
-
-  void _saveWorkoutFeedback() async {
-    // Get the current user ID
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to save feedback')),
-      );
-      return;
+  
+  double _getCalorieMultiplier(WorkoutDifficulty difficulty) {
+    switch (difficulty) {
+      case WorkoutDifficulty.beginner:
+        return 4.0;
+      case WorkoutDifficulty.intermediate:
+        return 6.0;
+      case WorkoutDifficulty.advanced:
+        return 8.0;
     }
-
-    // Create user feedback for workout service
-    final feedback = UserFeedback(
-      rating: _rating,
-      feltEasy: _feltEasy,
-      feltTooHard: _feltTooHard,
-      comments:
-          _feedbackController.text.isNotEmpty ? _feedbackController.text : null,
-    );
-
-    // Complete the workout using the provider
-    ref
-        .read(workoutServiceProvider)
-        .updateWorkoutFeedback(userId, widget.workout.id, feedback);
-
-    // Also log the feedback through our feedback service for analytics
-    final feedbackService = ref.read(feedbackServiceProvider);
-    feedbackService.submitSatisfactionRating(
-      userId: userId,
-      rating: _rating,
-      comment: _feedbackController.text,
-      featureName: 'Workout - ${widget.workout.title}',
-    );
-
-    // Navigate back to the main screen
+  }
+  
+  Future<void> _saveWorkoutLog() async {
+    setState(() {
+      _isSaving = true;
+    });
+    
+    try {
+      // Create user feedback object
+      final userFeedback = UserFeedback(
+        rating: _rating,
+        feltEasy: _feltEasy,
+        feltTooHard: _feltTooHard,
+        comments: _commentsController.text.isNotEmpty ? _commentsController.text : null,
+      );
+      
+      // Create workout log
+      final workoutLog = WorkoutLog(
+        id: 'log_${DateTime.now().millisecondsSinceEpoch}',
+        userId: 'current_user_id', // Replace with actual user ID
+        workoutId: widget.workout.id,
+        startedAt: DateTime.now().subtract(widget.elapsedTime),
+        completedAt: DateTime.now(),
+        durationMinutes: widget.elapsedTime.inMinutes,
+        caloriesBurned: (widget.elapsedTime.inMinutes * _getCalorieMultiplier(widget.workout.difficulty)).round(),
+        exercisesCompleted: widget.exercisesCompleted,
+        userFeedback: userFeedback,
+        workoutCategory: widget.workout.category.name,
+        workoutName: widget.workout.title,
+        targetAreas: [widget.workout.category.name],
+      );
+      
+      // Log analytics event
+      _analyticsService.logEvent(
+        name: 'workout_feedback_submitted',
+        parameters: {
+          'workout_id': widget.workout.id,
+          'rating': _rating,
+          'felt_easy': _feltEasy,
+          'felt_too_hard': _feltTooHard,
+        },
+      );
+      
+      // Navigate home
+      _navigateHome();
+    } catch (e) {
+      // Handle error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving workout: $e')),
+      );
+      
+      setState(() {
+        _isSaving = false;
+      });
+    }
+  }
+  
+  void _navigateHome() {
+    // Pop to home screen
     Navigator.of(context).popUntil((route) => route.isFirst);
-  }
-
-  int _calculateCaloriesBurned() {
-    // A simple calculation based on workout estimated burn rate and actual time
-    final estimatedPerMinute =
-        widget.workout.estimatedCaloriesBurn / widget.workout.durationMinutes;
-    final actualMinutes = widget.elapsedTimeSeconds / 60;
-    return (estimatedPerMinute * actualMinutes).round();
-  }
-
-  String _formatTime(int seconds) {
-    final minutes = seconds ~/ 60;
-    final remainingSeconds = seconds % 60;
-    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
+    
+    // Log analytics event
+    _analyticsService.logEvent(
+      name: 'workout_completion_exit',
+      parameters: {
+        'workout_id': widget.workout.id,
+      },
+    );
   }
 }

@@ -1,539 +1,551 @@
 // lib/features/workouts/providers/workout_execution_provider.dart
-import 'package:bums_n_tums/features/workouts/models/exercise.dart';
+import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import '../../../shared/analytics/firebase_analytics_service.dart';
+import '../models/exercise.dart';
 import '../models/workout.dart';
 import '../models/workout_log.dart';
-import '../services/workout_service.dart';
-import 'workout_provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../services/voice_guidance_service.dart';
 
+// Provider for the execution state
+final workoutExecutionProvider =
+    StateNotifierProvider<WorkoutExecutionNotifier, WorkoutExecutionState>(
+  (ref) => WorkoutExecutionNotifier(
+    analyticsService: AnalyticsService(),
+  ),
+);
+
+// Enum to represent the current state of workout execution
+enum ExecutionStatus {
+  initial,
+  ready,
+  exerciseInProgress,
+  betweenSets,
+  restingBetweenExercises,
+  completed,
+  paused,
+}
+
+// State class that holds all workout execution data
 class WorkoutExecutionState {
+  final ExecutionStatus status;
   final Workout workout;
+  final int currentSectionIndex;
   final int currentExerciseIndex;
-  final bool isPaused;
+  final int currentSetIndex;
+  final Exercise? currentExercise;
   final DateTime startTime;
-  final int elapsedTimeSeconds;
-  final Map<int, ExerciseLog> completedExercises;
-  final bool isInRestPeriod;
-  final int restTimeRemaining;
+  final Duration elapsedTime;
   final bool voiceGuidanceEnabled;
   final bool showRestTimers;
   final bool showCountdowns;
-  final int currentSet;
-  final bool isInSetRestPeriod;
-  final int setRestTimeRemaining;
-  final bool isWorkoutComplete;
+  final List<ExerciseLog> completedExerciseLogs;
+  final bool isPaused;
+  final int? remainingRestSeconds;
+  final int? remainingExerciseSeconds;
 
-  WorkoutExecutionState({
+  const WorkoutExecutionState({
+    this.status = ExecutionStatus.initial,
     required this.workout,
+    this.currentSectionIndex = 0,
     this.currentExerciseIndex = 0,
-    this.isPaused = false,
+    this.currentSetIndex = 0,
+    this.currentExercise,
     required this.startTime,
-    this.elapsedTimeSeconds = 0,
-    this.completedExercises = const {},
-    this.isInRestPeriod = false,
-    this.restTimeRemaining = 0,
+    this.elapsedTime = Duration.zero,
     this.voiceGuidanceEnabled = true,
     this.showRestTimers = true,
     this.showCountdowns = true,
-    this.currentSet = 1,
-    this.isInSetRestPeriod = false,
-    this.setRestTimeRemaining = 0,
-    this.isWorkoutComplete = false,
+    this.completedExerciseLogs = const [],
+    this.isPaused = false,
+    this.remainingRestSeconds,
+    this.remainingExerciseSeconds,
   });
 
-  bool get isFirstExercise => currentExerciseIndex == 0;
+  // Calculate progress percentage through the workout
+  double get progressPercentage {
+    final totalExercises = workout.getAllExercises().length;
+    final totalSets = workout.getAllExercises().fold<int>(
+          0,
+          (sum, exercise) => sum + exercise.sets,
+        );
+    
+    int completedSets = 0;
+    
+    // Count completed sets from previous exercises
+    if (workout.sections.isNotEmpty) {
+      for (int s = 0; s < currentSectionIndex; s++) {
+        for (final exercise in workout.sections[s].exercises) {
+          completedSets += exercise.sets;
+        }
+      }
+      
+      // Count completed sets in current section
+      for (int e = 0; e < currentExerciseIndex; e++) {
+        completedSets += workout.sections[currentSectionIndex].exercises[e].sets;
+      }
+    } else {
+      // Legacy workout with no sections
+      for (int e = 0; e < currentExerciseIndex; e++) {
+        completedSets += workout.exercises[e].sets;
+      }
+    }
+    
+    // Add current exercise's completed sets
+    completedSets += currentSetIndex;
+    
+    return totalSets > 0 ? completedSets / totalSets : 0;
+  }
 
-  bool get isLastExercise =>
-      currentExerciseIndex == workout.exercises.length - 1;
+  // Get the next exercise (or null if we're at the end)
+  Exercise? get nextExercise {
+    if (workout.sections.isNotEmpty) {
+      // Workouts with sections
+      if (currentExerciseIndex < workout.sections[currentSectionIndex].exercises.length - 1) {
+        // Next exercise in the same section
+        return workout.sections[currentSectionIndex].exercises[currentExerciseIndex + 1];
+      } else if (currentSectionIndex < workout.sections.length - 1) {
+        // First exercise in the next section
+        return workout.sections[currentSectionIndex + 1].exercises[0];
+      }
+    } else {
+      // Legacy workouts without sections
+      if (currentExerciseIndex < workout.exercises.length - 1) {
+        return workout.exercises[currentExerciseIndex + 1];
+      }
+    }
+    return null;
+  }
 
-  Exercise get currentExercise => workout.exercises[currentExerciseIndex];
+  // Factory method to create the initial state
+  factory WorkoutExecutionState.initial(Workout workout) {
+    final initialExercise = workout.sections.isNotEmpty
+        ? workout.sections[0].exercises[0]
+        : workout.exercises[0];
+        
+    return WorkoutExecutionState(
+      status: ExecutionStatus.initial,
+      workout: workout,
+      currentExercise: initialExercise,
+      startTime: DateTime.now(),
+    );
+  }
 
-  Exercise? get nextExercise =>
-      isLastExercise ? null : workout.exercises[currentExerciseIndex + 1];
-
-  int get completedExercisesCount => completedExercises.length;
-
-  double get progressPercentage =>
-      workout.exercises.isEmpty
-          ? 0
-          : completedExercisesCount / workout.exercises.length;
-
+  // Create a copy with updated properties
   WorkoutExecutionState copyWith({
+    ExecutionStatus? status,
     Workout? workout,
+    int? currentSectionIndex,
     int? currentExerciseIndex,
-    bool? isPaused,
+    int? currentSetIndex,
+    Exercise? currentExercise,
     DateTime? startTime,
-    int? elapsedTimeSeconds,
-    Map<int, ExerciseLog>? completedExercises,
-    bool? isInRestPeriod,
-    int? restTimeRemaining,
+    Duration? elapsedTime,
     bool? voiceGuidanceEnabled,
     bool? showRestTimers,
     bool? showCountdowns,
-    int? currentSet,
-    bool? isInSetRestPeriod,
-    int? setRestTimeRemaining,
-    bool? isWorkoutComplete,
+    List<ExerciseLog>? completedExerciseLogs,
+    bool? isPaused,
+    int? remainingRestSeconds,
+    int? remainingExerciseSeconds,
   }) {
     return WorkoutExecutionState(
+      status: status ?? this.status,
       workout: workout ?? this.workout,
+      currentSectionIndex: currentSectionIndex ?? this.currentSectionIndex,
       currentExerciseIndex: currentExerciseIndex ?? this.currentExerciseIndex,
-      isPaused: isPaused ?? this.isPaused,
+      currentSetIndex: currentSetIndex ?? this.currentSetIndex,
+      currentExercise: currentExercise ?? this.currentExercise,
       startTime: startTime ?? this.startTime,
-      elapsedTimeSeconds: elapsedTimeSeconds ?? this.elapsedTimeSeconds,
-      completedExercises: completedExercises ?? this.completedExercises,
-      isInRestPeriod: isInRestPeriod ?? this.isInRestPeriod,
-      restTimeRemaining: restTimeRemaining ?? this.restTimeRemaining,
+      elapsedTime: elapsedTime ?? this.elapsedTime,
       voiceGuidanceEnabled: voiceGuidanceEnabled ?? this.voiceGuidanceEnabled,
       showRestTimers: showRestTimers ?? this.showRestTimers,
       showCountdowns: showCountdowns ?? this.showCountdowns,
-      currentSet: currentSet ?? this.currentSet,
-      isInSetRestPeriod: isInSetRestPeriod ?? this.isInSetRestPeriod,
-      setRestTimeRemaining: setRestTimeRemaining ?? this.setRestTimeRemaining,
-      isWorkoutComplete: isWorkoutComplete ?? this.isWorkoutComplete,
+      completedExerciseLogs: completedExerciseLogs ?? this.completedExerciseLogs,
+      isPaused: isPaused ?? this.isPaused,
+      remainingRestSeconds: remainingRestSeconds ?? this.remainingRestSeconds,
+      remainingExerciseSeconds: 
+          remainingExerciseSeconds ?? this.remainingExerciseSeconds,
     );
   }
 }
 
-class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState?> {
-  final WorkoutService _workoutService;
-  final VoiceGuidanceService _voiceGuidance;
+// State notifier that manages the workout execution state
+class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
+  final AnalyticsService analyticsService;
+  Timer? _workoutTimer;
+  DateTime? _pauseStartTime;
 
-  WorkoutExecutionNotifier(this._workoutService, this._voiceGuidance)
-    : super(null) {
-    _initializeVoiceGuidance();
-  }
+  WorkoutExecutionNotifier({
+    required this.analyticsService,
+  }) : super(WorkoutExecutionState(
+          workout: Workout(
+            id: '',
+            title: '',
+            description: '',
+            imageUrl: '',
+            category: WorkoutCategory.fullBody,
+            difficulty: WorkoutDifficulty.beginner,
+            durationMinutes: 0,
+            estimatedCaloriesBurn: 0,
+            createdAt: DateTime.now(),
+            createdBy: '',
+            exercises: const [],
+            equipment: const [],
+            tags: const [],
+          ),
+          startTime: DateTime.now(),
+        ));
 
-  Future<void> _initializeVoiceGuidance() async {
-    await _voiceGuidance.initialize();
-  }
-
+  // Start a new workout
   void startWorkout(
     Workout workout, {
-    bool voiceGuidanceEnabled = false,
+    bool voiceGuidanceEnabled = true,
     bool showRestTimers = true,
     bool showCountdowns = true,
   }) {
-    // Make sure we get exercises in the right order
-    final exercises = workout.getAllExercises();
+    // Initialize with the first exercise
+    final firstExercise = workout.sections.isNotEmpty
+        ? workout.sections[0].exercises[0]
+        : workout.exercises[0];
 
+    // Set the initial state
     state = WorkoutExecutionState(
-      workout: workout.copyWith(
-        exercises: exercises,
-      ), // Ensure we have the right order
+      status: ExecutionStatus.ready,
+      workout: workout,
+      currentExercise: firstExercise,
       startTime: DateTime.now(),
       voiceGuidanceEnabled: voiceGuidanceEnabled,
       showRestTimers: showRestTimers,
       showCountdowns: showCountdowns,
-      currentExerciseIndex: 0,
     );
 
-    // Announce first exercise with a small delay to allow UI to build
-    if (voiceGuidanceEnabled) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        final exercise = state!.currentExercise;
-        if (exercise.durationSeconds != null) {
-          _voiceGuidance.announceTimedExercise(
-            exercise.name,
-            exercise.durationSeconds!,
-          );
-        } else {
-          _voiceGuidance.announceExerciseStart(
-            exercise.name,
-            exercise.sets,
-            exercise.reps,
-          );
-        }
-      });
-    }
-  }
-
-  void updateElapsedTime(int seconds) {
-    if (state == null) return;
-
-    state = state!.copyWith(elapsedTimeSeconds: seconds);
-  }
-
-  void pauseWorkout() {
-    if (state == null) return;
-
-    state = state!.copyWith(isPaused: true);
-  }
-
-  void resumeWorkout() {
-    if (state == null) return;
-
-    state = state!.copyWith(isPaused: false);
-  }
-
-  void adjustRestTime(int seconds, {int minimum = 0}) {
-    if (state == null || !state!.isInRestPeriod) return;
-
-    print(
-      "Adjusting rest time by $seconds seconds. Current: ${state!.restTimeRemaining}",
+    // Log analytics event
+    analyticsService.logWorkoutStarted(
+      workoutId: workout.id,
+      workoutName: workout.title,
     );
 
-    int newRestTime = state!.restTimeRemaining + seconds;
+    // Start the workout timer
+    _startTimer();
 
-    // Ensure rest time doesn't go below minimum
-    if (newRestTime < minimum) newRestTime = minimum;
-
-    print("New rest time: $newRestTime seconds");
-
-    state = state!.copyWith(restTimeRemaining: newRestTime);
+    // Start the first exercise
+    startExercise();
   }
 
-  void adjustSetRestTime(int seconds, {int minimum = 0}) {
-    if (state == null || !state!.isInSetRestPeriod) return;
+  // Start the current exercise
+  void startExercise() {
+    if (state.currentExercise == null) return;
 
-    print(
-      "Adjusting set rest time by $seconds seconds. Current: ${state!.setRestTimeRemaining}",
+    // Update state to exercise in progress
+    state = state.copyWith(
+      status: ExecutionStatus.exerciseInProgress,
+      remainingExerciseSeconds: state.currentExercise!.durationSeconds,
     );
+    // Haptic feedback
+    HapticFeedback.mediumImpact();
 
-    int newRestTime = state!.setRestTimeRemaining + seconds;
-
-    // Ensure rest time doesn't go below minimum
-    if (newRestTime < minimum) newRestTime = minimum;
-
-    print("New set rest time: $newRestTime seconds");
-
-    state = state!.copyWith(setRestTimeRemaining: newRestTime);
-  }
-
-  void logExerciseCompletion(int exerciseIndex, ExerciseLog log) {
-    if (state == null) return;
-
-    final updatedCompleted = Map<int, ExerciseLog>.from(
-      state!.completedExercises,
-    );
-    updatedCompleted[exerciseIndex] = log;
-
-    state = state!.copyWith(completedExercises: updatedCompleted);
-  }
-
-  void startRestPeriod(int seconds) {
-    if (state == null) return;
-
-    print(
-      "Starting rest period for ${seconds} seconds. Current exercise: ${state!.currentExercise.name}, index: ${state!.currentExerciseIndex}",
-    );
-
-    // Sanity check to ensure we don't accidentally skip exercises
-    if (state!.completedExercises.length >= state!.workout.exercises.length) {
-      print(
-        "WARNING: All exercises appear to be completed already. This may indicate a bug.",
-      );
-    }
-
-    state = state!.copyWith(isInRestPeriod: true, restTimeRemaining: seconds);
-
-    print(
-      "Rest period started. isInRestPeriod=${state!.isInRestPeriod}, restTimeRemaining=${state!.restTimeRemaining}",
+    // Log analytics
+    analyticsService.logEvent(
+      name: 'exercise_started',
+      parameters: {
+        'exercise_name': state.currentExercise!.name,
+        'set_number': state.currentSetIndex + 1,
+      },
     );
   }
 
-  void endRestPeriod() {
-    if (state == null) return;
-
-    print(
-      "Ending rest period. Current exercise: ${state!.currentExercise.name}, index: ${state!.currentExerciseIndex}",
-    );
-
-    // This flag will help us prevent recursive rest periods
-    final wasInRestPeriod = state!.isInRestPeriod;
-
-    // First set the rest period to false and reset rest time
-    state = state!.copyWith(
-      isInRestPeriod: false,
-      restTimeRemaining: 0,
-      currentSet: 1, // Reset to first set for the next exercise
-    );
-
-    print("Rest period ended. Moving to next exercise if not last");
-
-    // If not the last exercise, move to the next exercise
-    if (!state!.isLastExercise && wasInRestPeriod) {
-      final nextIndex = state!.currentExerciseIndex + 1;
-      print("Moving to next exercise index: $nextIndex");
-
-      // Update the current exercise index
-      state = state!.copyWith(currentExerciseIndex: nextIndex);
-
-      // Announce the new exercise
-      if (state!.voiceGuidanceEnabled) {
-        final exercise = state!.currentExercise;
-        if (exercise.durationSeconds != null) {
-          _voiceGuidance.announceTimedExercise(
-            exercise.name,
-            exercise.durationSeconds!,
-          );
-        } else {
-          _voiceGuidance.announceExerciseStart(
-            exercise.name,
-            exercise.sets,
-            exercise.reps,
-          );
-        }
-      }
-
-      print(
-        "Moved to next exercise: ${state!.currentExercise.name}, index: ${state!.currentExerciseIndex}",
-      );
-    }
-  }
-
-  void nextExercise() {
-    if (state == null || state!.isLastExercise) return;
-
-    state = state!.copyWith(
-      currentExerciseIndex: state!.currentExerciseIndex + 1,
-      currentSet: 1, // Reset to the first set when moving to a new exercise
-      isInSetRestPeriod: false,
-      setRestTimeRemaining: 0,
-    );
-
-    // Announce the new exercise
-    if (state!.voiceGuidanceEnabled) {
-      final exercise = state!.currentExercise;
-      if (exercise.durationSeconds != null) {
-        _voiceGuidance.announceTimedExercise(
-          exercise.name,
-          exercise.durationSeconds!,
-        );
-      } else {
-        _voiceGuidance.announceExerciseStart(
-          exercise.name,
-          exercise.sets,
-          exercise.reps,
-        );
-      }
-    }
-  }
-
+  // Complete the current set
   void completeSet() {
-    if (state == null) return;
+    final exercise = state.currentExercise!;
+    final isLastSet = state.currentSetIndex >= exercise.sets - 1;
 
-    try {
-      final currentExercise = state!.currentExercise;
-      final currentExerciseIndex = state!.currentExerciseIndex;
-      final currentSet = state!.currentSet;
-
-      print(
-        "CompleteSet called: Exercise: ${currentExercise.name}, Set: $currentSet/${currentExercise.sets}",
+    if (isLastSet) {
+      _completeExercise();
+    } else {
+      // Move to the next set
+      state = state.copyWith(
+        status: ExecutionStatus.betweenSets,
+        currentSetIndex: state.currentSetIndex + 1,
+        remainingRestSeconds: exercise.restBetweenSeconds,
       );
 
-      // Edge case check - don't proceed if somehow already completed all sets
-      if (currentSet > currentExercise.sets) {
-        print(
-          "Warning: Attempted to complete set beyond maximum (${currentExercise.sets})",
-        );
-        return;
-      }
+      // Haptic feedback
+      HapticFeedback.mediumImpact();
 
-      // Update the completed sets in the exercise log
-      final existingLog = state!.completedExercises[currentExerciseIndex];
-      final completedSets = (existingLog?.setsCompleted ?? 0) + 1;
-
-      logExerciseCompletion(
-        currentExerciseIndex,
-        ExerciseLog(
-          exerciseName: currentExercise.name,
-          setsCompleted:
-              completedSets > currentExercise.sets
-                  ? currentExercise.sets
-                  : completedSets,
-          repsCompleted: currentExercise.reps,
-          difficultyRating: existingLog?.difficultyRating ?? 3,
-          notes: existingLog?.notes ?? '',
-        ),
+      // Log analytics
+      analyticsService.logEvent(
+        name: 'set_completed',
+        parameters: {
+          'exercise_name': exercise.name,
+          'set_number': state.currentSetIndex,
+          'is_last_set': false,
+        },
       );
+    }
+  }
 
-      // If there are more sets to do
-      if (currentSet < currentExercise.sets) {
-        // Start rest between sets if rest time > 0
-        if (currentExercise.restBetweenSeconds > 0) {
-          startSetRestPeriod(currentExercise.restBetweenSeconds);
-        } else {
-          // No rest between sets, just increment the set counter
-          state = state!.copyWith(currentSet: currentSet + 1);
-
-          // Announce next set if voice guidance is enabled
-          if (state!.voiceGuidanceEnabled) {
-            _voiceGuidance.speak(
-              "Set ${currentSet + 1} of ${currentExercise.sets}",
-            );
-          }
-        }
+  // Complete the current exercise and move to the next
+  void _completeExercise() {
+    final currentExercise = state.currentExercise!;
+    
+    // Create a log for the completed exercise
+    final exerciseLog = ExerciseLog(
+      exerciseName: currentExercise.name,
+      setsCompleted: currentExercise.sets,
+      repsCompleted: currentExercise.durationSeconds != null 
+          ? 0 
+          : currentExercise.reps * currentExercise.sets,
+      difficultyRating: currentExercise.difficultyLevel,
+    );
+    
+    // Add to completed exercise logs
+    final updatedLogs = List<ExerciseLog>.from(state.completedExerciseLogs)
+      ..add(exerciseLog);
+    
+    // Check if there's a next exercise
+    bool isLastExercise = false;
+    int nextSectionIndex = state.currentSectionIndex;
+    int nextExerciseIndex = state.currentExerciseIndex;
+    
+    if (state.workout.sections.isNotEmpty) {
+      // Workout with sections
+      final currentSection = state.workout.sections[state.currentSectionIndex];
+      
+      if (state.currentExerciseIndex < currentSection.exercises.length - 1) {
+        // Next exercise in the same section
+        nextExerciseIndex = state.currentExerciseIndex + 1;
+      } else if (state.currentSectionIndex < state.workout.sections.length - 1) {
+        // First exercise in the next section
+        nextSectionIndex = state.currentSectionIndex + 1;
+        nextExerciseIndex = 0;
       } else {
-        // All sets completed for this exercise
-        print("All sets completed for ${currentExercise.name}");
-
-        // Check if this is the last exercise and mark workout as complete if it is
-        if (state!.isLastExercise) {
-          print("Last exercise completed - workout finished");
-
-          // Don't try to do multiple things at once - ONLY mark as complete here
-          markWorkoutAsCompleted();
-        } else {
-          // Add some CRITICAL checks to prevent multiple rest periods
-          if (state!.isInRestPeriod) {
-            print("WARNING: Already in rest period, not starting another one");
-            return;
-          }
-
-          // Start rest period before next exercise
-          print("Starting rest period before next exercise");
-          int restTime =
-              currentExercise.restBetweenSeconds > 0
-                  ? currentExercise.restBetweenSeconds
-                  : 30; // Default rest period if not specified
-
-          startRestPeriod(restTime);
-        }
+        // Last exercise in the last section
+        isLastExercise = true;
       }
-    } catch (e, stackTrace) {
-      print("Error in completeSet: $e");
-      print(stackTrace);
+    } else {
+      // Legacy workout without sections
+      if (state.currentExerciseIndex < state.workout.exercises.length - 1) {
+        nextExerciseIndex = state.currentExerciseIndex + 1;
+      } else {
+        isLastExercise = true;
+      }
     }
-  }
-
-  void startSetRestPeriod(int seconds) {
-    if (state == null) return;
-
-    state = state!.copyWith(
-      isInSetRestPeriod: true,
-      setRestTimeRemaining: seconds,
-    );
-
-    // Announce rest period if voice guidance is enabled
-    if (state!.voiceGuidanceEnabled) {
-      final currentSet = state!.currentSet;
-      final totalSets = state!.currentExercise.sets;
-      _voiceGuidance.speak(
-        "Rest for $seconds seconds. Next is set ${currentSet + 1} of $totalSets",
+    
+    if (isLastExercise) {
+      // If it's the last exercise, complete the workout
+      _completeWorkout(updatedLogs);
+    } else {
+      // Get the next exercise
+      final nextExercise = state.workout.sections.isNotEmpty
+          ? state.workout.sections[nextSectionIndex].exercises[nextExerciseIndex]
+          : state.workout.exercises[nextExerciseIndex];
+      
+      // Update state to show rest between exercises
+      state = state.copyWith(
+        status: ExecutionStatus.restingBetweenExercises,
+        completedExerciseLogs: updatedLogs,
+        currentSectionIndex: nextSectionIndex,
+        currentExerciseIndex: nextExerciseIndex,
+        currentSetIndex: 0,
+        currentExercise: nextExercise,
+        remainingRestSeconds: 30, // Default rest between exercises
+      );
+      
+      // Haptic feedback
+      HapticFeedback.heavyImpact();
+      
+      // Log analytics
+      analyticsService.logEvent(
+        name: 'exercise_completed',
+        parameters: {
+          'exercise_name': currentExercise.name,
+          'next_exercise': nextExercise.name,
+        },
       );
     }
   }
 
-  void endSetRestPeriod() {
-    if (state == null) return;
-
-    state = state!.copyWith(
-      isInSetRestPeriod: false,
-      setRestTimeRemaining: 0,
-      currentSet: state!.currentSet + 1,
-    );
-
-    // Announce the next set if voice guidance is enabled
-    if (state!.voiceGuidanceEnabled) {
-      final currentSet = state!.currentSet;
-      final totalSets = state!.currentExercise.sets;
-      _voiceGuidance.speak("Set $currentSet of $totalSets");
-    }
-  }
-
-  void updateExercise(int exerciseIndex, Exercise updatedExercise) {
-    if (state == null) return;
-
-    print("Updating exercise at index $exerciseIndex");
-    print("Original exercise: ${state!.workout.exercises[exerciseIndex].name}");
-    print(
-      "Original sets: ${state!.workout.exercises[exerciseIndex].sets}, reps: ${state!.workout.exercises[exerciseIndex].reps}, duration: ${state!.workout.exercises[exerciseIndex].durationSeconds}",
-    );
-    print("Updated exercise: ${updatedExercise.name}");
-    print(
-      "Updated sets: ${updatedExercise.sets}, reps: ${updatedExercise.reps}, duration: ${updatedExercise.durationSeconds}",
-    );
-
-    // Create a new list of exercises
-    final updatedExercises = List<Exercise>.from(state!.workout.exercises);
-    updatedExercises[exerciseIndex] = updatedExercise;
-
-    // Create updated workout
-    final updatedWorkout = state!.workout.copyWith(exercises: updatedExercises);
-
-    // Update state with the updated workout
-    state = state!.copyWith(workout: updatedWorkout);
-
-    print(
-      "State updated. Current exercise is now: ${state!.currentExercise.name}",
-    );
-    print(
-      "Current sets: ${state!.currentExercise.sets}, reps: ${state!.currentExercise.reps}, duration: ${state!.currentExercise.durationSeconds}",
-    );
-  }
-
-  void toggleVoiceGuidance(bool enabled) {
-    if (state == null) return;
-
-    state = state!.copyWith(voiceGuidanceEnabled: enabled);
-    _voiceGuidance.setEnabled(enabled);
-  }
-
-  void cancelWorkout() {
-    state = null;
-  }
-
-  Future<void> markWorkoutAsCompleted() async {
-    if (state == null) return;
-
-    print("Explicitly marking workout as complete");
-
-    // Set the flag
-    state = state!.copyWith(isWorkoutComplete: true);
-
-    print("Workout marked as complete: ${state!.isWorkoutComplete}");
-  }
-
-  Future<void> completeWorkout({
-    required UserFeedback feedback,
-    int? estimatedCaloriesBurned,
-    required String userId,
-  }) async {
-    if (state == null) return;
-
-    // Get the current user ID
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) return; // User is not authenticated
-
+  // Complete the entire workout
+  void _completeWorkout(List<ExerciseLog> exerciseLogs) {
+    // Calculate total duration
     final endTime = DateTime.now();
-    final durationMinutes = endTime.difference(state!.startTime).inMinutes;
-    final workoutLog = WorkoutLog(
-      id: const Uuid().v4(),
-      userId: userId, // Use the actual user ID
-      workoutId: state!.workout.id,
-      startedAt: state!.startTime,
-      completedAt: endTime,
-      durationMinutes: durationMinutes,
-      caloriesBurned:
-          estimatedCaloriesBurned ?? state!.workout.estimatedCaloriesBurn,
-      exercisesCompleted: state!.completedExercises.values.toList(),
-      userFeedback: feedback,
+    final durationMinutes = 
+        endTime.difference(state.startTime).inMinutes;
+    
+    // Update state
+    state = state.copyWith(
+      status: ExecutionStatus.completed,
+      completedExerciseLogs: exerciseLogs,
+      elapsedTime: endTime.difference(state.startTime),
     );
+    
+    // Haptic feedback
+    HapticFeedback.heavyImpact();
+    
+    // Stop the timer
+    _workoutTimer?.cancel();
+    
+    // Log analytics
+    analyticsService.logWorkoutCompleted(
+      workoutId: state.workout.id,
+      workoutName: state.workout.title,
+      durationSeconds: state.elapsedTime.inSeconds,
+    );
+  }
 
-    await _workoutService.logCompletedWorkout(workoutLog);
+  // Pause the workout
+  void pauseWorkout() {
+    if (state.isPaused) return;
+    
+    _pauseStartTime = DateTime.now();
+    _workoutTimer?.cancel();
+    
+    state = state.copyWith(
+      isPaused: true,
+      status: ExecutionStatus.paused,
+    );
+    
+    // Log analytics
+    analyticsService.logEvent(
+      name: 'workout_paused',
+      parameters: {
+        'elapsed_time': state.elapsedTime.inSeconds,
+        'current_exercise': state.currentExercise?.name ?? 'unknown',
+      },
+    );
+  }
 
-    // Reset state after completion
-    state = null;
+  // Resume the workout
+  void resumeWorkout() {
+    if (!state.isPaused) return;
+    
+    final pauseDuration = DateTime.now().difference(_pauseStartTime!);
+    _pauseStartTime = null;
+    
+    // Adjust the start time to account for the pause
+    final adjustedStartTime = state.startTime.add(pauseDuration);
+    
+    state = state.copyWith(
+      isPaused: false,
+      startTime: adjustedStartTime,
+      status: state.status == ExecutionStatus.paused
+          ? ExecutionStatus.exerciseInProgress
+          : state.status,
+    );
+    
+    // Restart the timer
+    _startTimer();
+    
+    // Log analytics
+    analyticsService.logEvent(
+      name: 'workout_resumed',
+      parameters: {
+        'pause_duration_seconds': pauseDuration.inSeconds,
+      },
+    );
+  }
+
+  // Skip the current rest period
+  void skipRest() {
+    if (state.status == ExecutionStatus.betweenSets) {
+      // If between sets, start the next set
+      startExercise();
+    } else if (state.status == ExecutionStatus.restingBetweenExercises) {
+      // If between exercises, start the next exercise
+      startExercise();
+    }
+    
+    // Log analytics
+    analyticsService.logEvent(
+      name: 'rest_skipped',
+      parameters: {
+        'rest_type': state.status == ExecutionStatus.betweenSets
+            ? 'between_sets'
+            : 'between_exercises',
+      },
+    );
+  }
+
+  // Adjust the rest time
+  void adjustRestTime(int seconds) {
+    if (state.status != ExecutionStatus.betweenSets && 
+        state.status != ExecutionStatus.restingBetweenExercises) {
+      return;
+    }
+    
+    int newRestTime = (state.remainingRestSeconds ?? 0) + seconds;
+    
+    // Ensure rest time is at least 0
+    newRestTime = newRestTime < 0 ? 0 : newRestTime;
+    
+    state = state.copyWith(
+      remainingRestSeconds: newRestTime,
+    );
+    
+    // Log analytics
+    analyticsService.logEvent(
+      name: 'rest_time_adjusted',
+      parameters: {
+        'adjustment_seconds': seconds,
+        'new_rest_time': newRestTime,
+      },
+    );
+  }
+  
+  // Start the workout timer
+  void _startTimer() {
+    _workoutTimer?.cancel();
+    _workoutTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      // Skip if paused
+      if (state.isPaused) return;
+      
+      // Update the elapsed time
+      final newElapsedTime = DateTime.now().difference(state.startTime);
+      
+      // Handle timed exercises
+      int? updatedExerciseSeconds;
+      if (state.status == ExecutionStatus.exerciseInProgress && 
+          state.currentExercise?.durationSeconds != null &&
+          state.remainingExerciseSeconds != null) {
+        updatedExerciseSeconds = state.remainingExerciseSeconds! - 1;
+        
+        // If exercise timer reaches zero, complete the set
+        if (updatedExerciseSeconds <= 0) {
+          timer.cancel();
+          completeSet();
+          return;
+        }
+      }
+      
+      // Handle rest periods
+      int? updatedRestSeconds;
+      if ((state.status == ExecutionStatus.betweenSets || 
+           state.status == ExecutionStatus.restingBetweenExercises) &&
+          state.remainingRestSeconds != null) {
+        updatedRestSeconds = state.remainingRestSeconds! - 1;
+        
+        // If rest timer reaches zero, move to the next exercise/set
+        if (updatedRestSeconds <= 0) {
+          timer.cancel();
+          startExercise();
+          return;
+        }
+      }
+      
+      // Update the state
+      state = state.copyWith(
+        elapsedTime: newElapsedTime,
+        remainingExerciseSeconds: updatedExerciseSeconds,
+        remainingRestSeconds: updatedRestSeconds,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _workoutTimer?.cancel();
+    super.dispose();
   }
 }
-
-// Update provider
-final workoutExecutionProvider =
-    StateNotifierProvider<WorkoutExecutionNotifier, WorkoutExecutionState?>((
-      ref,
-    ) {
-      final workoutService = ref.watch(workoutServiceProvider);
-      final voiceGuidance = VoiceGuidanceService(); // Create instance
-      return WorkoutExecutionNotifier(workoutService, voiceGuidance);
-    });
-
-// Add voice guidance provider
-final voiceGuidanceProvider = Provider<VoiceGuidanceService>((ref) {
-  final voiceGuidance = VoiceGuidanceService();
-  voiceGuidance.initialize();
-  return voiceGuidance;
-});

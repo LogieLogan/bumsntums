@@ -8,81 +8,92 @@ import '../../models/exercise.dart';
 class ExerciseInfoSheet extends StatelessWidget {
   final Exercise exercise;
 
-  const ExerciseInfoSheet({
-    super.key,
-    required this.exercise,
-  });
+  const ExerciseInfoSheet({super.key, required this.exercise});
 
-@override
-Widget build(BuildContext context) {
-  return DraggableScrollableSheet(
-    initialChildSize: 0.6,
-    minChildSize: 0.3,
-    maxChildSize: 0.9,
-    expand: false,
-    builder: (context, scrollController) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        child: ListView(
-          controller: scrollController,
-          children: [
-            // Handle bar
-            Center(
-              child: Container(
-                width: 50,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: AppColors.lightGrey,
-                  borderRadius: BorderRadius.circular(10),
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white, // Ensure solid white background
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: ListView(
+            controller: scrollController,
+            children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: AppColors.lightGrey,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // Exercise name
-            Text(
-              exercise.name,
-              style: AppTextStyles.h2,
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 16),
-            
-            // Exercise demo video - NEW ADDITION
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+              // Exercise name
+              Text(
+                exercise.name,
+                style: AppTextStyles.h2,
+                textAlign: TextAlign.center,
               ),
-              clipBehavior: Clip.hardEdge,
-              child: ExerciseDemoWidget(
-                exercise: exercise,
-                showControls: true,
-                autoPlay: true,
-              ),
-            ),
 
-            const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-            // Description
-            Text(
-              'Description',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.salmon,
+              // Exercise demo video - NEW ADDITION
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                clipBehavior: Clip.hardEdge,
+                child: ExerciseDemoWidget(
+                  exercise: exercise,
+                  showControls: true,
+                  autoPlay: true,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(exercise.description),
+
+              const SizedBox(height: 24),
+
+              // Description
+              Text(
+                'Description',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.salmon,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(exercise.description),
 
               const SizedBox(height: 24),
 
@@ -226,17 +237,20 @@ Widget build(BuildContext context) {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: exercise.targetMuscles
-                      .map(
-                        (muscle) => Chip(
-                          backgroundColor: AppColors.salmon.withOpacity(0.1),
-                          label: Text(
-                            muscle,
-                            style: TextStyle(color: AppColors.salmon),
-                          ),
-                        ),
-                      )
-                      .toList(),
+                  children:
+                      exercise.targetMuscles
+                          .map(
+                            (muscle) => Chip(
+                              backgroundColor: AppColors.salmon.withOpacity(
+                                0.1,
+                              ),
+                              label: Text(
+                                muscle,
+                                style: TextStyle(color: AppColors.salmon),
+                              ),
+                            ),
+                          )
+                          .toList(),
                 ),
               ],
 

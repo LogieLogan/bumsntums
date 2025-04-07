@@ -175,7 +175,7 @@ class _ExerciseTimerState extends State<ExerciseTimer>
                       child: CircularProgressIndicator(
                         value: progress,
                         strokeWidth: 10,
-                        backgroundColor: Colors.transparent,
+                        backgroundColor: Colors.white,
                         color: _getTimerColor(),
                       ),
                     ),
