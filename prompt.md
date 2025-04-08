@@ -1,8 +1,10 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-Workout execution file need completing
-I have a bunch of widgets and a pre workout scren plus other files that are related but not the actual workout execution screen. can we first review what we have and based on those files make a plan. With that plan in mind make any adjustments to the files and make any additional files before we make the execution screen. If you are unsure about the final end result aim then please ask me questions to resolve any mysteries. 
+workout stats not saving. workouts not saving in history
+need to fill out workout analytics with more indepth data looking at it on daily, weekly, monthly time frames. 
+need to make a complete analytics spec to cover all different aspects that should be done for this. this is potentially a premium feature we provide so it should be done very well.  
+
 
 project structure: 
 
@@ -300,7 +302,8 @@ project structure:
     ├── 12_accessibility.md
     ├── 13_ux_ui_spec.md
     ├── 14a_workouts.md
-    ├── 14b_workout_tracking_analytics.md
+    ├── 14b_workout_analytics.md
+    ├── 14b_workout_planning.md
     └── 14c_workout_map.md
 
 Which of these files do you want to review? 

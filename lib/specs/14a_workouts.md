@@ -193,23 +193,20 @@ Community trend insights that highlight popular workouts
 - [ ] Weekly featured workouts
 
 ### Workout Execution
-- [ ] Basic workout execution flow
-- [ ] Exercise timers for timed exercises
-- [ ] Rest period timers between exercises
-- [ ] Set tracking during workout
+- [x] Basic workout execution flow
+- [x] Exercise timers for timed exercises
+- [x] Rest period timers between exercises
+- [x] Set tracking during workout
 - [ ] Basic voice guidance
-- [ ] Pause and resume functionality
-- [ ] Workout progress indicator
-- [ ] Pre-workout setup screen
+- [x] Pause and resume functionality
+- [x] Workout progress indicator
+- [x] Pre-workout setup screen
 - [ ] Default voice guidance off
 - [ ] Explore using gpt-4o-mini-tts api for voice guidance
-- [ ] Haptic feedback integration
-- [ ] Alternative exercise suggestions
+- [x] Haptic feedback integration
+- [x] Alternative exercise suggestions
 - [ ] Exercise-specific feedback collection
-- [ ] Enhanced completion celebration
-- [ ] Screen-off audio guidance
-- [ ] Fix renderflex issues
-- [ ] 
+- [x] Enhanced completion celebration
 
 ### Workout Customization
 - [x] Basic workout editor functionality
@@ -250,8 +247,6 @@ Community trend insights that highlight popular workouts
 - [x] Basic calendar for workout scheduling
 - [x] Recurring workout setup
 - [x] Rest day recommendations
-- [ ] Pre-designed plan templates
-- [ ] Vacation mode planning
 - [ ] Quick plan adjustment tools
 - [ ] Drag and drop workouts on weekly view
 - [ ] Delete, and open workouts on calendar screen
@@ -283,6 +278,4 @@ Community trend insights that highlight popular workouts
 - [ ] Habit formation assistance
 
 ### Bugs 
-- [x] Execution screen buggy, sometime demos and ui components move and overlap 
-- [ ] Executions cant be completed and the app gets stuck at the end of a wokout 
-- [ ] Customisizing workouts doest save 
+- [ ] Customisizing stock workouts should direct users to templating. Templates should be easily acessible from app bar action bar 
