@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
-import '../../workouts/providers/workout_stats_provider.dart';
+import '../../workout_analytics/providers/workout_stats_provider.dart';
 import '../../../shared/navigation/navigation.dart';
 
 class StatsCard extends ConsumerWidget {

@@ -2,8 +2,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/workout_stats.dart';
-import '../models/workout_log.dart';
-import '../models/workout_streak.dart';
+import '../../workouts/models/workout_log.dart';
+import '../../workouts/models/workout_streak.dart';
 import '../services/workout_stats_service.dart';
 import '../../../shared/providers/analytics_provider.dart';
 

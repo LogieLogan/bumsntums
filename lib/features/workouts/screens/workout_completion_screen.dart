@@ -1,4 +1,6 @@
 // lib/features/workouts/screens/workout_completion_screen.dart
+import 'package:bums_n_tums/features/auth/providers/auth_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:confetti/confetti.dart';
@@ -9,7 +11,7 @@ import '../../../shared/theme/color_palette.dart';
 import '../models/workout.dart';
 import '../models/workout_log.dart';
 import '../services/workout_service.dart';
-import '../providers/workout_stats_provider.dart';
+import '../../workout_analytics/providers/workout_stats_provider.dart';
 
 class WorkoutCompletionScreen extends ConsumerStatefulWidget {
   final Workout workout;
@@ -24,11 +26,15 @@ class WorkoutCompletionScreen extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   @override
-  ConsumerState<WorkoutCompletionScreen> createState() => _WorkoutCompletionScreenState();
+  ConsumerState<WorkoutCompletionScreen> createState() =>
+      _WorkoutCompletionScreenState();
 }
 
-class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScreen> {
-  final _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+class _WorkoutCompletionScreenState
+    extends ConsumerState<WorkoutCompletionScreen> {
+  final _confettiController = ConfettiController(
+    duration: const Duration(seconds: 3),
+  );
   final _analyticsService = AnalyticsService();
   int _rating = 3;
   bool _feltEasy = false;
@@ -41,11 +47,11 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
     super.initState();
     // Start the confetti animation
     _confettiController.play();
-    
+
     // Log screen view
     _analyticsService.logScreenView(screenName: 'workout_completion');
   }
-  
+
   @override
   void dispose() {
     _confettiController.dispose();
@@ -58,11 +64,12 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
     final minutes = widget.elapsedTime.inMinutes;
     final seconds = widget.elapsedTime.inSeconds % 60;
     final formattedTime = '$minutes:${seconds.toString().padLeft(2, '0')}';
-    
+
     // Calculate estimated calories burned
     final calorieMultiplier = _getCalorieMultiplier(widget.workout.difficulty);
-    final estimatedCalories = (widget.elapsedTime.inMinutes * calorieMultiplier).round();
-    
+    final estimatedCalories =
+        (widget.elapsedTime.inMinutes * calorieMultiplier).round();
+
     return Scaffold(
       body: Stack(
         children: [
@@ -86,7 +93,7 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
               ],
             ),
           ),
-          
+
           // Main content
           SafeArea(
             child: Padding(
@@ -96,7 +103,7 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const SizedBox(height: 40),
-                    
+
                     // Celebration heading
                     const Text(
                       'Workout Complete!',
@@ -107,9 +114,9 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    
+
                     const SizedBox(height: 8),
-                    
+
                     Text(
                       widget.workout.title,
                       style: TextStyle(
@@ -119,9 +126,9 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    
+
                     const SizedBox(height: 40),
-                    
+
                     // Stats cards
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -146,9 +153,9 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 40),
-                    
+
                     // Feedback section
                     const Text(
                       'How was your workout?',
@@ -158,9 +165,9 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
                         color: AppColors.darkGrey,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Rating
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -169,15 +176,18 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
                           onTap: () => setState(() => _rating = index + 1),
                           child: Icon(
                             index < _rating ? Icons.star : Icons.star_border,
-                            color: index < _rating ? AppColors.popYellow : AppColors.lightGrey,
+                            color:
+                                index < _rating
+                                    ? AppColors.popYellow
+                                    : AppColors.lightGrey,
                             size: 36,
                           ),
                         );
                       }),
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Difficulty feedback
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -203,9 +213,9 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Comments field
                     TextField(
                       controller: _commentsController,
@@ -219,20 +229,22 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
                       ),
                       maxLines: 3,
                     ),
-                    
+
                     const SizedBox(height: 32),
-                    
+
                     // Save button
                     _isSaving
-                        ? const CircularProgressIndicator(color: AppColors.salmon)
+                        ? const CircularProgressIndicator(
+                          color: AppColors.salmon,
+                        )
                         : PrimaryButton(
-                            text: 'Save & Continue',
-                            onPressed: _saveWorkoutLog,
-                            width: double.infinity,
-                          ),
-                        
+                          text: 'Save & Continue',
+                          onPressed: _saveWorkoutLog,
+                          width: double.infinity,
+                        ),
+
                     const SizedBox(height: 16),
-                    
+
                     // Skip button
                     if (!_isSaving)
                       SecondaryButton(
@@ -249,8 +261,13 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
       ),
     );
   }
-  
-  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+
+  Widget _buildStatCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -279,16 +296,13 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
           ),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.mediumGrey,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.mediumGrey),
           ),
         ],
       ),
     );
   }
-  
+
   Widget _buildFeedbackChip(
     String label,
     bool isSelected,
@@ -317,7 +331,7 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
       ),
     );
   }
-  
+
   double _getCalorieMultiplier(WorkoutDifficulty difficulty) {
     switch (difficulty) {
       case WorkoutDifficulty.beginner:
@@ -328,37 +342,66 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
         return 8.0;
     }
   }
-  
+
   Future<void> _saveWorkoutLog() async {
     setState(() {
       _isSaving = true;
     });
-    
+
     try {
+      // Get the current user ID from auth provider
+      final authState = ref.read(authStateProvider).value;
+      if (authState == null) {
+        throw Exception('User not logged in');
+      }
+      final userId = authState.uid;
+
       // Create user feedback object
       final userFeedback = UserFeedback(
         rating: _rating,
         feltEasy: _feltEasy,
         feltTooHard: _feltTooHard,
-        comments: _commentsController.text.isNotEmpty ? _commentsController.text : null,
+        comments:
+            _commentsController.text.isNotEmpty
+                ? _commentsController.text
+                : null,
       );
-      
+
+      // Calculate calories burned
+      final caloriesBurned =
+          (widget.elapsedTime.inMinutes *
+                  _getCalorieMultiplier(widget.workout.difficulty))
+              .round();
+
       // Create workout log
       final workoutLog = WorkoutLog(
         id: 'log_${DateTime.now().millisecondsSinceEpoch}',
-        userId: 'current_user_id', // Replace with actual user ID
+        userId: userId,
         workoutId: widget.workout.id,
         startedAt: DateTime.now().subtract(widget.elapsedTime),
         completedAt: DateTime.now(),
         durationMinutes: widget.elapsedTime.inMinutes,
-        caloriesBurned: (widget.elapsedTime.inMinutes * _getCalorieMultiplier(widget.workout.difficulty)).round(),
+        caloriesBurned: caloriesBurned,
         exercisesCompleted: widget.exercisesCompleted,
         userFeedback: userFeedback,
         workoutCategory: widget.workout.category.name,
         workoutName: widget.workout.title,
         targetAreas: [widget.workout.category.name],
       );
-      
+
+      // Save workout log to Firestore
+      final firestore = FirebaseFirestore.instance;
+      await firestore
+          .collection('user_workout_history')
+          .doc(userId)
+          .collection('logs')
+          .doc(workoutLog.id)
+          .set(workoutLog.toMap());
+
+      // Update workout stats
+      final statsActions = ref.read(workoutStatsActionsProvider.notifier);
+      await statsActions.updateStatsFromWorkoutLog(workoutLog);
+
       // Log analytics event
       _analyticsService.logEvent(
         name: 'workout_feedback_submitted',
@@ -369,31 +412,46 @@ class _WorkoutCompletionScreenState extends ConsumerState<WorkoutCompletionScree
           'felt_too_hard': _feltTooHard,
         },
       );
-      
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Workout saved successfully!'),
+            backgroundColor: AppColors.popGreen,
+          ),
+        );
+      }
+
       // Navigate home
       _navigateHome();
     } catch (e) {
       // Handle error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving workout: $e')),
-      );
-      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving workout: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+
+      _analyticsService.logError(error: 'Workout save error: $e');
+
       setState(() {
         _isSaving = false;
       });
     }
   }
-  
+
   void _navigateHome() {
     // Pop to home screen
     Navigator.of(context).popUntil((route) => route.isFirst);
-    
+
     // Log analytics event
     _analyticsService.logEvent(
       name: 'workout_completion_exit',
-      parameters: {
-        'workout_id': widget.workout.id,
-      },
+      parameters: {'workout_id': widget.workout.id},
     );
   }
 }

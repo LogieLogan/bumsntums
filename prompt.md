@@ -1,9 +1,8 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 MAIN FOCUS AREA:
-workout stats not saving. workouts not saving in history
-need to fill out workout analytics with more indepth data looking at it on daily, weekly, monthly time frames. 
-need to make a complete analytics spec to cover all different aspects that should be done for this. this is potentially a premium feature we provide so it should be done very well.  
+workout analytcis
+
 
 
 project structure: 
@@ -121,6 +120,31 @@ project structure:
 │   ├── splash
 │   │   └── screens
 │   │       └── splash_screen.dart
+│   ├── workout_analytics
+│   │   ├── models
+│   │   │   ├── workout_analytics_filters.dart
+│   │   │   ├── workout_analytics_timeframe.dart
+│   │   │   └── workout_stats.dart
+│   │   ├── providers
+│   │   │   ├── workout_analytics_provider.dart
+│   │   │   ├── workout_insights_provider.dart
+│   │   │   └── workout_stats_provider.dart
+│   │   ├── screens
+│   │   │   ├── daily_analytics_screen.dart
+│   │   │   ├── monthly_analytics_screen.dart
+│   │   │   ├── weekly_analytics_screen.dart
+│   │   │   ├── workout_analytics_screen.dart
+│   │   │   └── workout_insights_screen.dart
+│   │   ├── services
+│   │   │   ├── workout_analytics_service.dart
+│   │   │   └── workout_stats_service.dart
+│   │   └── widgets
+│   │       ├── analytics_chart_card.dart
+│   │       ├── analytics_stat_card.dart
+│   │       ├── body_focus_chart.dart
+│   │       ├── period_selector.dart
+│   │       ├── workout_calendar_heatmap.dart
+│   │       └── workout_progress_chart.dart
 │   ├── workout_planning
 │   │   ├── index.dart
 │   │   ├── models
@@ -149,15 +173,13 @@ project structure:
 │       │   ├── workout.dart
 │       │   ├── workout_log.dart
 │       │   ├── workout_section.dart
-│       │   ├── workout_stats.dart
 │       │   └── workout_streak.dart
 │       ├── providers
 │       │   ├── exercise_providers.dart
 │       │   ├── exercise_selector_provider.dart
 │       │   ├── workout_editor_provider.dart
 │       │   ├── workout_execution_provider.dart
-│       │   ├── workout_provider.dart
-│       │   └── workout_stats_provider.dart
+│       │   └── workout_provider.dart
 │       ├── repositories
 │       │   └── custom_workout_repository.dart
 │       ├── screens
@@ -171,7 +193,6 @@ project structure:
 │       │   ├── exercise_selector_screen.dart
 │       │   ├── favorite_workouts_screen.dart
 │       │   ├── pre_workout_setup_screen.dart
-│       │   ├── workout_analytics_screen.dart
 │       │   ├── workout_browse_screen.dart
 │       │   ├── workout_completion_screen.dart
 │       │   ├── workout_detail_screen.dart
@@ -185,8 +206,7 @@ project structure:
 │       │   ├── exercise_service.dart
 │       │   ├── voice_guidance_service.dart
 │       │   ├── workout_execution_helper_service.dart
-│       │   ├── workout_service.dart
-│       │   └── workout_stats_service.dart
+│       │   └── workout_service.dart
 │       └── widgets
 │           ├── category_card.dart
 │           ├── editor
