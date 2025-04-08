@@ -3,8 +3,6 @@ Using the Project Knowledge AND the SPECS provided as your core instructions ple
 MAIN FOCUS AREA:
 workout analytcis
 
-
-
 project structure: 
 
 ├── app.dart

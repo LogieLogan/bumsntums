@@ -117,56 +117,57 @@ class _ProfileSetupFormState extends ConsumerState<ProfileSetupForm> {
     _scrollToTop();
   }
 
-void _updateBasicInfo(String displayName) async {
-  final userService = ref.read(userProfileServiceProvider);
-  await userService.updateDisplayName(_profile.userId, displayName.trim());
+  void _updateBasicInfo(String displayName) async {
+    final userService = ref.read(userProfileServiceProvider);
+    await userService.updateDisplayName(_profile.userId, displayName.trim());
 
-  // Add document acceptances to the profile
-  if (_basicInfoController.hasAcceptedPrivacyPolicy || _basicInfoController.hasAcceptedTerms) {
-    final acceptedDocs = Map<String, Map<String, dynamic>>.from(
-      _profile.acceptedDocuments,
-    );
-    
-    // Add privacy policy if accepted
-    if (_basicInfoController.hasAcceptedPrivacyPolicy) {
-      acceptedDocs[LegalDocumentType.privacyPolicy.documentId] = {
-        'version': _basicInfoController.privacyPolicyVersion,
-        'acceptedAt': DateTime.now().millisecondsSinceEpoch,
-      };
-
-      // Log acceptance in the document service
-      final documentService = LegalDocumentService();
-      documentService.logUserAcceptance(
-        _profile.userId,
-        LegalDocumentType.privacyPolicy,
-        _basicInfoController.privacyPolicyVersion,
+    // Add document acceptances to the profile
+    if (_basicInfoController.hasAcceptedPrivacyPolicy ||
+        _basicInfoController.hasAcceptedTerms) {
+      final acceptedDocs = Map<String, Map<String, dynamic>>.from(
+        _profile.acceptedDocuments,
       );
-    }
-    
-    // Add terms & conditions if accepted
-    if (_basicInfoController.hasAcceptedTerms) {
-      acceptedDocs[LegalDocumentType.termsAndConditions.documentId] = {
-        'version': _basicInfoController.termsVersion,
-        'acceptedAt': DateTime.now().millisecondsSinceEpoch,
-      };
 
-      // Log acceptance in the document service
-      final documentService = LegalDocumentService();
-      documentService.logUserAcceptance(
-        _profile.userId,
-        LegalDocumentType.termsAndConditions,
-        _basicInfoController.termsVersion,
-      );
+      // Add privacy policy if accepted
+      if (_basicInfoController.hasAcceptedPrivacyPolicy) {
+        acceptedDocs[LegalDocumentType.privacyPolicy.documentId] = {
+          'version': _basicInfoController.privacyPolicyVersion,
+          'acceptedAt': DateTime.now().millisecondsSinceEpoch,
+        };
+
+        // Log acceptance in the document service
+        final documentService = LegalDocumentService();
+        documentService.logUserAcceptance(
+          _profile.userId,
+          LegalDocumentType.privacyPolicy,
+          _basicInfoController.privacyPolicyVersion,
+        );
+      }
+
+      // Add terms & conditions if accepted
+      if (_basicInfoController.hasAcceptedTerms) {
+        acceptedDocs[LegalDocumentType.termsAndConditions.documentId] = {
+          'version': _basicInfoController.termsVersion,
+          'acceptedAt': DateTime.now().millisecondsSinceEpoch,
+        };
+
+        // Log acceptance in the document service
+        final documentService = LegalDocumentService();
+        documentService.logUserAcceptance(
+          _profile.userId,
+          LegalDocumentType.termsAndConditions,
+          _basicInfoController.termsVersion,
+        );
+      }
+
+      _profile = _profile.copyWith(acceptedDocuments: acceptedDocs);
     }
-    
-    _profile = _profile.copyWith(acceptedDocuments: acceptedDocs);
+
+    setState(() {
+      _currentStep++;
+    });
+    _scrollToTop();
   }
-
-  setState(() {
-    _currentStep++;
-  });
-  _scrollToTop();
-}
 
   void _updateGoals(List<FitnessGoal> goals) {
     print("Updating goals: ${goals.map((g) => g.name).join(', ')}");
@@ -660,6 +661,37 @@ void _updateBasicInfo(String displayName) async {
     }
   }
 
+  void _updateMeasurementsWithUnits(
+    DateTime? dateOfBirth,
+    double? height,
+    double? weight,
+    UnitSystem unitSystem,
+  ) {
+    print("Updating measurements:");
+    print("Date of Birth: $dateOfBirth");
+    print("Height: $height cm");
+    print("Weight: $weight kg");
+    print("Unit System: $unitSystem");
+
+    setState(() {
+      _profile = _profile.copyWith(
+        dateOfBirth: dateOfBirth,
+        heightCm: height,
+        weightKg: weight,
+        unitPreference: unitSystem,
+      );
+
+      print("Updated profile measurements:");
+      print("Date of Birth: ${_profile.dateOfBirth}");
+      print("Height: ${_profile.heightCm} cm");
+      print("Weight: ${_profile.weightKg} kg");
+      print("Unit System: ${_profile.unitPreference}");
+
+      _currentStep++;
+    });
+    _scrollToTop();
+  }
+
   Widget _buildCurrentStep() {
     switch (_currentStep) {
       case 0:
@@ -673,14 +705,16 @@ void _updateBasicInfo(String displayName) async {
           initialDateOfBirth: _profile.dateOfBirth,
           initialHeight: _profile.heightCm,
           initialWeight: _profile.weightKg,
-          onNext: _updateMeasurements,
-          onChanged: (dateOfBirth, height, weight) {
+          initialUnitSystem: _profile.unitPreference,
+          onNext: _updateMeasurementsWithUnits,
+          onChanged: (dateOfBirth, height, weight, unitSystem) {
             // Update profile immediately when measurements change
             setState(() {
               _profile = _profile.copyWith(
                 dateOfBirth: dateOfBirth,
                 heightCm: height,
                 weightKg: weight,
+                unitPreference: unitSystem,
               );
             });
           },
