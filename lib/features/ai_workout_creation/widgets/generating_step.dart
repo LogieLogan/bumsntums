@@ -1,5 +1,6 @@
 // lib/features/ai_workout_creation/screens/workout_creation/widgets/generating_step.dart
 import 'dart:math';
+import 'package:bums_n_tums/features/workouts/models/workout_category_extensions.dart';
 import 'package:flutter/material.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
@@ -100,7 +101,7 @@ class _GeneratingStepState extends State<GeneratingStep>
     _particles.clear();
 
     // Get the appropriate icon for the category
-    IconData categoryIcon = _getCategoryIcon(widget.selectedCategory);
+    IconData categoryIcon = widget.selectedCategory.displayIcon;
 
     // Create a mix of dots and icons
     for (int i = 0; i < 20; i++) {
@@ -150,36 +151,6 @@ class _GeneratingStepState extends State<GeneratingStep>
     _particleController.dispose();
     _textController.dispose();
     super.dispose();
-  }
-
-  IconData _getCategoryIcon(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return Icons.fitness_center;
-      case WorkoutCategory.tums:
-        return Icons.accessibility_new;
-      case WorkoutCategory.fullBody:
-        return Icons.sports_gymnastics;
-      case WorkoutCategory.cardio:
-        return Icons.directions_run;
-      case WorkoutCategory.quickWorkout:
-        return Icons.timer;
-    }
-  }
-
-  String _getCategoryDisplayName(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return 'Bums';
-      case WorkoutCategory.tums:
-        return 'Tums';
-      case WorkoutCategory.fullBody:
-        return 'Full Body';
-      case WorkoutCategory.cardio:
-        return 'Cardio';
-      case WorkoutCategory.quickWorkout:
-        return 'Quick';
-    }
   }
 
   @override
@@ -267,7 +238,7 @@ class _GeneratingStepState extends State<GeneratingStep>
                                     ),
                                     // Exercise icon overlay
                                     Icon(
-                                      _getCategoryIcon(widget.selectedCategory),
+                                      widget.selectedCategory.displayIcon,
                                       color: Colors.white,
                                       size: 26,
                                     ),
@@ -293,7 +264,7 @@ class _GeneratingStepState extends State<GeneratingStep>
                   reverseCurve: const Interval(0.5, 1.0, curve: Curves.easeIn),
                 ),
                 child: Text(
-                  'Creating Your Personalized\n${_getCategoryDisplayName(widget.selectedCategory)} Workout',
+                  'Creating Your Personalized\n${widget.selectedCategory.displayName} Workout',
                   style: AppTextStyles.h3,
                   textAlign: TextAlign.center,
                 ),

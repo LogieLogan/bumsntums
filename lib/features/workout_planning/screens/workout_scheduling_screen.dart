@@ -1,5 +1,6 @@
 // lib/features/workout_planning/screens/workout_scheduling_screen.dart
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
+import 'package:bums_n_tums/features/workouts/models/workout_category_extensions.dart';
 import 'package:bums_n_tums/features/workouts/repositories/custom_workout_repository.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_editor_screen.dart';
 import 'package:bums_n_tums/features/ai_workout_creation/screens/ai_workout_screen.dart';
@@ -320,15 +321,15 @@ class _WorkoutSchedulingScreenState
       backgroundColor: Colors.white,
       selectedColor:
           category != null
-              ? _getCategoryColor(category).withOpacity(0.2)
+              ? category.displayColor.withOpacity(0.2)
               : AppColors.lightGrey,
       checkmarkColor:
-          category != null ? _getCategoryColor(category) : AppColors.darkGrey,
+          category != null ? category.displayColor : AppColors.darkGrey,
       labelStyle: TextStyle(
         color:
             isSelected
                 ? (category != null
-                    ? _getCategoryColor(category)
+                    ? category.displayColor
                     : AppColors.darkGrey)
                 : AppColors.darkGrey,
       ),
@@ -516,17 +517,17 @@ class _WorkoutSchedulingScreenState
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: _getCategoryColor(
-                              workout.category,
-                            ).withOpacity(0.2),
+                            color: workout.category.displayColor.withOpacity(
+                              0.2,
+                            ),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            _getCategoryName(workout.category),
+                            workout.category.displayName,
                             style: Theme.of(
                               context,
                             ).textTheme.bodySmall?.copyWith(
-                              color: _getCategoryColor(workout.category),
+                              color: workout.category.displayColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -551,7 +552,7 @@ class _WorkoutSchedulingScreenState
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _getDifficultyName(workout.difficulty),
+                      workout.difficulty.displayName,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -733,47 +734,6 @@ class _WorkoutSchedulingScreenState
         return const TimeOfDay(hour: 12, minute: 0);
       case TimeOfDayOption.evening:
         return const TimeOfDay(hour: 18, minute: 0);
-    }
-  }
-
-  Color _getCategoryColor(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return AppColors.pink;
-      case WorkoutCategory.tums:
-        return AppColors.popCoral;
-      case WorkoutCategory.fullBody:
-        return AppColors.popBlue;
-      case WorkoutCategory.cardio:
-        return AppColors.popGreen;
-      case WorkoutCategory.quickWorkout:
-        return AppColors.popYellow;
-    }
-  }
-
-  String _getCategoryName(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return 'Bums';
-      case WorkoutCategory.tums:
-        return 'Tums';
-      case WorkoutCategory.fullBody:
-        return 'Full Body';
-      case WorkoutCategory.cardio:
-        return 'Cardio';
-      case WorkoutCategory.quickWorkout:
-        return 'Quick';
-    }
-  }
-
-  String _getDifficultyName(WorkoutDifficulty difficulty) {
-    switch (difficulty) {
-      case WorkoutDifficulty.beginner:
-        return 'Beginner';
-      case WorkoutDifficulty.intermediate:
-        return 'Intermediate';
-      case WorkoutDifficulty.advanced:
-        return 'Advanced';
     }
   }
 }

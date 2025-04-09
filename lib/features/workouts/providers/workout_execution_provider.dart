@@ -296,62 +296,50 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
   void _completeExercise() {
     final currentExercise = state.currentExercise!;
 
-    // Create a log for the completed exercise, using the adjusted values
     final exerciseLog = ExerciseLog(
       exerciseName: currentExercise.name,
-      setsCompleted:
-          state.currentSetIndex + 1, // The number of sets actually completed
+      setsCompleted: state.currentSetIndex + 1,
       repsCompleted: List.filled(
         state.currentSetIndex + 1,
         currentExercise.reps,
-      ), // Assuming the planned reps were done each set. If you want to track actual reps per set, you'd need a way to record that during the workout.
+      ),
       weightUsed: List.filled(
         state.currentSetIndex + 1,
         currentExercise.weight,
-      ), // Assuming the planned weight was used each set. Same note as above for per-set tracking.
+      ),
       duration:
           currentExercise.durationSeconds != null
               ? List.filled(
                 state.currentSetIndex + 1,
                 Duration(seconds: currentExercise.durationSeconds!),
-              ) // Assuming the planned duration.
+              )
               : [],
-      distance:
-          currentExercise.tempo?['distance']
-              as double?, // Example of accessing other parameters
-      speed:
-          currentExercise.tempo?['speed']
-              as double?, // Example of accessing other parameters
+      distance: currentExercise.tempo?['distance'] as double?,
+      speed: currentExercise.tempo?['speed'] as double?,
       difficultyRating: currentExercise.difficultyLevel,
+      targetMuscles: currentExercise.targetMuscles,
     );
 
-    // Add to completed exercise logs
     final updatedLogs = List<ExerciseLog>.from(state.completedExerciseLogs)
       ..add(exerciseLog);
 
-    // Check if there's a next exercise
     bool isLastExercise = false;
     int nextSectionIndex = state.currentSectionIndex;
     int nextExerciseIndex = state.currentExerciseIndex;
 
     if (state.workout.sections.isNotEmpty) {
-      // Workout with sections
       final currentSection = state.workout.sections[state.currentSectionIndex];
 
       if (state.currentExerciseIndex < currentSection.exercises.length - 1) {
-        // Next exercise in the same section
         nextExerciseIndex = state.currentExerciseIndex + 1;
       } else if (state.currentSectionIndex <
           state.workout.sections.length - 1) {
-        // First exercise in the next section
         nextSectionIndex = state.currentSectionIndex + 1;
         nextExerciseIndex = 0;
       } else {
-        // Last exercise in the last section
         isLastExercise = true;
       }
     } else {
-      // Legacy workout without sections
       if (state.currentExerciseIndex < state.workout.exercises.length - 1) {
         nextExerciseIndex = state.currentExerciseIndex + 1;
       } else {
@@ -360,10 +348,8 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
     }
 
     if (isLastExercise) {
-      // If it's the last exercise, complete the workout
       _completeWorkout(updatedLogs);
     } else {
-      // Get the next exercise
       final nextExercise =
           state.workout.sections.isNotEmpty
               ? state
@@ -372,7 +358,6 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
                   .exercises[nextExerciseIndex]
               : state.workout.exercises[nextExerciseIndex];
 
-      // Update state to show rest between exercises
       state = state.copyWith(
         status: ExecutionStatus.restingBetweenExercises,
         completedExerciseLogs: updatedLogs,
@@ -380,13 +365,11 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
         currentExerciseIndex: nextExerciseIndex,
         currentSetIndex: 0,
         currentExercise: nextExercise,
-        remainingRestSeconds: 30, // Default rest between exercises
+        remainingRestSeconds: 30,
       );
 
-      // Haptic feedback
       HapticFeedback.heavyImpact();
 
-      // Log analytics
       analyticsService.logEvent(
         name: 'exercise_completed',
         parameters: {

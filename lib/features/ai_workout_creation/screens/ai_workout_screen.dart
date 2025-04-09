@@ -26,15 +26,17 @@ class AIWorkoutScreen extends ConsumerStatefulWidget {
   ConsumerState<AIWorkoutScreen> createState() => _AIWorkoutScreenState();
 }
 
-class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTickerProviderStateMixin {
+class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen>
+    with SingleTickerProviderStateMixin {
   CreationStep _currentStep = CreationStep.welcome;
   WorkoutCategory _selectedCategory = WorkoutCategory.fullBody;
   int _selectedDuration = 30;
-  final TextEditingController _customRequestController = TextEditingController();
+  final TextEditingController _customRequestController =
+      TextEditingController();
   final TextEditingController _refinementController = TextEditingController();
   List<String> selectedEquipment = [];
   final AnalyticsService _analytics = AnalyticsService();
-  
+
   // Add animation controller for transitions
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -48,17 +50,17 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
     _selectedDuration = 30;
     selectedEquipment = [];
     _scrollController = ScrollController();
-    
+
     // Initialize animation controller
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeIn)
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
     _animationController.forward();
-    
+
     _analytics.logScreenView(screenName: 'ai_workout_screen');
 
     // Start with a short delay to allow for smooth animation
@@ -84,9 +86,11 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
     // Animate out current step
     _animationController.reverse().then((_) {
       setState(() {
-        _currentStep = CreationStep.values[(_currentStep.index + 1) % CreationStep.values.length];
+        _currentStep =
+            CreationStep.values[(_currentStep.index + 1) %
+                CreationStep.values.length];
       });
-      
+
       // Scroll to top and animate in new step
       _scrollToTop();
       _animationController.forward();
@@ -106,18 +110,18 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
   void _selectCategory(WorkoutCategory category) {
     // Add haptic feedback
     HapticFeedback.selectionClick();
-    
+
     // Animate transition
     _animationController.reverse().then((_) {
       setState(() {
         _selectedCategory = category;
         _currentStep = CreationStep.durationSelection;
       });
-      
+
       _scrollToTop();
       _animationController.forward();
     });
-    
+
     _analytics.logEvent(
       name: 'workout_category_selected',
       parameters: {'category': category.name},
@@ -127,18 +131,18 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
   void _selectDuration(int duration) {
     // Add haptic feedback
     HapticFeedback.selectionClick();
-    
+
     // Animate transition
     _animationController.reverse().then((_) {
       setState(() {
         _selectedDuration = duration;
         _currentStep = CreationStep.equipmentSelection;
       });
-      
+
       _scrollToTop();
       _animationController.forward();
     });
-    
+
     _analytics.logEvent(
       name: 'workout_duration_selected',
       parameters: {'duration': duration},
@@ -154,17 +158,17 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
   void _startGeneration() {
     // Add haptic feedback
     HapticFeedback.mediumImpact();
-    
+
     _animationController.reverse().then((_) {
       setState(() {
         _currentStep = CreationStep.generating;
       });
-      
+
       _scrollToTop();
       _animationController.forward();
       _generateWorkout();
     });
-    
+
     _analytics.logEvent(name: 'workout_generation_started');
   }
 
@@ -262,7 +266,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
       _scrollToTop();
       _animationController.forward();
     });
-    
+
     _analytics.logEvent(name: 'workout_refinement_started');
   }
 
@@ -313,7 +317,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
           _scrollToTop();
           _animationController.forward();
         });
-        
+
         _analytics.logEvent(
           name: 'workout_refinement_applied',
           parameters: {'request_length': refinementRequest.length},
@@ -333,7 +337,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
 
   void _startOver() {
     ref.read(workoutGenerationProvider.notifier).reset();
-    
+
     _animationController.reverse().then((_) {
       setState(() {
         _customRequestController.clear();
@@ -343,7 +347,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
       _scrollToTop();
       _animationController.forward();
     });
-    
+
     _analytics.logEvent(name: 'workout_creation_restarted');
   }
 
@@ -353,6 +357,8 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
         return ['Glutes', 'Lower Body'];
       case WorkoutCategory.tums:
         return ['Core', 'Abs'];
+      case WorkoutCategory.arms:
+        return ['Arms'];
       case WorkoutCategory.fullBody:
         return ['Full Body'];
       case WorkoutCategory.cardio:
@@ -364,7 +370,6 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI Workout Creator'),
@@ -394,10 +399,9 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
                 ),
               ),
             ),
-            
+
             // Parameter summary sheet (only shown for certain steps)
-            if (_shouldShowBottomSheet())
-              _buildBottomSheet(),
+            if (_shouldShowBottomSheet()) _buildBottomSheet(),
           ],
         ),
       ),
@@ -406,17 +410,17 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
 
   Widget _buildCurrentStep() {
     final recommendationState = ref.watch(workoutGenerationProvider);
-    
+
     switch (_currentStep) {
       case CreationStep.welcome:
         return WelcomeStep(onGetStarted: _goToNextStep);
-        
+
       case CreationStep.categorySelection:
         return CategorySelectionStep(
           selectedCategory: _selectedCategory,
           onCategorySelected: _selectCategory,
         );
-        
+
       case CreationStep.durationSelection:
         return DurationSelectionStep(
           selectedDuration: _selectedDuration,
@@ -432,7 +436,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
             });
           },
         );
-        
+
       case CreationStep.equipmentSelection:
         return EquipmentSelectionStep(
           selectedEquipment: selectedEquipment,
@@ -456,7 +460,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
             });
           },
         );
-        
+
       case CreationStep.customRequest:
         return CustomRequestStep(
           controller: _customRequestController,
@@ -474,10 +478,10 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
           },
           onGenerate: _startGeneration,
         );
-        
+
       case CreationStep.generating:
         return GeneratingStep(selectedCategory: _selectedCategory);
-        
+
       case CreationStep.result:
         if (recommendationState.workoutData != null) {
           return WorkoutResult(
@@ -486,14 +490,15 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
           );
         }
         return const Center(child: Text("No workout data available"));
-        
+
       case CreationStep.refining:
         if (recommendationState.workoutData != null) {
           return RefinementStep(
             workoutData: recommendationState.workoutData!,
             controller: _refinementController,
             isRefining: recommendationState.isLoading,
-            refinementHistoryExists: recommendationState.refinementHistory.isNotEmpty,
+            refinementHistoryExists:
+                recommendationState.refinementHistory.isNotEmpty,
             onCancel: () {
               _animationController.reverse().then((_) {
                 setState(() {
@@ -517,7 +522,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
           );
         }
         return const Center(child: Text("No workout data available"));
-        
+
       case CreationStep.refinementResult:
         if (recommendationState.workoutData != null) {
           return RefinementResult(
@@ -570,8 +575,9 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
 
   Widget _buildBottomSheet() {
     // Only add back button for steps after category selection
-    final showBackButton = _currentStep.index > CreationStep.categorySelection.index;
-    
+    final showBackButton =
+        _currentStep.index > CreationStep.categorySelection.index;
+
     // Only add continue button for certain steps
     final showContinueButton = [
       CreationStep.categorySelection,
@@ -579,7 +585,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
       CreationStep.equipmentSelection,
       CreationStep.customRequest,
     ].contains(_currentStep);
-    
+
     // Configure button text based on step
     String continueText = 'Continue';
     if (_currentStep == CreationStep.customRequest) {
@@ -587,11 +593,11 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
     } else if (_currentStep == CreationStep.refining) {
       continueText = 'Apply Changes';
     }
-    
+
     // Configure actions based on step
     VoidCallback? onBack;
     VoidCallback? onContinue;
-    
+
     switch (_currentStep) {
       case CreationStep.categorySelection:
         onContinue = _goToNextStep;
@@ -654,14 +660,15 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen> with SingleTi
       default:
         break;
     }
-    
+
     return ParameterSummarySheet(
       selectedCategory: _selectedCategory,
       selectedDuration: _selectedDuration,
       selectedEquipment: selectedEquipment,
-      specialRequest: _customRequestController.text.trim().isNotEmpty 
-          ? _customRequestController.text.trim() 
-          : null,
+      specialRequest:
+          _customRequestController.text.trim().isNotEmpty
+              ? _customRequestController.text.trim()
+              : null,
       onBack: onBack,
       onContinue: onContinue,
       showBackButton: showBackButton,

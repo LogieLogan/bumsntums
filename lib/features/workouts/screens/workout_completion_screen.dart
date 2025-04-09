@@ -424,6 +424,7 @@ class _WorkoutCompletionScreenState
       ref.invalidate(userWorkoutStatsProvider(userId));
       ref.invalidate(userWorkoutStreakProvider(userId));
       ref.invalidate(plannerItemsNotifierProvider(userId));
+      print("Attempting to invalidate workoutFrequencyDataProvider with userId: $userId, days: 90");
       ref.invalidate(workoutFrequencyDataProvider((userId: userId, days: 90)));
 
       print("Providers invalidated.");

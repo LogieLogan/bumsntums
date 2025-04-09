@@ -1,4 +1,5 @@
 // lib/features/ai_workout_creation/screens/workout_creation/widgets/parameter_summary_sheet.dart
+import 'package:bums_n_tums/features/workouts/models/workout_category_extensions.dart';
 import 'package:flutter/material.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
@@ -86,7 +87,7 @@ class ParameterSummarySheet extends StatelessWidget {
                   if (selectedCategory != null)
                     _buildParameter(
                       'Type',
-                      _formatCategory(selectedCategory!),
+                      selectedCategory!.displayName,
                       Icons.fitness_center,
                     ),
 
@@ -175,20 +176,5 @@ class ParameterSummarySheet extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatCategory(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return 'Bums';
-      case WorkoutCategory.tums:
-        return 'Tums';
-      case WorkoutCategory.fullBody:
-        return 'Full Body';
-      case WorkoutCategory.cardio:
-        return 'Cardio';
-      case WorkoutCategory.quickWorkout:
-        return 'Quick Workout';
-    }
   }
 }

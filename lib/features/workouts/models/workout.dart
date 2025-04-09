@@ -6,7 +6,7 @@ import 'workout_section.dart';
 
 enum WorkoutDifficulty { beginner, intermediate, advanced }
 
-enum WorkoutCategory { bums, tums, fullBody, cardio, quickWorkout }
+enum WorkoutCategory { bums, tums, arms, fullBody, cardio, quickWorkout }
 
 class Workout extends Equatable {
   final String id;

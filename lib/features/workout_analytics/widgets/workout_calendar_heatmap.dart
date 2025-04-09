@@ -6,11 +6,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../providers/workout_stats_provider.dart';
+import '../../../shared/components/indicators/loading_indicator.dart';
 
 class WorkoutCalendarHeatmap extends ConsumerStatefulWidget {
-  final int months; // Number of months to display
+  final int months;
+  final int daysToFetch;
 
-  const WorkoutCalendarHeatmap({Key? key, this.months = 3}) : super(key: key);
+  const WorkoutCalendarHeatmap({
+    Key? key,
+    this.months = 3, // Show 3 months by default
+    this.daysToFetch = 90, // Fetch 90 days for 3 months
+  }) : super(key: key);
 
   @override
   ConsumerState<WorkoutCalendarHeatmap> createState() =>
@@ -60,43 +68,21 @@ class _WorkoutCalendarHeatmapState
 
   @override
   Widget build(BuildContext context) {
-    // Mock workout data - in a real app, this would come from Firebase
-    // The map keys are date strings in the format 'yyyy-MM-dd'
-    final workoutData = {
-      '2025-04-01': 1, // 1 workout
-      '2025-04-03': 2, // 2 workouts
-      '2025-04-05': 1,
-      '2025-04-07': 3,
-      '2025-04-10': 1,
-      '2025-04-12': 2,
-      '2025-04-15': 1,
-      '2025-04-18': 1,
-      '2025-04-20': 2,
-      '2025-04-23': 1,
-      '2025-04-25': 1,
-      '2025-04-28': 1,
-      '2025-04-30': 1,
-      '2025-03-02': 1,
-      '2025-03-05': 2,
-      '2025-03-08': 1,
-      '2025-03-11': 1,
-      '2025-03-14': 1,
-      '2025-03-17': 2,
-      '2025-03-20': 1,
-      '2025-03-23': 1,
-      '2025-03-26': 1,
-      '2025-03-29': 1,
-      '2025-02-01': 1,
-      '2025-02-04': 1,
-      '2025-02-07': 1,
-      '2025-02-10': 2,
-      '2025-02-13': 1,
-      '2025-02-16': 1,
-      '2025-02-19': 2,
-      '2025-02-22': 1,
-      '2025-02-25': 1,
-      '2025-02-28': 1,
-    };
+    print(
+      "WorkoutCalendarHeatmap building. Watching frequency data with days: ${widget.daysToFetch}",
+    );
+    final userId = ref.watch(authStateProvider).value?.uid;
+
+    // --- Watch the Provider ---
+    // Watch the provider for frequency data
+    final frequencyDataAsync = ref.watch(
+      workoutFrequencyDataProvider(
+        (
+          userId: userId ?? '',
+          days: widget.daysToFetch,
+        ), // Provide default empty ID if null
+      ),
+    );
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -146,13 +132,41 @@ class _WorkoutCalendarHeatmapState
           ),
           const SizedBox(height: 16),
 
-          // Calendar
-          AspectRatio(
-            aspectRatio: 1.2,
-            child: _buildCalendarMonth(
-              _monthsToShow[_currentMonthIndex],
-              workoutData,
-            ),
+          frequencyDataAsync.when(
+            data: (frequencyDataList) {
+              // --- Convert the List<Map> to Map<String, int> for easy lookup ---
+              final Map<String, int> workoutData = {
+                for (var item in frequencyDataList)
+                  item['date'] as String: item['count'] as int,
+              };
+
+              // --- Build Calendar with real data ---
+              return AspectRatio(
+                aspectRatio: 1.2,
+                child: _buildCalendarMonth(
+                  _monthsToShow[_currentMonthIndex],
+                  workoutData, // <-- Use the fetched and converted data
+                ),
+              );
+            },
+            loading:
+                () => const AspectRatio(
+                  aspectRatio: 1.2, // Maintain size while loading
+                  child: Center(child: LoadingIndicator()),
+                ),
+            error:
+                (error, stack) => AspectRatio(
+                  aspectRatio: 1.2, // Maintain size on error
+                  child: Center(
+                    child: Text(
+                      'Error loading heatmap: $error',
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.error,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
           ),
 
           const SizedBox(height: 16),
@@ -183,6 +197,11 @@ class _WorkoutCalendarHeatmapState
 
     // Days of week
     const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+    final shortHash = workoutData.hashCode.toRadixString(16);
+    print(
+      "_buildCalendarMonth (${DateFormat('MMMM yyyy').format(month)}): Using workoutData map (hash: $shortHash)",
+    );
 
     return Column(
       children: [
@@ -230,6 +249,12 @@ class _WorkoutCalendarHeatmapState
                   DateTime.now().year == date.year &&
                   DateTime.now().month == date.month &&
                   DateTime.now().day == date.day;
+
+              if (workoutCount > 0 || isToday) {
+                print(
+                  "_buildCalendarMonth: Checking $dateStr, found count: $workoutCount",
+                );
+              }
 
               return Container(
                 margin: const EdgeInsets.all(2),

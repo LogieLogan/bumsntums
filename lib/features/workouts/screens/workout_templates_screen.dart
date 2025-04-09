@@ -1,4 +1,4 @@
-// lib/features/workouts/screens/workout_templates_screen.dart
+import 'package:bums_n_tums/features/workouts/models/workout_category_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -109,7 +109,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Template header with image
           ClipRRect(
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(16),
@@ -117,7 +116,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
             ),
             child: Stack(
               children: [
-                // Template image or placeholder
                 Image.asset(
                   template.imageUrl,
                   height: 120,
@@ -137,7 +135,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
                   },
                 ),
 
-                // Template category badge
                 Positioned(
                   top: 12,
                   right: 12,
@@ -147,11 +144,11 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: _getCategoryColor(template.category),
+                      color: template.category.displayColor,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      _getCategoryName(template.category),
+                      template.category.displayName,
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -163,13 +160,11 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
             ),
           ),
 
-          // Template details
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title and stats row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -202,7 +197,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
 
                 const SizedBox(height: 8),
 
-                // Template description
                 Text(
                   template.description,
                   style: Theme.of(context).textTheme.bodyMedium,
@@ -212,7 +206,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
 
                 const SizedBox(height: 16),
 
-                // Exercise count and difficulty
                 Row(
                   children: [
                     Icon(
@@ -237,7 +230,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
 
                 const SizedBox(height: 8),
 
-                // Usage stats
                 Row(
                   children: [
                     Icon(Icons.history, size: 16, color: AppColors.mediumGrey),
@@ -266,7 +258,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
 
                 const SizedBox(height: 16),
 
-                // Action buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -281,7 +272,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
                         ),
                       )
                     else ...[
-                      // Original buttons for edit and use template
                       TextButton.icon(
                         icon: const Icon(Icons.edit),
                         label: const Text('Edit'),
@@ -316,7 +306,7 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
     final newWorkout = await editorNotifier.createFromTemplate(template);
 
     if (newWorkout != null && context.mounted) {
-      Navigator.pop(context); // Close template selection screen
+      Navigator.pop(context);
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -389,36 +379,6 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
           ),
         );
       }
-    }
-  }
-
-  Color _getCategoryColor(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return AppColors.salmon;
-      case WorkoutCategory.tums:
-        return AppColors.popCoral;
-      case WorkoutCategory.fullBody:
-        return AppColors.popBlue;
-      case WorkoutCategory.cardio:
-        return AppColors.popGreen;
-      case WorkoutCategory.quickWorkout:
-        return AppColors.popTurquoise;
-    }
-  }
-
-  String _getCategoryName(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return 'Bums';
-      case WorkoutCategory.tums:
-        return 'Tums';
-      case WorkoutCategory.fullBody:
-        return 'Full Body';
-      case WorkoutCategory.cardio:
-        return 'Cardio';
-      case WorkoutCategory.quickWorkout:
-        return 'Quick';
     }
   }
 

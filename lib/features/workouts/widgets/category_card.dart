@@ -1,7 +1,7 @@
 // lib/features/workouts/widgets/category_card.dart
+import 'package:bums_n_tums/features/workouts/models/workout_category_extensions.dart';
 import 'package:flutter/material.dart';
 import '../models/workout.dart';
-import '../../../shared/theme/color_palette.dart';
 
 class CategoryCard extends StatelessWidget {
   final WorkoutCategory category;
@@ -23,7 +23,7 @@ class CategoryCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 8),
         width: 120,
         decoration: BoxDecoration(
-          color: getCategoryColor(category),
+          color: category.displayColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -37,13 +37,13 @@ class CategoryCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              getCategoryIcon(category),
+              category.displayIcon,
               color: Colors.white,
               size: 32,
             ),
             const SizedBox(height: 8),
             Text(
-              getCategoryText(category),
+              category.displayName,
               style: textTheme.titleSmall?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -54,50 +54,5 @@ class CategoryCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  IconData getCategoryIcon(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return Icons.accessibility_new;
-      case WorkoutCategory.tums:
-        return Icons.fitness_center;
-      case WorkoutCategory.fullBody:
-        return Icons.model_training;
-      case WorkoutCategory.cardio:
-        return Icons.directions_run;
-      case WorkoutCategory.quickWorkout:
-        return Icons.timer;
-    }
-  }
-
-  String getCategoryText(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return 'Bums';
-      case WorkoutCategory.tums:
-        return 'Tums';
-      case WorkoutCategory.fullBody:
-        return 'Full Body';
-      case WorkoutCategory.cardio:
-        return 'Cardio';
-      case WorkoutCategory.quickWorkout:
-        return 'Quick';
-    }
-  }
-
-  Color getCategoryColor(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return AppColors.salmon;
-      case WorkoutCategory.tums:
-        return AppColors.popTurquoise;
-      case WorkoutCategory.fullBody:
-        return AppColors.popBlue;
-      case WorkoutCategory.cardio:
-        return AppColors.popCoral;
-      case WorkoutCategory.quickWorkout:
-        return AppColors.popYellow.withOpacity(0.8);
-    }
   }
 }

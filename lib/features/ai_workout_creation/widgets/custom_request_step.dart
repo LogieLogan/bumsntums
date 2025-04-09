@@ -1,4 +1,5 @@
 // Updated lib/features/ai/screens/workout_creation/widgets/custom_request_step.dart
+import 'package:bums_n_tums/features/workouts/models/workout_category_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../shared/theme/color_palette.dart';
@@ -48,21 +49,6 @@ class _CustomRequestStepState extends State<CustomRequestStep> {
         _selectedSuggestions.add(suggestion);
       }
     });
-  }
-
-  String _getCategoryDisplayName(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return 'Bums';
-      case WorkoutCategory.tums:
-        return 'Tums';
-      case WorkoutCategory.fullBody:
-        return 'Full Body';
-      case WorkoutCategory.cardio:
-        return 'Cardio';
-      case WorkoutCategory.quickWorkout:
-        return 'Quick';
-    }
   }
 
   // Organized suggestions by category for better usability
@@ -252,7 +238,7 @@ class _CustomRequestStepState extends State<CustomRequestStep> {
               const SizedBox(height: 12),
               _buildSummaryRow(
                 'Focus',
-                _getCategoryDisplayName(widget.selectedCategory),
+                widget.selectedCategory.displayName,
                 Icons.center_focus_strong,
               ),
               _buildSummaryRow(

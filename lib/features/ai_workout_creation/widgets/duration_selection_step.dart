@@ -1,4 +1,5 @@
 // Updated lib/features/ai/screens/workout_creation/widgets/duration_selection_step.dart
+import 'package:bums_n_tums/features/workouts/models/workout_category_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../shared/theme/color_palette.dart';
@@ -18,29 +19,14 @@ class DurationSelectionStep extends StatelessWidget {
     required this.onDurationSelected,
     required this.onBack,
   }) : super(key: key);
-
-  String _getCategoryDisplayName(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return 'Bums';
-      case WorkoutCategory.tums:
-        return 'Tums';
-      case WorkoutCategory.fullBody:
-        return 'Full Body';
-      case WorkoutCategory.cardio:
-        return 'Cardio';
-      case WorkoutCategory.quickWorkout:
-        return 'Quick';
-    }
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Great choice! How long should your ${_getCategoryDisplayName(selectedCategory)} workout be?',
+          'Great choice! How long should your ${selectedCategory.displayName} workout be?',
           style: AppTextStyles.h3,
         ),
         const SizedBox(height: 12),

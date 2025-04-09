@@ -144,11 +144,29 @@ final userWorkoutStreakProvider = FutureProvider.family<WorkoutStreak, String>((
 // Provider for workout frequency data
 final workoutFrequencyDataProvider = FutureProvider.family<
   List<Map<String, dynamic>>,
-  ({String userId, int days})
->((ref, params) async {
+  ({String userId, int days}) // <<< Check the parameter type here
+>((ref, params) async { // <<< params contains userId and days
+  // Ensure user ID is handled correctly, especially if potentially null initially
+  final userId = params.userId;
+  if (userId.isEmpty) {
+     print("WorkoutFrequencyDataProvider: No user ID provided, returning empty list.");
+     return []; // Return empty if no user ID
+  }
+  final days = params.days;
+  print("WorkoutFrequencyDataProvider: Fetching for user $userId, days $days"); // Add print
   final service = ref.read(workoutStatsServiceProvider);
-  return service.getWorkoutFrequencyData(params.userId, params.days);
+  try {
+     final result = await service.getWorkoutFrequencyData(userId, days);
+     print("WorkoutFrequencyDataProvider: Fetched ${result.length} frequency data points."); // Add print
+     return result;
+  } catch (e, stackTrace) {
+     print("Error in workoutFrequencyDataProvider for user $userId: $e");
+     // Consider logging to crash reporting service
+     // ref.read(crashReportingServiceProvider).recordError(e, stackTrace);
+     throw e; // Re-throw error so the .when clause catches it
+  }
 });
+
 
 // Actions notifier for workout stats
 class WorkoutStatsActionsNotifier extends StateNotifier<AsyncValue<void>> {

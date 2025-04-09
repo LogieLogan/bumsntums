@@ -1,4 +1,5 @@
 // lib/features/workouts/widgets/editor/workout_basic_info_form.dart
+import 'package:bums_n_tums/features/workouts/models/workout_category_extensions.dart';
 import 'package:flutter/material.dart';
 import '../../models/workout.dart';
 
@@ -52,7 +53,7 @@ class WorkoutBasicInfoForm extends StatelessWidget {
           items: WorkoutCategory.values.map((category) {
             return DropdownMenuItem(
               value: category,
-              child: Text(_categoryToString(category)),
+              child: Text(category.displayName),
             );
           }).toList(),
           onChanged: (value) {
@@ -72,7 +73,7 @@ class WorkoutBasicInfoForm extends StatelessWidget {
           items: WorkoutDifficulty.values.map((difficulty) {
             return DropdownMenuItem(
               value: difficulty,
-              child: Text(_difficultyToString(difficulty)),
+              child: Text(difficulty.displayName),
             );
           }).toList(),
           onChanged: (value) {
@@ -83,31 +84,5 @@ class WorkoutBasicInfoForm extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _categoryToString(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return 'Bums';
-      case WorkoutCategory.tums:
-        return 'Tums';
-      case WorkoutCategory.fullBody:
-        return 'Full Body';
-      case WorkoutCategory.cardio:
-        return 'Cardio';
-      case WorkoutCategory.quickWorkout:
-        return 'Quick Workout';
-    }
-  }
-
-  String _difficultyToString(WorkoutDifficulty difficulty) {
-    switch (difficulty) {
-      case WorkoutDifficulty.beginner:
-        return 'Beginner';
-      case WorkoutDifficulty.intermediate:
-        return 'Intermediate';
-      case WorkoutDifficulty.advanced:
-        return 'Advanced';
-    }
   }
 }

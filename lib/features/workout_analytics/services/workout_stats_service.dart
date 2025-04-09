@@ -173,74 +173,88 @@ class WorkoutStatsService {
     );
     updatedTimeOfDay[timeOfDay] = (updatedTimeOfDay[timeOfDay] ?? 0) + 1;
 
-    Map<String, int> updatedCategory = Map.from(
-      currentStats.workoutsByCategory,
-    );
-    final List<String> tags =
-        log.targetAreas; // Use the tags saved in the log
-    final String? workoutCategoryName =
-        log.workoutCategory; // Use category as fallback
+Map<String, int> updatedCategory = Map.from(currentStats.workoutsByCategory);
 
-    // Define your primary body focus categories
-    const String lowerBody = 'Lower Body';
-    const String upperBody = 'Upper Body';
-    const String core = 'Core';
-    const String fullBody = 'Full Body';
-    const String cardio = 'Cardio';
-    const String other = 'Other'; // Default/fallback
+  // Define your primary body focus categories
+  const String lowerBody = 'Lower Body';
+  const String upperBody = 'Upper Body';
+  const String core = 'Core';
+  const String fullBody = 'Full Body'; // Less likely to be derived from muscles
+  const String cardio = 'Cardio';     // Less likely to be derived from muscles
+  const String other = 'Other';
 
-    bool categoryAssigned = false;
+  // Define muscle-to-category mapping (adjust as needed)
+  const Map<String, String> muscleToCategoryMap = {
+    // Lower Body
+    'gluteus maximus': lowerBody,
+    'glutes': lowerBody, // Add aliases
+    'gluteus medius': lowerBody,
+    'hamstrings': lowerBody,
+    'quadriceps': lowerBody,
+    'calves': lowerBody,
+    'adductors': lowerBody,
+    'abductors': lowerBody,
+    'hip abductors': lowerBody, // From Jumping Jacks example
+    'hip extensors': lowerBody,
 
-    // Map tags to categories (adjust these tags based on your actual workout tags)
-    if (tags.any(
-      (tag) =>
-          ['legs', 'glutes', 'bums', 'lower body'].contains(tag.toLowerCase()),
-    )) {
-      updatedCategory[lowerBody] = (updatedCategory[lowerBody] ?? 0) + 1;
-      categoryAssigned = true;
-    } else if (tags.any(
-      (tag) => [
-        'arms',
-        'chest',
-        'back',
-        'shoulders',
-        'upper body',
-      ].contains(tag.toLowerCase()),
-    )) {
-      updatedCategory[upperBody] = (updatedCategory[upperBody] ?? 0) + 1;
-      categoryAssigned = true;
-    } else if (tags.any(
-      (tag) => ['core', 'abs', 'tums', 'obliques'].contains(tag.toLowerCase()),
-    )) {
-      updatedCategory[core] = (updatedCategory[core] ?? 0) + 1;
-      categoryAssigned = true;
-    } else if (tags.any(
-          (tag) => ['full body', 'total body'].contains(tag.toLowerCase()),
-        ) ||
-        workoutCategoryName == WorkoutCategory.fullBody.name) {
-      // Use category name as fallback for full body if needed
-      updatedCategory[fullBody] = (updatedCategory[fullBody] ?? 0) + 1;
-      categoryAssigned = true;
-    } else if (tags.any(
-          (tag) => [
-            'cardio',
-            'hiit',
-            'running',
-            'cycling',
-          ].contains(tag.toLowerCase()),
-        ) ||
-        workoutCategoryName == WorkoutCategory.cardio.name) {
-      updatedCategory[cardio] = (updatedCategory[cardio] ?? 0) + 1;
-      categoryAssigned = true;
+    // Upper Body
+    'chest': upperBody,
+    'shoulders': upperBody,
+    'triceps': upperBody,
+    'biceps': upperBody,
+    'forearms': upperBody,
+    'back': upperBody, // General back
+    'trapezius': upperBody,
+    'rhomboids': upperBody,
+    'latissimus dorsi': upperBody,
+    'upper back': upperBody,
+
+    // Core
+    'core': core,
+    'rectus abdominis': core,
+    'obliques': core,
+    'transverse abdominis': core,
+    'lower back': core, // Often considered core
+    'erector spinae': core,
+    'hip flexors': core, // Often grouped with core work
+  };
+
+  // Keep track of categories incremented for this specific log
+  // to avoid double-counting if multiple exercises hit the same category
+  Set<String> categoriesIncrementedThisLog = {};
+
+  // Iterate through completed exercises in the log
+  for (final exerciseLog in log.exercisesCompleted) {
+    bool exerciseCategoryAssigned = false;
+    // Iterate through the muscles targeted by this exercise
+    for (final muscle in exerciseLog.targetMuscles) {
+      final category = muscleToCategoryMap[muscle.toLowerCase()];
+      if (category != null && !categoriesIncrementedThisLog.contains(category)) {
+        updatedCategory[category] = (updatedCategory[category] ?? 0) + 1;
+        categoriesIncrementedThisLog.add(category);
+        exerciseCategoryAssigned = true;
+        // Optional: break here if you only want to count the category once per exercise
+        // break;
+      }
     }
+     // If no specific muscle mapped, maybe use the overall workout category as fallback?
+     // This part needs careful consideration based on your desired logic.
+     // Example fallback (might still lead to 'Full Body' if that's the workout category)
+     if (!exerciseCategoryAssigned) {
+         final String fallbackCategory = log.workoutCategory == WorkoutCategory.bums.name ? lowerBody :
+                                        log.workoutCategory == WorkoutCategory.tums.name ? core :
+                                        log.workoutCategory == WorkoutCategory.arms.name ? upperBody :
+                                        log.workoutCategory == WorkoutCategory.cardio.name ? cardio :
+                                        log.workoutCategory == WorkoutCategory.fullBody.name ? fullBody : other;
 
-    // If no specific category was assigned based on tags/primary category name, use a default
-    if (!categoryAssigned) {
-      updatedCategory[other] = (updatedCategory[other] ?? 0) + 1;
-      print(
-        "Warning: Workout '${log.workoutName ?? log.workoutId}' (Tags: $tags, Category: $workoutCategoryName) assigned to '$other'",
-      );
-    }
+         if (!categoriesIncrementedThisLog.contains(fallbackCategory)) {
+            updatedCategory[fallbackCategory] = (updatedCategory[fallbackCategory] ?? 0) + 1;
+            categoriesIncrementedThisLog.add(fallbackCategory);
+         }
+         print("Warning: Exercise '${exerciseLog.exerciseName}' muscles (${exerciseLog.targetMuscles}) didn't map directly. Used fallback: $fallbackCategory");
+     }
+
+  }
     // --- End of Body Focus Category Logic ---
 
     // Calculate new average duration
@@ -646,6 +660,10 @@ class WorkoutStatsService {
     return result;
   }
 
+  // lib/features/workout_analytics/services/workout_stats_service.dart
+
+  // ... inside WorkoutStatsService class ...
+
   Future<List<Map<String, dynamic>>> getWorkoutFrequencyData(
     String userId,
     int days,
@@ -653,21 +671,28 @@ class WorkoutStatsService {
     try {
       final endDate = DateTime.now();
       final startDate = endDate.subtract(Duration(days: days));
+      final int startMillis = startDate.millisecondsSinceEpoch;
+      final int endMillis = endDate.millisecondsSinceEpoch;
+      print(
+        "WorkoutFrequencyDataProvider: Fetching for user $userId, days $days, from: $startDate (millis: $startMillis) to: $endDate (millis: $endMillis)", // Updated print
+      );
 
       final snapshot =
-          await _userLogsCollection(userId) // <<< USE HELPER METHOD
+          await _userLogsCollection(userId)
               .where(
-                'completedAt',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+                'completedAt', // Field is NUMBER
+                isGreaterThanOrEqualTo: startMillis, // Compare with NUMBER
               )
               .where(
-                'completedAt',
-                isLessThanOrEqualTo: Timestamp.fromDate(endDate),
+                'completedAt', // Field is NUMBER
+                isLessThanOrEqualTo: endMillis, // Compare with NUMBER
               )
-              .orderBy('completedAt')
+              .orderBy('completedAt') // Ordering still works on numbers
               .get();
+      print(
+        "WorkoutFrequencyDataProvider: Firestore query returned ${snapshot.docs.length} logs in range.",
+      ); // Add print
 
-      // ... (rest of the method remains the same - processing the snapshot)
       // Create a map of dates to count
       Map<String, int> dateCountMap = {};
 
@@ -682,33 +707,69 @@ class WorkoutStatsService {
       // Count workouts per day
       for (final doc in snapshot.docs) {
         try {
+          // *** IMPORTANT: Ensure WorkoutLog.fromMap handles completedAt being a number ***
           final log = WorkoutLog.fromMap({'id': doc.id, ...doc.data()});
+
+          // Check if parsing worked - log.completedAt should be a DateTime object here
+          if (log.completedAt == null) {
+            print(
+              "WorkoutFrequencyDataProvider: Warning - could not parse completedAt for log ${doc.id}. Skipping.",
+            );
+            continue;
+          }
+
+          // Convert the parsed DateTime back to string for map key
           final dateString =
               '${log.completedAt.year}-${log.completedAt.month.toString().padLeft(2, '0')}-${log.completedAt.day.toString().padLeft(2, '0')}';
 
+          print(
+            "WorkoutFrequencyDataProvider: Processing log completed on $dateString (Log ID: ${log.id})",
+          );
+
+          // Increment count using the date string key
           dateCountMap[dateString] = (dateCountMap[dateString] ?? 0) + 1;
-        } catch (e) {
+
+          print(
+            "WorkoutFrequencyDataProvider: Count for $dateString is now ${dateCountMap[dateString]}",
+          );
+        } catch (e, stackTrace) {
+          // Catch specific parsing errors
           if (_debugMode) {
             print(
-              'Error parsing WorkoutLog with id ${doc.id} in getWorkoutFrequencyData: $e',
+              'Error parsing WorkoutLog with id ${doc.id} in getWorkoutFrequencyData: $e\n$stackTrace',
             );
           }
+          // Log to crash reporting service here if desired
         }
       }
 
       // Convert to list of maps for chart data
       List<Map<String, dynamic>> result =
           dateCountMap.entries.map((entry) {
+            // --->>> ADD CONDITIONAL PRINT FOR NON-ZERO COUNTS <<<---
+            if (entry.value > 0) {
+              print(
+                "WorkoutFrequencyDataProvider: Final map includes ${entry.key} with count ${entry.value}",
+              );
+            }
             return {'date': entry.key, 'count': entry.value};
           }).toList();
 
       // Sort by date
       result.sort((a, b) => a['date'].compareTo(b['date']));
 
+      print(
+        // Keep this print
+        "WorkoutFrequencyDataProvider: Fetched ${result.length} frequency data points total.",
+      );
       return result;
-    } catch (e) {
-      debugPrint('Error getting workout frequency data: $e');
-      return [];
+    } catch (e, stackTrace) {
+      // Added stackTrace
+      debugPrint('Error getting workout frequency data for user $userId: $e');
+      debugPrint('Stack trace: $stackTrace'); // Print stack trace
+      // Log to crash reporting service
+      // ref.read(crashReportingServiceProvider).recordError(e, stackTrace, reason: 'Error in getWorkoutFrequencyData');
+      return []; // Return empty on error
     }
   }
 }

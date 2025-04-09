@@ -155,6 +155,7 @@ class ExerciseLog extends Equatable {
   final double? speed; // For speed-based exercises
   final int difficultyRating;
   final String? notes;
+  final List<String> targetMuscles;
 
   const ExerciseLog({
     required this.exerciseName,
@@ -166,6 +167,7 @@ class ExerciseLog extends Equatable {
     this.speed,
     required this.difficultyRating,
     this.notes,
+    this.targetMuscles = const [],
   });
 
   @override
@@ -178,6 +180,8 @@ class ExerciseLog extends Equatable {
     distance,
     speed,
     difficultyRating,
+    notes,
+    targetMuscles,
   ];
 
   Map<String, dynamic> toMap() {
@@ -191,6 +195,7 @@ class ExerciseLog extends Equatable {
       'speed': speed,
       'difficultyRating': difficultyRating,
       'notes': notes,
+      'targetMuscles': targetMuscles,
     };
   }
 
@@ -217,6 +222,7 @@ class ExerciseLog extends Equatable {
       speed: (map['speed'] as num?)?.toDouble(),
       difficultyRating: map['difficultyRating']?.toInt() ?? 3,
       notes: map['notes'],
+      targetMuscles: map['targetMuscles'] != null ? List<String>.from(map['targetMuscles']) : [],
     );
   }
 }

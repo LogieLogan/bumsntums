@@ -1,5 +1,6 @@
 // Create a new file: lib/features/workouts/screens/category_workouts_screen.dart
 
+import 'package:bums_n_tums/features/workouts/models/workout_category_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workout.dart';
@@ -8,22 +9,21 @@ import '../widgets/workout_card.dart';
 import 'workout_detail_screen.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
-import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
 
 class CategoryWorkoutsScreen extends ConsumerStatefulWidget {
   final WorkoutCategory category;
 
-  const CategoryWorkoutsScreen({
-    Key? key,
-    required this.category,
-  }) : super(key: key);
+  const CategoryWorkoutsScreen({Key? key, required this.category})
+    : super(key: key);
 
   @override
-  ConsumerState<CategoryWorkoutsScreen> createState() => _CategoryWorkoutsScreenState();
+  ConsumerState<CategoryWorkoutsScreen> createState() =>
+      _CategoryWorkoutsScreenState();
 }
 
-class _CategoryWorkoutsScreenState extends ConsumerState<CategoryWorkoutsScreen> {
+class _CategoryWorkoutsScreenState
+    extends ConsumerState<CategoryWorkoutsScreen> {
   final AnalyticsService _analytics = AnalyticsService();
 
   @override
@@ -41,15 +41,14 @@ class _CategoryWorkoutsScreenState extends ConsumerState<CategoryWorkoutsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final workoutsAsync = ref.watch(workoutsByCategoryProvider(widget.category));
+    final workoutsAsync = ref.watch(
+      workoutsByCategoryProvider(widget.category),
+    );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _getCategoryTitle(widget.category),
-          style: AppTextStyles.h2,
-        ),
-        backgroundColor: _getCategoryColor(widget.category),
+        title: Text(widget.category.displayName, style: AppTextStyles.h2),
+        backgroundColor: widget.category.displayColor,
       ),
       body: workoutsAsync.when(
         data: (workouts) {
@@ -75,9 +74,9 @@ class _CategoryWorkoutsScreenState extends ConsumerState<CategoryWorkoutsScreen>
           );
         },
         loading: () => const Center(child: LoadingIndicator()),
-        error: (error, stack) => Center(
-          child: Text('Error loading workouts: $error'),
-        ),
+        error:
+            (error, stack) =>
+                Center(child: Text('Error loading workouts: $error')),
       ),
     );
   }
@@ -91,33 +90,4 @@ class _CategoryWorkoutsScreenState extends ConsumerState<CategoryWorkoutsScreen>
     );
   }
 
-  String _getCategoryTitle(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return 'Bums Workouts';
-      case WorkoutCategory.tums:
-        return 'Tums Workouts';
-      case WorkoutCategory.fullBody:
-        return 'Full Body Workouts';
-      case WorkoutCategory.cardio:
-        return 'Cardio Workouts';
-      case WorkoutCategory.quickWorkout:
-        return 'Quick Workouts';
-    }
-  }
-
-  Color _getCategoryColor(WorkoutCategory category) {
-    switch (category) {
-      case WorkoutCategory.bums:
-        return AppColors.salmon;
-      case WorkoutCategory.tums:
-        return AppColors.popTurquoise;
-      case WorkoutCategory.fullBody:
-        return AppColors.popBlue;
-      case WorkoutCategory.cardio:
-        return AppColors.popCoral;
-      case WorkoutCategory.quickWorkout:
-        return AppColors.popYellow;
-    }
-  }
 }
