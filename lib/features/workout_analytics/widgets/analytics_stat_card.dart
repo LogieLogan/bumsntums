@@ -70,8 +70,11 @@ class AnalyticsStatCard extends StatelessWidget {
     Color color = AppColors.popCoral,
     VoidCallback? onTap,
   }) {
-    final formattedWeight = UnitConversionService.formatWeight(weightKg, unitSystem);
-    
+    final formattedWeight = UnitConversionService.formatWeight(
+      weightKg,
+      unitSystem,
+    );
+
     return AnalyticsStatCard(
       title: 'Current Weight',
       value: formattedWeight,
@@ -88,8 +91,11 @@ class AnalyticsStatCard extends StatelessWidget {
     Color color = AppColors.popBlue,
     VoidCallback? onTap,
   }) {
-    final formattedHeight = UnitConversionService.formatHeight(heightCm, unitSystem);
-    
+    final formattedHeight = UnitConversionService.formatHeight(
+      heightCm,
+      unitSystem,
+    );
+
     return AnalyticsStatCard(
       title: 'Height',
       value: formattedHeight,
@@ -107,14 +113,107 @@ class AnalyticsStatCard extends StatelessWidget {
     Color color = AppColors.popGreen,
     VoidCallback? onTap,
   }) {
-    final formattedDistance = unitSystem == UnitSystem.metric
-        ? '${distanceKm.toStringAsFixed(2)} km'
-        : '${(distanceKm * 0.621371).toStringAsFixed(2)} mi';
-    
+    final formattedDistance =
+        unitSystem == UnitSystem.metric
+            ? '${distanceKm.toStringAsFixed(2)} km'
+            : '${(distanceKm * 0.621371).toStringAsFixed(2)} mi';
+
     return AnalyticsStatCard(
       title: title,
       value: formattedDistance,
       icon: Icons.straighten,
+      color: color,
+      onTap: onTap,
+    );
+  }
+
+  // Add these factory constructors to your existing analytics_stat_card.dart file
+
+  // Factory constructor for rep count stat card
+  static AnalyticsStatCard repCount({
+    required int repCount,
+    required String title,
+    Color color = AppColors.popYellow,
+    VoidCallback? onTap,
+  }) {
+    return AnalyticsStatCard(
+      title: title,
+      value: '$repCount reps',
+      icon: Icons.repeat,
+      color: color,
+      onTap: onTap,
+    );
+  }
+
+  // Factory constructor for duration stat card
+  static AnalyticsStatCard duration({
+    required int durationMinutes,
+    required String title,
+    Color color = AppColors.salmon,
+    VoidCallback? onTap,
+  }) {
+    final hours = durationMinutes ~/ 60;
+    final minutes = durationMinutes % 60;
+
+    final formattedDuration =
+        hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
+
+    return AnalyticsStatCard(
+      title: title,
+      value: formattedDuration,
+      icon: Icons.timer,
+      color: color,
+      onTap: onTap,
+    );
+  }
+
+  // Factory constructor for personal record stat card
+  static AnalyticsStatCard personalRecord({
+    required String recordType,
+    required String recordValue,
+    required DateTime recordDate,
+    Color color = AppColors.popTurquoise,
+    VoidCallback? onTap,
+  }) {
+    IconData recordIcon;
+
+    switch (recordType.toLowerCase()) {
+      case 'weight':
+        recordIcon = Icons.fitness_center;
+        break;
+      case 'distance':
+        recordIcon = Icons.straighten;
+        break;
+      case 'reps':
+        recordIcon = Icons.repeat;
+        break;
+      case 'duration':
+        recordIcon = Icons.timer;
+        break;
+      default:
+        recordIcon = Icons.emoji_events;
+    }
+
+    return AnalyticsStatCard(
+      title: 'PR: $recordType',
+      value: recordValue,
+      icon: recordIcon,
+      color: color,
+      onTap: onTap,
+    );
+  }
+
+  // Factory constructor for workout streak stat card
+  static AnalyticsStatCard streak({
+    required int streakCount,
+    required String title,
+    Color color = AppColors.popYellow,
+    VoidCallback? onTap,
+  }) {
+    return AnalyticsStatCard(
+      title: title,
+      value: '$streakCount days',
+      icon: Icons.local_fire_department,
       color: color,
       onTap: onTap,
     );

@@ -11,10 +11,8 @@ import '../services/voice_guidance_service.dart';
 // Provider for the execution state
 final workoutExecutionProvider =
     StateNotifierProvider<WorkoutExecutionNotifier, WorkoutExecutionState>(
-  (ref) => WorkoutExecutionNotifier(
-    analyticsService: AnalyticsService(),
-  ),
-);
+      (ref) => WorkoutExecutionNotifier(analyticsService: AnalyticsService()),
+    );
 
 // Enum to represent the current state of workout execution
 enum ExecutionStatus {
@@ -67,12 +65,12 @@ class WorkoutExecutionState {
   double get progressPercentage {
     final totalExercises = workout.getAllExercises().length;
     final totalSets = workout.getAllExercises().fold<int>(
-          0,
-          (sum, exercise) => sum + exercise.sets,
-        );
-    
+      0,
+      (sum, exercise) => sum + exercise.sets,
+    );
+
     int completedSets = 0;
-    
+
     // Count completed sets from previous exercises
     if (workout.sections.isNotEmpty) {
       for (int s = 0; s < currentSectionIndex; s++) {
@@ -80,10 +78,11 @@ class WorkoutExecutionState {
           completedSets += exercise.sets;
         }
       }
-      
+
       // Count completed sets in current section
       for (int e = 0; e < currentExerciseIndex; e++) {
-        completedSets += workout.sections[currentSectionIndex].exercises[e].sets;
+        completedSets +=
+            workout.sections[currentSectionIndex].exercises[e].sets;
       }
     } else {
       // Legacy workout with no sections
@@ -91,10 +90,10 @@ class WorkoutExecutionState {
         completedSets += workout.exercises[e].sets;
       }
     }
-    
+
     // Add current exercise's completed sets
     completedSets += currentSetIndex;
-    
+
     return totalSets > 0 ? completedSets / totalSets : 0;
   }
 
@@ -102,9 +101,12 @@ class WorkoutExecutionState {
   Exercise? get nextExercise {
     if (workout.sections.isNotEmpty) {
       // Workouts with sections
-      if (currentExerciseIndex < workout.sections[currentSectionIndex].exercises.length - 1) {
+      if (currentExerciseIndex <
+          workout.sections[currentSectionIndex].exercises.length - 1) {
         // Next exercise in the same section
-        return workout.sections[currentSectionIndex].exercises[currentExerciseIndex + 1];
+        return workout
+            .sections[currentSectionIndex]
+            .exercises[currentExerciseIndex + 1];
       } else if (currentSectionIndex < workout.sections.length - 1) {
         // First exercise in the next section
         return workout.sections[currentSectionIndex + 1].exercises[0];
@@ -120,10 +122,11 @@ class WorkoutExecutionState {
 
   // Factory method to create the initial state
   factory WorkoutExecutionState.initial(Workout workout) {
-    final initialExercise = workout.sections.isNotEmpty
-        ? workout.sections[0].exercises[0]
-        : workout.exercises[0];
-        
+    final initialExercise =
+        workout.sections.isNotEmpty
+            ? workout.sections[0].exercises[0]
+            : workout.exercises[0];
+
     return WorkoutExecutionState(
       status: ExecutionStatus.initial,
       workout: workout,
@@ -162,10 +165,11 @@ class WorkoutExecutionState {
       voiceGuidanceEnabled: voiceGuidanceEnabled ?? this.voiceGuidanceEnabled,
       showRestTimers: showRestTimers ?? this.showRestTimers,
       showCountdowns: showCountdowns ?? this.showCountdowns,
-      completedExerciseLogs: completedExerciseLogs ?? this.completedExerciseLogs,
+      completedExerciseLogs:
+          completedExerciseLogs ?? this.completedExerciseLogs,
       isPaused: isPaused ?? this.isPaused,
       remainingRestSeconds: remainingRestSeconds ?? this.remainingRestSeconds,
-      remainingExerciseSeconds: 
+      remainingExerciseSeconds:
           remainingExerciseSeconds ?? this.remainingExerciseSeconds,
     );
   }
@@ -177,9 +181,9 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
   Timer? _workoutTimer;
   DateTime? _pauseStartTime;
 
-  WorkoutExecutionNotifier({
-    required this.analyticsService,
-  }) : super(WorkoutExecutionState(
+  WorkoutExecutionNotifier({required this.analyticsService})
+    : super(
+        WorkoutExecutionState(
           workout: Workout(
             id: '',
             title: '',
@@ -196,7 +200,8 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
             tags: const [],
           ),
           startTime: DateTime.now(),
-        ));
+        ),
+      );
 
   // Start a new workout
   void startWorkout(
@@ -206,9 +211,10 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
     bool showCountdowns = true,
   }) {
     // Initialize with the first exercise
-    final firstExercise = workout.sections.isNotEmpty
-        ? workout.sections[0].exercises[0]
-        : workout.exercises[0];
+    final firstExercise =
+        workout.sections.isNotEmpty
+            ? workout.sections[0].exercises[0]
+            : workout.exercises[0];
 
     // Set the initial state
     state = WorkoutExecutionState(
@@ -289,34 +295,54 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
   // Complete the current exercise and move to the next
   void _completeExercise() {
     final currentExercise = state.currentExercise!;
-    
-    // Create a log for the completed exercise
+
+    // Create a log for the completed exercise, using the adjusted values
     final exerciseLog = ExerciseLog(
       exerciseName: currentExercise.name,
-      setsCompleted: currentExercise.sets,
-      repsCompleted: currentExercise.durationSeconds != null 
-          ? 0 
-          : currentExercise.reps * currentExercise.sets,
+      setsCompleted:
+          state.currentSetIndex + 1, // The number of sets actually completed
+      repsCompleted: List.filled(
+        state.currentSetIndex + 1,
+        currentExercise.reps,
+      ), // Assuming the planned reps were done each set. If you want to track actual reps per set, you'd need a way to record that during the workout.
+      weightUsed: List.filled(
+        state.currentSetIndex + 1,
+        currentExercise.weight,
+      ), // Assuming the planned weight was used each set. Same note as above for per-set tracking.
+      duration:
+          currentExercise.durationSeconds != null
+              ? List.filled(
+                state.currentSetIndex + 1,
+                Duration(seconds: currentExercise.durationSeconds!),
+              ) // Assuming the planned duration.
+              : [],
+      distance:
+          currentExercise.tempo?['distance']
+              as double?, // Example of accessing other parameters
+      speed:
+          currentExercise.tempo?['speed']
+              as double?, // Example of accessing other parameters
       difficultyRating: currentExercise.difficultyLevel,
     );
-    
+
     // Add to completed exercise logs
     final updatedLogs = List<ExerciseLog>.from(state.completedExerciseLogs)
       ..add(exerciseLog);
-    
+
     // Check if there's a next exercise
     bool isLastExercise = false;
     int nextSectionIndex = state.currentSectionIndex;
     int nextExerciseIndex = state.currentExerciseIndex;
-    
+
     if (state.workout.sections.isNotEmpty) {
       // Workout with sections
       final currentSection = state.workout.sections[state.currentSectionIndex];
-      
+
       if (state.currentExerciseIndex < currentSection.exercises.length - 1) {
         // Next exercise in the same section
         nextExerciseIndex = state.currentExerciseIndex + 1;
-      } else if (state.currentSectionIndex < state.workout.sections.length - 1) {
+      } else if (state.currentSectionIndex <
+          state.workout.sections.length - 1) {
         // First exercise in the next section
         nextSectionIndex = state.currentSectionIndex + 1;
         nextExerciseIndex = 0;
@@ -332,16 +358,20 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
         isLastExercise = true;
       }
     }
-    
+
     if (isLastExercise) {
       // If it's the last exercise, complete the workout
       _completeWorkout(updatedLogs);
     } else {
       // Get the next exercise
-      final nextExercise = state.workout.sections.isNotEmpty
-          ? state.workout.sections[nextSectionIndex].exercises[nextExerciseIndex]
-          : state.workout.exercises[nextExerciseIndex];
-      
+      final nextExercise =
+          state.workout.sections.isNotEmpty
+              ? state
+                  .workout
+                  .sections[nextSectionIndex]
+                  .exercises[nextExerciseIndex]
+              : state.workout.exercises[nextExerciseIndex];
+
       // Update state to show rest between exercises
       state = state.copyWith(
         status: ExecutionStatus.restingBetweenExercises,
@@ -352,10 +382,10 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
         currentExercise: nextExercise,
         remainingRestSeconds: 30, // Default rest between exercises
       );
-      
+
       // Haptic feedback
       HapticFeedback.heavyImpact();
-      
+
       // Log analytics
       analyticsService.logEvent(
         name: 'exercise_completed',
@@ -371,22 +401,21 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
   void _completeWorkout(List<ExerciseLog> exerciseLogs) {
     // Calculate total duration
     final endTime = DateTime.now();
-    final durationMinutes = 
-        endTime.difference(state.startTime).inMinutes;
-    
+    final durationMinutes = endTime.difference(state.startTime).inMinutes;
+
     // Update state
     state = state.copyWith(
       status: ExecutionStatus.completed,
       completedExerciseLogs: exerciseLogs,
       elapsedTime: endTime.difference(state.startTime),
     );
-    
+
     // Haptic feedback
     HapticFeedback.heavyImpact();
-    
+
     // Stop the timer
     _workoutTimer?.cancel();
-    
+
     // Log analytics
     analyticsService.logWorkoutCompleted(
       workoutId: state.workout.id,
@@ -398,15 +427,12 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
   // Pause the workout
   void pauseWorkout() {
     if (state.isPaused) return;
-    
+
     _pauseStartTime = DateTime.now();
     _workoutTimer?.cancel();
-    
-    state = state.copyWith(
-      isPaused: true,
-      status: ExecutionStatus.paused,
-    );
-    
+
+    state = state.copyWith(isPaused: true, status: ExecutionStatus.paused);
+
     // Log analytics
     analyticsService.logEvent(
       name: 'workout_paused',
@@ -420,30 +446,29 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
   // Resume the workout
   void resumeWorkout() {
     if (!state.isPaused) return;
-    
+
     final pauseDuration = DateTime.now().difference(_pauseStartTime!);
     _pauseStartTime = null;
-    
+
     // Adjust the start time to account for the pause
     final adjustedStartTime = state.startTime.add(pauseDuration);
-    
+
     state = state.copyWith(
       isPaused: false,
       startTime: adjustedStartTime,
-      status: state.status == ExecutionStatus.paused
-          ? ExecutionStatus.exerciseInProgress
-          : state.status,
+      status:
+          state.status == ExecutionStatus.paused
+              ? ExecutionStatus.exerciseInProgress
+              : state.status,
     );
-    
+
     // Restart the timer
     _startTimer();
-    
+
     // Log analytics
     analyticsService.logEvent(
       name: 'workout_resumed',
-      parameters: {
-        'pause_duration_seconds': pauseDuration.inSeconds,
-      },
+      parameters: {'pause_duration_seconds': pauseDuration.inSeconds},
     );
   }
 
@@ -456,61 +481,57 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
       // If between exercises, start the next exercise
       startExercise();
     }
-    
+
     // Log analytics
     analyticsService.logEvent(
       name: 'rest_skipped',
       parameters: {
-        'rest_type': state.status == ExecutionStatus.betweenSets
-            ? 'between_sets'
-            : 'between_exercises',
+        'rest_type':
+            state.status == ExecutionStatus.betweenSets
+                ? 'between_sets'
+                : 'between_exercises',
       },
     );
   }
 
   // Adjust the rest time
   void adjustRestTime(int seconds) {
-    if (state.status != ExecutionStatus.betweenSets && 
+    if (state.status != ExecutionStatus.betweenSets &&
         state.status != ExecutionStatus.restingBetweenExercises) {
       return;
     }
-    
+
     int newRestTime = (state.remainingRestSeconds ?? 0) + seconds;
-    
+
     // Ensure rest time is at least 0
     newRestTime = newRestTime < 0 ? 0 : newRestTime;
-    
-    state = state.copyWith(
-      remainingRestSeconds: newRestTime,
-    );
-    
+
+    state = state.copyWith(remainingRestSeconds: newRestTime);
+
     // Log analytics
     analyticsService.logEvent(
       name: 'rest_time_adjusted',
-      parameters: {
-        'adjustment_seconds': seconds,
-        'new_rest_time': newRestTime,
-      },
+      parameters: {'adjustment_seconds': seconds, 'new_rest_time': newRestTime},
     );
   }
-  
+
   // Start the workout timer
   void _startTimer() {
     _workoutTimer?.cancel();
     _workoutTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       // Skip if paused
       if (state.isPaused) return;
-      
+
       // Update the elapsed time
       final newElapsedTime = DateTime.now().difference(state.startTime);
-      
+
       // Handle timed exercises
       int? updatedExerciseSeconds;
-      if (state.status == ExecutionStatus.exerciseInProgress && 
+      if (state.status == ExecutionStatus.exerciseInProgress &&
           state.currentExercise?.durationSeconds != null &&
           state.remainingExerciseSeconds != null) {
         updatedExerciseSeconds = state.remainingExerciseSeconds! - 1;
-        
+
         // If exercise timer reaches zero, complete the set
         if (updatedExerciseSeconds <= 0) {
           timer.cancel();
@@ -518,14 +539,14 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
           return;
         }
       }
-      
+
       // Handle rest periods
       int? updatedRestSeconds;
-      if ((state.status == ExecutionStatus.betweenSets || 
-           state.status == ExecutionStatus.restingBetweenExercises) &&
+      if ((state.status == ExecutionStatus.betweenSets ||
+              state.status == ExecutionStatus.restingBetweenExercises) &&
           state.remainingRestSeconds != null) {
         updatedRestSeconds = state.remainingRestSeconds! - 1;
-        
+
         // If rest timer reaches zero, move to the next exercise/set
         if (updatedRestSeconds <= 0) {
           timer.cancel();
@@ -533,7 +554,7 @@ class WorkoutExecutionNotifier extends StateNotifier<WorkoutExecutionState> {
           return;
         }
       }
-      
+
       // Update the state
       state = state.copyWith(
         elapsedTime: newElapsedTime,

@@ -147,7 +147,12 @@ class WorkoutLog extends Equatable {
 class ExerciseLog extends Equatable {
   final String exerciseName;
   final int setsCompleted;
-  final int repsCompleted;
+  final List<int?> repsCompleted; // Allow different reps per set
+  final List<double?> weightUsed; // Allow different weights per set
+  final List<Duration?>
+  duration; // For timed exercises, allow different durations per set
+  final double? distance; // For distance-based exercises
+  final double? speed; // For speed-based exercises
   final int difficultyRating;
   final String? notes;
 
@@ -155,6 +160,10 @@ class ExerciseLog extends Equatable {
     required this.exerciseName,
     required this.setsCompleted,
     required this.repsCompleted,
+    required this.weightUsed,
+    required this.duration,
+    this.distance,
+    this.speed,
     required this.difficultyRating,
     this.notes,
   });
@@ -164,6 +173,10 @@ class ExerciseLog extends Equatable {
     exerciseName,
     setsCompleted,
     repsCompleted,
+    weightUsed,
+    duration,
+    distance,
+    speed,
     difficultyRating,
   ];
 
@@ -171,8 +184,13 @@ class ExerciseLog extends Equatable {
     return {
       'exerciseName': exerciseName,
       'setsCompleted': setsCompleted,
-      'repsCompleted': repsCompleted,
+      'repsCompleted': repsCompleted.map((r) => r).toList(),
+      'weightUsed': weightUsed.map((w) => w).toList(),
+      'duration': duration.map((d) => d?.inMilliseconds).toList(),
+      'distance': distance,
+      'speed': speed,
       'difficultyRating': difficultyRating,
+      'notes': notes,
     };
   }
 
@@ -180,8 +198,25 @@ class ExerciseLog extends Equatable {
     return ExerciseLog(
       exerciseName: map['exerciseName'] ?? '',
       setsCompleted: map['setsCompleted']?.toInt() ?? 0,
-      repsCompleted: map['repsCompleted']?.toInt() ?? 0,
+      repsCompleted:
+          (map['repsCompleted'] as List<dynamic>?)
+              ?.map((r) => r as int?)
+              .toList() ??
+          [],
+      weightUsed:
+          (map['weightUsed'] as List<dynamic>?)
+              ?.map((w) => (w as num?)?.toDouble())
+              .toList() ??
+          [],
+      duration:
+          (map['duration'] as List<dynamic>?)
+              ?.map((d) => d != null ? Duration(milliseconds: d as int) : null)
+              .toList() ??
+          [],
+      distance: (map['distance'] as num?)?.toDouble(),
+      speed: (map['speed'] as num?)?.toDouble(),
       difficultyRating: map['difficultyRating']?.toInt() ?? 3,
+      notes: map['notes'],
     );
   }
 }

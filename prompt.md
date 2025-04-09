@@ -1,7 +1,16 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
-MAIN FOCUS AREA:
-workout analytcis
+Issues/thoughts 
+workout stats analytics widget on home screen doesnt update until app is restarted.
+'your progress' section is showing dummy data how can we get real data
+'body focus area' is 100% unknown this should be broken down into distinct catgories based on a holitic tag we have for each workout. 
+Is the workout calendar showing real data? this should be updated when completing a workout. 
+
+MAIN direction
+Consolidation of workouts analytics data so it can be evaluated and used effectively thoughtout the app in things such as planning, logging wokrouts completed and analytics.
+
+Also need to review why I have both and anaytics provider and a stats provider? is this a dupe? 
+
 
 project structure: 
 
@@ -119,7 +128,10 @@ project structure:
 │   │   └── screens
 │   │       └── splash_screen.dart
 │   ├── workout_analytics
+│   │   ├── data
+│   │   │   └── achievement_definitions.dart
 │   │   ├── models
+│   │   │   ├── workout_achievement.dart
 │   │   │   ├── workout_analytics_filters.dart
 │   │   │   ├── workout_analytics_timeframe.dart
 │   │   │   └── workout_stats.dart
@@ -128,24 +140,23 @@ project structure:
 │   │   │   ├── workout_insights_provider.dart
 │   │   │   └── workout_stats_provider.dart
 │   │   ├── screens
-│   │   │   ├── daily_analytics_screen.dart
-│   │   │   ├── monthly_analytics_screen.dart
-│   │   │   ├── weekly_analytics_screen.dart
-│   │   │   ├── workout_analytics_screen.dart
-│   │   │   └── workout_insights_screen.dart
+│   │   │   └── workout_analytics_screen.dart
 │   │   ├── services
-│   │   │   ├── workout_analytics_service.dart
 │   │   │   └── workout_stats_service.dart
 │   │   └── widgets
+│   │       ├── achievements_section.dart
 │   │       ├── analytics_chart_card.dart
 │   │       ├── analytics_stat_card.dart
 │   │       ├── body_focus_chart.dart
 │   │       ├── period_selector.dart
+│   │       ├── personal_records_section.dart
+│   │       ├── unit_preference_toggle.dart
 │   │       ├── workout_calendar_heatmap.dart
 │   │       └── workout_progress_chart.dart
 │   ├── workout_planning
 │   │   ├── index.dart
 │   │   ├── models
+│   │   │   ├── planner_item.dart
 │   │   │   ├── scheduled_workout.dart
 │   │   │   └── workout_plan.dart
 │   │   ├── providers
@@ -157,6 +168,7 @@ project structure:
 │   │   │   └── workout_scheduling_screen.dart
 │   │   └── widgets
 │   │       ├── day_schedule_card.dart
+│   │       ├── logged_workout_item_widget.dart
 │   │       ├── scheduled_workout_item.dart
 │   │       └── workout_day_header.dart
 │   └── workouts
@@ -290,7 +302,8 @@ project structure:
 │   │   ├── gdpr_service.dart
 │   │   ├── legal_document_service.dart
 │   │   ├── resource_loader_service.dart
-│   │   └── shake_detector_service.dart
+│   │   ├── shake_detector_service.dart
+│   │   └── unit_conversion_service.dart
 │   ├── theme
 │   │   ├── app_theme.dart
 │   │   ├── color_palette.dart

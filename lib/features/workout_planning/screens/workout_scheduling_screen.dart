@@ -690,7 +690,7 @@ class _WorkoutSchedulingScreenState
 
       // Get the planning notifier
       final planningNotifier = ref.read(
-        workoutPlanningNotifierProvider(widget.userId).notifier,
+        plannerItemsNotifierProvider(widget.userId).notifier,
       );
 
       // Schedule the workout

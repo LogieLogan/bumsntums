@@ -1,17 +1,20 @@
 // lib/features/workouts/screens/workout_completion_screen.dart
 import 'package:bums_n_tums/features/auth/providers/auth_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../workout_analytics/providers/workout_stats_provider.dart';
+import 'package:bums_n_tums/features/workout_planning/providers/workout_planning_provider.dart';
+import 'package:bums_n_tums/features/workouts/providers/workout_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:confetti/confetti.dart';
+import 'package:uuid/uuid.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/components/buttons/secondary_button.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../models/workout.dart';
 import '../models/workout_log.dart';
-import '../services/workout_service.dart';
 import '../../workout_analytics/providers/workout_stats_provider.dart';
+import '../../../shared/providers/crash_reporting_provider.dart';
 
 class WorkoutCompletionScreen extends ConsumerStatefulWidget {
   final Workout workout;
@@ -344,38 +347,51 @@ class _WorkoutCompletionScreenState
   }
 
   Future<void> _saveWorkoutLog() async {
+    // Prevent double taps
+    if (_isSaving) return;
+
     setState(() {
       _isSaving = true;
     });
 
-    try {
-      // Get the current user ID from auth provider
-      final authState = ref.read(authStateProvider).value;
-      if (authState == null) {
-        throw Exception('User not logged in');
-      }
-      final userId = authState.uid;
+    final userId = ref.read(authStateProvider).value?.uid;
 
-      // Create user feedback object
+    // --- 1. Validate User ---
+    if (userId == null) {
+      print("Error: User not logged in.");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error: You must be logged in to save workouts.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        setState(() => _isSaving = false);
+      }
+      return;
+    }
+
+    try {
       final userFeedback = UserFeedback(
         rating: _rating,
         feltEasy: _feltEasy,
         feltTooHard: _feltTooHard,
         comments:
-            _commentsController.text.isNotEmpty
-                ? _commentsController.text
+            _commentsController.text.trim().isNotEmpty
+                ? _commentsController.text.trim()
                 : null,
       );
 
-      // Calculate calories burned
       final caloriesBurned =
           (widget.elapsedTime.inMinutes *
                   _getCalorieMultiplier(widget.workout.difficulty))
               .round();
 
-      // Create workout log
+      const uuid = Uuid();
+      final logId = 'log_${DateTime.now().millisecondsSinceEpoch}_${uuid.v4()}';
+
       final workoutLog = WorkoutLog(
-        id: 'log_${DateTime.now().millisecondsSinceEpoch}',
+        id: logId,
         userId: userId,
         workoutId: widget.workout.id,
         startedAt: DateTime.now().subtract(widget.elapsedTime),
@@ -386,61 +402,93 @@ class _WorkoutCompletionScreenState
         userFeedback: userFeedback,
         workoutCategory: widget.workout.category.name,
         workoutName: widget.workout.title,
-        targetAreas: [widget.workout.category.name],
+        targetAreas: widget.workout.tags,
+        isShared: false,
+        privacy: 'private',
+        isOfflineCreated: false,
+        syncStatus: 'syncing',
       );
 
-      // Save workout log to Firestore
-      final firestore = FirebaseFirestore.instance;
-      await firestore
-          .collection('user_workout_history')
-          .doc(userId)
-          .collection('logs')
-          .doc(workoutLog.id)
-          .set(workoutLog.toMap());
+      final workoutService = ref.read(workoutServiceProvider);
+      await workoutService.logCompletedWorkout(workoutLog);
+      print(
+        "Workout log saved successfully via WorkoutService (ID: ${workoutLog.id}).",
+      );
 
-      // Update workout stats
-      final statsActions = ref.read(workoutStatsActionsProvider.notifier);
-      await statsActions.updateStatsFromWorkoutLog(workoutLog);
+      final statsActionsNotifier = ref.read(workoutStatsActionsProvider.notifier);
+      await statsActionsNotifier.updateStatsFromWorkoutLog(workoutLog);
+      print("Aggregated stats update triggered successfully.");
 
-      // Log analytics event
+      print("Invalidating relevant providers...");
+      ref.invalidate(workoutStatsProvider(userId));
+      ref.invalidate(userWorkoutStatsProvider(userId));
+      ref.invalidate(userWorkoutStreakProvider(userId));
+      ref.invalidate(plannerItemsNotifierProvider(userId));
+      ref.invalidate(workoutFrequencyDataProvider((userId: userId, days: 90)));
+
+      print("Providers invalidated.");
+
       _analyticsService.logEvent(
-        name: 'workout_feedback_submitted',
+        name: 'workout_log_saved',
         parameters: {
-          'workout_id': widget.workout.id,
-          'rating': _rating,
-          'felt_easy': _feltEasy,
-          'felt_too_hard': _feltTooHard,
+          'workout_id': workoutLog.workoutId,
+          'workout_name': workoutLog.workoutName ?? 'N/A',
+          'duration_minutes': workoutLog.durationMinutes,
+          'calories_burned': workoutLog.caloriesBurned,
+          'rating': workoutLog.userFeedback.rating,
+          'category': workoutLog.workoutCategory ?? 'N/A',
         },
       );
 
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Workout saved successfully!'),
-            backgroundColor: AppColors.popGreen,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Workout saved successfully!'),
+          backgroundColor: AppColors.popGreen,
+          duration: Duration(seconds: 2),
+        ),
+      );
 
-      // Navigate home
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
       _navigateHome();
-    } catch (e) {
-      // Handle error
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error saving workout: $e'),
-            backgroundColor: AppColors.error,
-          ),
+    } catch (e, stackTrace) {
+      print("Error saving workout log: $e");
+      print(stackTrace);
+
+      try {
+        final crashReporter = ref.read(crashReportingServiceProvider);
+        await crashReporter.recordError(
+          e,
+          stackTrace,
+          reason: 'Error saving workout log in WorkoutCompletionScreen',
+          fatal: false,
+        );
+        print("Error reported to Crash Reporting Service.");
+      } catch (reportError) {
+        print(
+          "Failed to report error to Crash Reporting Service: $reportError",
         );
       }
 
-      _analyticsService.logError(error: 'Workout save error: $e');
+      _analyticsService.logEvent(
+        name: 'workout_save_failed',
+        parameters: {'error_type': e.runtimeType.toString()},
+      );
 
-      setState(() {
-        _isSaving = false;
-      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save workout: ${e.toString()}'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 

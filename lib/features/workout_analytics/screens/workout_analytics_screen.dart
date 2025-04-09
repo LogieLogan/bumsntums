@@ -1,4 +1,5 @@
 // lib/features/workout_analytics/screens/workout_analytics_screen.dart
+import 'package:bums_n_tums/features/workout_analytics/widgets/achievements_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -23,21 +24,30 @@ class WorkoutAnalyticsScreen extends ConsumerStatefulWidget {
     : super(key: key);
 
   @override
-  ConsumerState<WorkoutAnalyticsScreen> createState() => _WorkoutAnalyticsScreenState();
+  ConsumerState<WorkoutAnalyticsScreen> createState() =>
+      _WorkoutAnalyticsScreenState();
 }
 
-class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen> with SingleTickerProviderStateMixin {
+class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
+    with SingleTickerProviderStateMixin {
   final _analyticsService = AnalyticsService();
   late TabController _tabController;
   AnalyticsTimeframe _timeframe = AnalyticsTimeframe.monthly;
-  
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _analyticsService.logScreenView(screenName: 'workout_analytics_screen');
+
+    // Initialize the user's achievements if needed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(workoutStatsActionsProvider.notifier)
+          .initializeAchievements(widget.userId);
+    });
   }
-  
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -48,7 +58,7 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
   Widget build(BuildContext context) {
     final userStatsAsync = ref.watch(userWorkoutStatsProvider(widget.userId));
     final userStreakAsync = ref.watch(userWorkoutStreakProvider(widget.userId));
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Workout Analytics', style: AppTextStyles.h2),
@@ -73,7 +83,9 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
         onRefresh: () async {
           ref.refresh(userWorkoutStatsProvider(widget.userId));
           ref.refresh(userWorkoutStreakProvider(widget.userId));
-          ref.refresh(workoutFrequencyDataProvider((userId: widget.userId, days: 90)));
+          ref.refresh(
+            workoutFrequencyDataProvider((userId: widget.userId, days: 90)),
+          );
         },
         child: SingleChildScrollView(
           child: Padding(
@@ -84,62 +96,153 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
                 // Summary cards
                 userStatsAsync.when(
                   data: (stats) => _buildSummarySection(stats, context),
-                  loading: () => const SizedBox(height: 200, child: LoadingIndicator()),
+                  loading:
+                      () => const SizedBox(
+                        height: 200,
+                        child: LoadingIndicator(),
+                      ),
                   error: (error, _) => _buildErrorWidget(error),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Current streak section
                 userStreakAsync.when(
                   data: (streak) => _buildStreakSection(streak, context, ref),
-                  loading: () => const SizedBox(height: 150, child: LoadingIndicator()),
+                  loading:
+                      () => const SizedBox(
+                        height: 150,
+                        child: LoadingIndicator(),
+                      ),
                   error: (error, _) => _buildErrorWidget(error),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
+                // Most Completed Exercises Section
+                Text(
+                  'Most Completed Exercises',
+                  style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                userStatsAsync.when(
+                  data: (stats) {
+                    if (stats.exerciseCompletionCounts.isEmpty) {
+                      return const Text('No exercise data yet.');
+                    }
+
+                    // Sort exercises by completion count (descending)
+                    final sortedExercises =
+                        stats.exerciseCompletionCounts.entries.toList()
+                          ..sort((a, b) => b.value.compareTo(a.value));
+
+                    // Take the top 3 (or fewer if there aren't that many)
+                    final topExercises = sortedExercises.take(3).toList();
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics:
+                          const NeverScrollableScrollPhysics(), // To avoid nested scrolling
+                      itemCount: topExercises.length,
+                      itemBuilder: (context, index) {
+                        final exercise = topExercises[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            '${index + 1}. ${exercise.key}: ${exercise.value} times',
+                            style: AppTextStyles.body,
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  loading:
+                      () => const SizedBox(
+                        height: 100,
+                        child: LoadingIndicator(),
+                      ),
+                  error: (error, _) => _buildErrorWidget(error),
+                ),
+
+                const SizedBox(height: 24),
+
                 // Progress section
-                Text('Your Progress', style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Your Progress',
+                  style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
                 userStatsAsync.when(
-                  data: (stats) => WorkoutProgressChart(
-                    stats: stats,
-                    timeframe: _timeframe,
-                  ),
-                  loading: () => const SizedBox(height: 200, child: LoadingIndicator()),
+                  data:
+                      (stats) => WorkoutProgressChart(
+                        stats: stats,
+                        timeframe: _timeframe,
+                      ),
+                  loading:
+                      () => const SizedBox(
+                        height: 200,
+                        child: LoadingIndicator(),
+                      ),
                   error: (error, _) => _buildErrorWidget(error),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Body focus distribution
-                Text('Body Focus Areas', style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Body Focus Areas',
+                  style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
                 userStatsAsync.when(
-                  data: (stats) => BodyFocusChart(
-                    workoutsByCategory: stats.workoutsByCategory,
-                    totalWorkouts: stats.totalWorkoutsCompleted,
-                  ),
-                  loading: () => const SizedBox(height: 250, child: LoadingIndicator()),
+                  data:
+                      (stats) => BodyFocusChart(
+                        workoutsByCategory: stats.workoutsByCategory,
+                        totalWorkouts: stats.totalWorkoutsCompleted,
+                      ),
+                  loading:
+                      () => const SizedBox(
+                        height: 250,
+                        child: LoadingIndicator(),
+                      ),
                   error: (error, _) => _buildErrorWidget(error),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Workout calendar heatmap
-                Text('Workout Calendar', style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Workout Calendar',
+                  style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
                 const WorkoutCalendarHeatmap(),
-                
+
+                // const SizedBox(height: 24),
+
+                // // Achievements section
+                // Text(
+                //   'Achievements',
+                //   style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
+                // ),
+                // const SizedBox(height: 16),
+                // AchievementsSection(userId: widget.userId),
+
                 const SizedBox(height: 24),
-                
+
                 // Activity pattern
-                Text('Activity Pattern', style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Activity Pattern',
+                  style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
                 userStatsAsync.when(
                   data: (stats) => _buildActivityPatternChart(stats),
-                  loading: () => const SizedBox(height: 200, child: LoadingIndicator()),
+                  loading:
+                      () => const SizedBox(
+                        height: 200,
+                        child: LoadingIndicator(),
+                      ),
                   error: (error, _) => _buildErrorWidget(error),
                 ),
               ],
@@ -157,10 +260,7 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.salmon,
-            AppColors.salmon.withOpacity(0.8),
-          ],
+          colors: [AppColors.salmon, AppColors.salmon.withOpacity(0.8)],
         ),
         borderRadius: BorderRadius.circular(20),
       ),
@@ -290,7 +390,11 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
           children: [
             Row(
               children: [
-                Icon(Icons.local_fire_department, color: AppColors.popYellow, size: 24),
+                Icon(
+                  Icons.local_fire_department,
+                  color: AppColors.popYellow,
+                  size: 24,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Current Streak',
@@ -308,9 +412,10 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: streak.isStreakActive
-                              ? AppColors.popYellow.withOpacity(0.1)
-                              : AppColors.mediumGrey.withOpacity(0.1),
+                          color:
+                              streak.isStreakActive
+                                  ? AppColors.popYellow.withOpacity(0.1)
+                                  : AppColors.mediumGrey.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
@@ -318,9 +423,10 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
                             Text(
                               streak.currentStreak.toString(),
                               style: AppTextStyles.h1.copyWith(
-                                color: streak.isStreakActive
-                                    ? AppColors.popYellow
-                                    : AppColors.mediumGrey,
+                                color:
+                                    streak.isStreakActive
+                                        ? AppColors.popYellow
+                                        : AppColors.mediumGrey,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -332,7 +438,8 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            if (!streak.isStreakActive && streak.currentStreak > 0)
+                            if (!streak.isStreakActive &&
+                                streak.currentStreak > 0)
                               Padding(
                                 padding: const EdgeInsets.only(top: 8),
                                 child: OutlinedButton.icon(
@@ -346,7 +453,9 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
                                   label: const Text('Protect Streak'),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: AppColors.salmon,
-                                    side: const BorderSide(color: AppColors.salmon),
+                                    side: const BorderSide(
+                                      color: AppColors.salmon,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -402,7 +511,7 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
       ),
     );
   }
-  
+
   Widget _buildActivityPatternChart(UserWorkoutStats stats) {
     if (stats.workoutsByDayOfWeek.every((count) => count == 0)) {
       return _buildEmptyDataWidget('No activity pattern data available');
@@ -410,7 +519,8 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
 
     // Days of week labels
     final days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    final maxValue = stats.workoutsByDayOfWeek.reduce((a, b) => a > b ? a : b).toDouble();
+    final maxValue =
+        stats.workoutsByDayOfWeek.reduce((a, b) => a > b ? a : b).toDouble();
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -429,37 +539,43 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: days.map((day) {
-              final index = days.indexOf(day);
-              return Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      day,
-                      style: AppTextStyles.small.copyWith(
-                        color: AppColors.mediumGrey,
-                      ),
+            children:
+                days.map((day) {
+                  final index = days.indexOf(day);
+                  return Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          day,
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.mediumGrey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          height:
+                              120 *
+                              (stats.workoutsByDayOfWeek[index] / maxValue),
+                          width: 25,
+                          decoration: BoxDecoration(
+                            color: _getActivityBarColor(
+                              stats.workoutsByDayOfWeek[index],
+                              maxValue,
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          stats.workoutsByDayOfWeek[index].toString(),
+                          style: AppTextStyles.small.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 120 * (stats.workoutsByDayOfWeek[index] / maxValue),
-                      width: 25,
-                      decoration: BoxDecoration(
-                        color: _getActivityBarColor(stats.workoutsByDayOfWeek[index], maxValue),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      stats.workoutsByDayOfWeek[index].toString(),
-                      style: AppTextStyles.small.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                  );
+                }).toList(),
           ),
           const SizedBox(height: 16),
           Center(
@@ -478,7 +594,7 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
 
   Color _getActivityBarColor(int value, double maxValue) {
     if (value == 0) return AppColors.lightGrey;
-    
+
     final ratio = value / maxValue;
     if (ratio < 0.3) return AppColors.popGreen.withOpacity(0.5);
     if (ratio < 0.6) return AppColors.popGreen.withOpacity(0.7);

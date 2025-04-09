@@ -1,4 +1,5 @@
-// lib/features/workouts/services/workout_stats_service.dart
+// lib/features/workout_analytics/services/workout_stats_service.dart
+import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../../workouts/models/workout_log.dart';
@@ -9,9 +10,17 @@ import '../../../shared/analytics/firebase_analytics_service.dart';
 class WorkoutStatsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AnalyticsService _analytics;
-  final bool _debugMode = true;
+  final bool _debugMode = kDebugMode;
 
   WorkoutStatsService(this._analytics);
+
+  static const String _logsCollectionPath = 'logs';
+  CollectionReference<Map<String, dynamic>> _userLogsCollection(String userId) {
+    return _firestore
+        .collection('workout_logs')
+        .doc(userId)
+        .collection(_logsCollectionPath);
+  }
 
   // Get user's workout stats
   Future<UserWorkoutStats> getUserWorkoutStats(String userId) async {
@@ -164,27 +173,130 @@ class WorkoutStatsService {
     );
     updatedTimeOfDay[timeOfDay] = (updatedTimeOfDay[timeOfDay] ?? 0) + 1;
 
-    // Update workouts by category
     Map<String, int> updatedCategory = Map.from(
       currentStats.workoutsByCategory,
     );
-    // We would need the workout category here - assume we get it from the workout ID
-    // For now, just use 'unknown' as placeholder
-    updatedCategory['unknown'] = (updatedCategory['unknown'] ?? 0) + 1;
+    final List<String> tags =
+        log.targetAreas; // Use the tags saved in the log
+    final String? workoutCategoryName =
+        log.workoutCategory; // Use category as fallback
+
+    // Define your primary body focus categories
+    const String lowerBody = 'Lower Body';
+    const String upperBody = 'Upper Body';
+    const String core = 'Core';
+    const String fullBody = 'Full Body';
+    const String cardio = 'Cardio';
+    const String other = 'Other'; // Default/fallback
+
+    bool categoryAssigned = false;
+
+    // Map tags to categories (adjust these tags based on your actual workout tags)
+    if (tags.any(
+      (tag) =>
+          ['legs', 'glutes', 'bums', 'lower body'].contains(tag.toLowerCase()),
+    )) {
+      updatedCategory[lowerBody] = (updatedCategory[lowerBody] ?? 0) + 1;
+      categoryAssigned = true;
+    } else if (tags.any(
+      (tag) => [
+        'arms',
+        'chest',
+        'back',
+        'shoulders',
+        'upper body',
+      ].contains(tag.toLowerCase()),
+    )) {
+      updatedCategory[upperBody] = (updatedCategory[upperBody] ?? 0) + 1;
+      categoryAssigned = true;
+    } else if (tags.any(
+      (tag) => ['core', 'abs', 'tums', 'obliques'].contains(tag.toLowerCase()),
+    )) {
+      updatedCategory[core] = (updatedCategory[core] ?? 0) + 1;
+      categoryAssigned = true;
+    } else if (tags.any(
+          (tag) => ['full body', 'total body'].contains(tag.toLowerCase()),
+        ) ||
+        workoutCategoryName == WorkoutCategory.fullBody.name) {
+      // Use category name as fallback for full body if needed
+      updatedCategory[fullBody] = (updatedCategory[fullBody] ?? 0) + 1;
+      categoryAssigned = true;
+    } else if (tags.any(
+          (tag) => [
+            'cardio',
+            'hiit',
+            'running',
+            'cycling',
+          ].contains(tag.toLowerCase()),
+        ) ||
+        workoutCategoryName == WorkoutCategory.cardio.name) {
+      updatedCategory[cardio] = (updatedCategory[cardio] ?? 0) + 1;
+      categoryAssigned = true;
+    }
+
+    // If no specific category was assigned based on tags/primary category name, use a default
+    if (!categoryAssigned) {
+      updatedCategory[other] = (updatedCategory[other] ?? 0) + 1;
+      print(
+        "Warning: Workout '${log.workoutName ?? log.workoutId}' (Tags: $tags, Category: $workoutCategoryName) assigned to '$other'",
+      );
+    }
+    // --- End of Body Focus Category Logic ---
 
     // Calculate new average duration
     final totalWorkouts = currentStats.totalWorkoutsCompleted + 1;
     final totalMinutes = currentStats.totalWorkoutMinutes + log.durationMinutes;
+    // Use double division for potentially more accurate average, though floor division (~) is fine if int is required
     final newAverage = totalMinutes ~/ totalWorkouts;
 
     // Update monthly trend (last 6 months)
     List<int> updatedMonthlyTrend = List.from(currentStats.monthlyTrend);
-    if (updatedMonthlyTrend.isEmpty) {
-      updatedMonthlyTrend = List.filled(6, 0);
+    if (updatedMonthlyTrend.isEmpty || updatedMonthlyTrend.length < 6) {
+      updatedMonthlyTrend = List.filled(6, 0); // Ensure it has 6 elements
     }
-
-    // Current month is the last element in the list
+    // Increment the count for the current month (last element)
     updatedMonthlyTrend[updatedMonthlyTrend.length - 1]++;
+
+    // --- Exercise specific stats update (Keep this logic as is) ---
+    Map<String, int> updatedExerciseCompletionCounts = Map.from(
+      currentStats.exerciseCompletionCounts,
+    );
+    Map<String, int> updatedTotalRepsCompleted = Map.from(
+      currentStats.totalRepsCompleted,
+    );
+    Map<String, Duration> updatedTotalDuration = Map.from(
+      currentStats.totalDuration,
+    );
+
+    for (final exerciseLog in log.exercisesCompleted) {
+      final exerciseName = exerciseLog.exerciseName;
+
+      // Update completion count
+      updatedExerciseCompletionCounts[exerciseName] =
+          (updatedExerciseCompletionCounts[exerciseName] ?? 0) + 1;
+
+      // Update total reps (if applicable)
+      if (exerciseLog.repsCompleted.isNotEmpty) {
+        final latestReps = exerciseLog.repsCompleted.last;
+        if (latestReps != null) {
+          updatedTotalRepsCompleted[exerciseName] =
+              (updatedTotalRepsCompleted[exerciseName] ?? 0) +
+              latestReps *
+                  exerciseLog
+                      .setsCompleted; // Assuming all sets had the same reps for simplicity
+        }
+      }
+
+      // Update total duration (if applicable)
+      if (exerciseLog.duration.isNotEmpty) {
+        final latestDuration = exerciseLog.duration.last;
+        if (latestDuration != null) {
+          updatedTotalDuration[exerciseName] =
+              (updatedTotalDuration[exerciseName] ?? Duration.zero) +
+              latestDuration * exerciseLog.setsCompleted; // Accumulate duration
+        }
+      }
+    }
 
     return currentStats.copyWith(
       totalWorkoutsCompleted: totalWorkouts,
@@ -197,6 +309,9 @@ class WorkoutStatsService {
       lastWorkoutDate: log.completedAt,
       lastUpdated: DateTime.now(),
       monthlyTrend: updatedMonthlyTrend,
+      exerciseCompletionCounts: updatedExerciseCompletionCounts,
+      totalRepsCompleted: updatedTotalRepsCompleted,
+      totalDuration: updatedTotalDuration,
     );
   }
 
@@ -371,18 +486,17 @@ class WorkoutStatsService {
     DateTime endDate,
   ) async {
     try {
-      // Only print debug logs when in debug mode
       if (_debugMode) {
         print('Attempting to fetch workout logs for user: $userId');
-        print('Path: user_workout_history/$userId/logs'); // Updated path
+        // Construct the full path for logging clarity
+        print(
+          'Path: workout_logs/$userId/$_logsCollectionPath',
+        ); // <<< UPDATED DEBUG LOG PATH
         print('Date range: $startDate to $endDate');
       }
 
       final snapshot =
-          await _firestore
-              .collection('user_workout_history') // Updated path
-              .doc(userId)
-              .collection('logs')
+          await _userLogsCollection(userId) // <<< USE HELPER METHOD
               .where(
                 'completedAt',
                 isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
@@ -391,6 +505,10 @@ class WorkoutStatsService {
                 'completedAt',
                 isLessThanOrEqualTo: Timestamp.fromDate(endDate),
               )
+              .orderBy(
+                'completedAt',
+                descending: true,
+              ) // Keep ordering consistent if needed elsewhere
               .get();
 
       if (_debugMode) {
@@ -401,42 +519,37 @@ class WorkoutStatsService {
       Map<DateTime, List<WorkoutLog>> workoutsByDate = {};
 
       for (final doc in snapshot.docs) {
-        final log = WorkoutLog.fromMap({'id': doc.id, ...doc.data()});
-        final dateKey = DateTime(
-          log.completedAt.year,
-          log.completedAt.month,
-          log.completedAt.day,
-        );
+        try {
+          final log = WorkoutLog.fromMap({'id': doc.id, ...doc.data()});
+          final dateKey = DateTime(
+            log.completedAt.year,
+            log.completedAt.month,
+            log.completedAt.day,
+          );
 
-        if (workoutsByDate.containsKey(dateKey)) {
-          workoutsByDate[dateKey]!.add(log);
-        } else {
-          workoutsByDate[dateKey] = [log];
+          if (workoutsByDate.containsKey(dateKey)) {
+            workoutsByDate[dateKey]!.add(log);
+          } else {
+            workoutsByDate[dateKey] = [log];
+          }
+        } catch (e) {
+          if (_debugMode) {
+            print('Error parsing WorkoutLog with id ${doc.id}: $e');
+            // Optionally skip this log or handle error differently
+          }
         }
       }
 
-      // If we're in debug mode and there's no data, return sample data
+      // Sample data logic can remain for debugging
       if (kDebugMode && workoutsByDate.isEmpty) {
-        // Generate and return sample workout data for development
         if (_debugMode) {
           print(
             'No real workout logs found, returning sample data for development',
           );
         }
-
         return await _generateSampleWorkoutData(userId);
       }
 
-      if (kDebugMode && workoutsByDate.isEmpty) {
-        // Generate and return sample workout data for development
-        if (_debugMode) {
-          print(
-            'No real workout logs found, returning sample data for development',
-          );
-        }
-
-        return await _generateSampleWorkoutData(userId);
-      }
       return workoutsByDate;
     } catch (e) {
       if (_debugMode) {
@@ -468,14 +581,18 @@ class WorkoutStatsService {
         ExerciseLog(
           exerciseName: 'Squats',
           setsCompleted: 3,
-          repsCompleted: 12,
+          repsCompleted: [12],
           difficultyRating: 3,
+          weightUsed: [0],
+          duration: [const Duration(seconds: 1)], // Wrapped in Duration()
         ),
         ExerciseLog(
           exerciseName: 'Push-ups',
           setsCompleted: 3,
-          repsCompleted: 10,
+          repsCompleted: [10],
           difficultyRating: 4,
+          weightUsed: [40],
+          duration: [const Duration(seconds: 12)], // Wrapped in Duration()
         ),
       ],
       userFeedback: const UserFeedback(rating: 4),
@@ -505,14 +622,20 @@ class WorkoutStatsService {
         ExerciseLog(
           exerciseName: 'Lunges',
           setsCompleted: 3,
-          repsCompleted: 10,
+          repsCompleted: [10], // Make sure this is a list
           difficultyRating: 3,
+          weightUsed: [0], // Add weightUsed for consistency
+          duration: [], // Can be an empty list if no duration
         ),
         ExerciseLog(
           exerciseName: 'Plank',
           setsCompleted: 3,
-          repsCompleted: 1,
+          repsCompleted: [1], // Make sure this is a list
           difficultyRating: 4,
+          weightUsed: [0], // Add weightUsed for consistency
+          duration: [
+            const Duration(seconds: 30),
+          ], // Let's add a duration for plank
         ),
       ],
       userFeedback: const UserFeedback(rating: 5),
@@ -523,7 +646,6 @@ class WorkoutStatsService {
     return result;
   }
 
-  // Get workout frequency data for visualization
   Future<List<Map<String, dynamic>>> getWorkoutFrequencyData(
     String userId,
     int days,
@@ -533,12 +655,7 @@ class WorkoutStatsService {
       final startDate = endDate.subtract(Duration(days: days));
 
       final snapshot =
-          await _firestore
-              .collection(
-                'user_workout_history',
-              ) // Updated path to be consistent
-              .doc(userId)
-              .collection('logs')
+          await _userLogsCollection(userId) // <<< USE HELPER METHOD
               .where(
                 'completedAt',
                 isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
@@ -550,6 +667,7 @@ class WorkoutStatsService {
               .orderBy('completedAt')
               .get();
 
+      // ... (rest of the method remains the same - processing the snapshot)
       // Create a map of dates to count
       Map<String, int> dateCountMap = {};
 
@@ -563,11 +681,19 @@ class WorkoutStatsService {
 
       // Count workouts per day
       for (final doc in snapshot.docs) {
-        final log = WorkoutLog.fromMap({'id': doc.id, ...doc.data()});
-        final dateString =
-            '${log.completedAt.year}-${log.completedAt.month.toString().padLeft(2, '0')}-${log.completedAt.day.toString().padLeft(2, '0')}';
+        try {
+          final log = WorkoutLog.fromMap({'id': doc.id, ...doc.data()});
+          final dateString =
+              '${log.completedAt.year}-${log.completedAt.month.toString().padLeft(2, '0')}-${log.completedAt.day.toString().padLeft(2, '0')}';
 
-        dateCountMap[dateString] = (dateCountMap[dateString] ?? 0) + 1;
+          dateCountMap[dateString] = (dateCountMap[dateString] ?? 0) + 1;
+        } catch (e) {
+          if (_debugMode) {
+            print(
+              'Error parsing WorkoutLog with id ${doc.id} in getWorkoutFrequencyData: $e',
+            );
+          }
+        }
       }
 
       // Convert to list of maps for chart data

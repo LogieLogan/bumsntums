@@ -11,7 +11,6 @@ import '../widgets/execution/rest_period_widget.dart';
 import '../widgets/execution/workout_bottom_controls.dart';
 import '../widgets/execution/workout_progress_indicator.dart';
 import '../widgets/execution/workout_top_bar.dart';
-import '../models/workout_log.dart';
 import 'workout_completion_screen.dart';
 
 class WorkoutExecutionScreen extends ConsumerStatefulWidget {

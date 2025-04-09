@@ -1,6 +1,6 @@
 Enhanced Workout Analytics & Measurement System: Implementation Specification
 High-Level Overview
-This system offers a comprehensive approach to fitness tracking tailored specifically for amateur women using the Bums & Tums app. It combines workout analytics with detailed measurement capabilities, allowing users to track their progress using either imperial or metric units across various exercise types. The focus is on accessible metrics, encouraging feedback, achievement recognition, and practical progress tracking for body-focused workouts.
+This system offers a comprehensive approach to fitness tracking tailored specifically for amateur women using the Bums & Tums app. It combines workout analytics with detailed measurement capabilities, allowing users to track their progress using either imperial or metric units across various exercise types. The focus is on accessible metrics, encouraging feedback, achievement recognition, and practical progress tracking.
 
 Unit Preference Management
 
@@ -34,8 +34,6 @@ Analytics & Visualization
 
 Track achievements and milestones
 
-Visualize progress and personal records
-
 Core Progress Metrics
 
 Workout consistency (frequency, streaks)
@@ -53,8 +51,6 @@ Repetition and endurance improvements
 Duration and hold-time gains
 
 Speed/pace development
-
-Optional body measurements
 
 Engagement & Motivation Metrics
 
@@ -115,9 +111,6 @@ Calendar heatmap
 
 Progress cards
 
-Body focus map
-
 Achievement gallery
 
-Personal records display
 

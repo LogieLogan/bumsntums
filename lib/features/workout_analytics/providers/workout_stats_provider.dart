@@ -1,4 +1,4 @@
-// lib/features/workouts/providers/workout_stats_provider.dart
+// lib/features/workout_analytics/providers/workout_stats_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/workout_stats.dart';
@@ -66,41 +66,59 @@ final workoutStatsServiceProvider = Provider<WorkoutStatsService>((ref) {
   return WorkoutStatsService(analytics);
 });
 
-// Provider for simplified stats (used in home tab)
+
 final workoutStatsProvider = FutureProvider.family<WorkoutStats, String>((
   ref,
   userId,
 ) async {
+  
   final statsService = ref.read(workoutStatsServiceProvider);
   final userStats = await statsService.getUserWorkoutStats(userId);
   final streak = await statsService.getUserWorkoutStreak(userId);
 
-  // Get weekly workout count
+  
   final now = DateTime.now();
-  final weekStart = now.subtract(Duration(days: now.weekday - 1));
+  final weekStart = now.subtract(
+    Duration(days: now.weekday - 1),
+  ); 
   final weekStartDay = DateTime(weekStart.year, weekStart.month, weekStart.day);
+  
+  final weekEndDay = DateTime(
+    now.year,
+    now.month,
+    now.day,
+  ).add(const Duration(days: 1));
 
-  // Query for workouts completed this week
+  
   final firestore = FirebaseFirestore.instance;
   final weeklyLogsSnapshot =
       await firestore
-          .collection('user_workout_history')
+          .collection('workout_logs') 
           .doc(userId)
-          .collection('logs')
+          .collection('logs') 
           .where(
             'completedAt',
             isGreaterThanOrEqualTo: Timestamp.fromDate(weekStartDay),
           )
-          .where('completedAt', isLessThanOrEqualTo: Timestamp.fromDate(now))
+          .where(
+            'completedAt',
+            isLessThan: Timestamp.fromDate(
+              weekEndDay,
+            ), 
+          )
           .get();
 
   final weeklyCompleted = weeklyLogsSnapshot.docs.length;
+
+  // Assuming weeklyGoal is stored elsewhere or defaults
+  // TODO: Fetch weeklyGoal from user profile or settings if needed
+  final weeklyGoal = 5; // Placeholder
 
   return WorkoutStats(
     totalWorkouts: userStats.totalWorkoutsCompleted,
     totalMinutes: userStats.totalWorkoutMinutes,
     totalCaloriesBurned: userStats.caloriesBurned,
-    weeklyGoal: 5, // Default or could be stored in userStats
+    weeklyGoal: weeklyGoal,
     weeklyCompleted: weeklyCompleted,
     currentStreak: streak.currentStreak,
     lastWorkoutDate: userStats.lastWorkoutDate,
@@ -160,6 +178,8 @@ class WorkoutStatsActionsNotifier extends StateNotifier<AsyncValue<void>> {
       return false;
     }
   }
+
+  void initializeAchievements(String userId) {}
 }
 
 // Provider for workout stats actions
@@ -168,31 +188,3 @@ final workoutStatsActionsProvider =
       final statsService = ref.watch(workoutStatsServiceProvider);
       return WorkoutStatsActionsNotifier(statsService);
     });
-
-// final weeklyWorkoutStatsProvider = FutureProvider.family<int, String>((
-//   ref,
-//   userId,
-// ) async {
-//   // final statsService = ref.read(workoutStatsServiceProvider);
-
-//   // Get current week start date
-//   final now = DateTime.now();
-//   final weekStart = now.subtract(Duration(days: now.weekday - 1));
-//   final weekStartDay = DateTime(weekStart.year, weekStart.month, weekStart.day);
-
-//   // Get workout logs for the current week
-//   final firestore = FirebaseFirestore.instance;
-//   final weeklyLogsSnapshot =
-//       await firestore
-//           .collection('user_workout_history')
-//           .doc(userId)
-//           .collection('logs')
-//           .where(
-//             'completedAt',
-//             isGreaterThanOrEqualTo: Timestamp.fromDate(weekStartDay),
-//           )
-//           .where('completedAt', isLessThanOrEqualTo: Timestamp.fromDate(now))
-//           .get();
-
-//   return weeklyLogsSnapshot.docs.length;
-// });
