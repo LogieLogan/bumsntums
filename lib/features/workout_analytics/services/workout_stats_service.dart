@@ -1,7 +1,10 @@
 // lib/features/workout_analytics/services/workout_stats_service.dart
+import 'package:bums_n_tums/features/workout_analytics/models/workout_analytics_timeframe.dart';
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import '../../workouts/models/workout_log.dart';
 import '../models/workout_stats.dart';
 import '../../workouts/models/workout_streak.dart';
@@ -173,88 +176,101 @@ class WorkoutStatsService {
     );
     updatedTimeOfDay[timeOfDay] = (updatedTimeOfDay[timeOfDay] ?? 0) + 1;
 
-Map<String, int> updatedCategory = Map.from(currentStats.workoutsByCategory);
+    Map<String, int> updatedCategory = Map.from(
+      currentStats.workoutsByCategory,
+    );
 
-  // Define your primary body focus categories
-  const String lowerBody = 'Lower Body';
-  const String upperBody = 'Upper Body';
-  const String core = 'Core';
-  const String fullBody = 'Full Body'; // Less likely to be derived from muscles
-  const String cardio = 'Cardio';     // Less likely to be derived from muscles
-  const String other = 'Other';
+    // Define your primary body focus categories
+    const String lowerBody = 'Lower Body';
+    const String upperBody = 'Upper Body';
+    const String core = 'Core';
+    const String fullBody =
+        'Full Body'; // Less likely to be derived from muscles
+    const String cardio = 'Cardio'; // Less likely to be derived from muscles
+    const String other = 'Other';
 
-  // Define muscle-to-category mapping (adjust as needed)
-  const Map<String, String> muscleToCategoryMap = {
-    // Lower Body
-    'gluteus maximus': lowerBody,
-    'glutes': lowerBody, // Add aliases
-    'gluteus medius': lowerBody,
-    'hamstrings': lowerBody,
-    'quadriceps': lowerBody,
-    'calves': lowerBody,
-    'adductors': lowerBody,
-    'abductors': lowerBody,
-    'hip abductors': lowerBody, // From Jumping Jacks example
-    'hip extensors': lowerBody,
+    // Define muscle-to-category mapping (adjust as needed)
+    const Map<String, String> muscleToCategoryMap = {
+      // Lower Body
+      'gluteus maximus': lowerBody,
+      'glutes': lowerBody, // Add aliases
+      'gluteus medius': lowerBody,
+      'hamstrings': lowerBody,
+      'quadriceps': lowerBody,
+      'calves': lowerBody,
+      'adductors': lowerBody,
+      'abductors': lowerBody,
+      'hip abductors': lowerBody, // From Jumping Jacks example
+      'hip extensors': lowerBody,
 
-    // Upper Body
-    'chest': upperBody,
-    'shoulders': upperBody,
-    'triceps': upperBody,
-    'biceps': upperBody,
-    'forearms': upperBody,
-    'back': upperBody, // General back
-    'trapezius': upperBody,
-    'rhomboids': upperBody,
-    'latissimus dorsi': upperBody,
-    'upper back': upperBody,
+      // Upper Body
+      'chest': upperBody,
+      'shoulders': upperBody,
+      'triceps': upperBody,
+      'biceps': upperBody,
+      'forearms': upperBody,
+      'back': upperBody, // General back
+      'trapezius': upperBody,
+      'rhomboids': upperBody,
+      'latissimus dorsi': upperBody,
+      'upper back': upperBody,
 
-    // Core
-    'core': core,
-    'rectus abdominis': core,
-    'obliques': core,
-    'transverse abdominis': core,
-    'lower back': core, // Often considered core
-    'erector spinae': core,
-    'hip flexors': core, // Often grouped with core work
-  };
+      // Core
+      'core': core,
+      'rectus abdominis': core,
+      'obliques': core,
+      'transverse abdominis': core,
+      'lower back': core, // Often considered core
+      'erector spinae': core,
+      'hip flexors': core, // Often grouped with core work
+    };
 
-  // Keep track of categories incremented for this specific log
-  // to avoid double-counting if multiple exercises hit the same category
-  Set<String> categoriesIncrementedThisLog = {};
+    // Keep track of categories incremented for this specific log
+    // to avoid double-counting if multiple exercises hit the same category
+    Set<String> categoriesIncrementedThisLog = {};
 
-  // Iterate through completed exercises in the log
-  for (final exerciseLog in log.exercisesCompleted) {
-    bool exerciseCategoryAssigned = false;
-    // Iterate through the muscles targeted by this exercise
-    for (final muscle in exerciseLog.targetMuscles) {
-      final category = muscleToCategoryMap[muscle.toLowerCase()];
-      if (category != null && !categoriesIncrementedThisLog.contains(category)) {
-        updatedCategory[category] = (updatedCategory[category] ?? 0) + 1;
-        categoriesIncrementedThisLog.add(category);
-        exerciseCategoryAssigned = true;
-        // Optional: break here if you only want to count the category once per exercise
-        // break;
+    // Iterate through completed exercises in the log
+    for (final exerciseLog in log.exercisesCompleted) {
+      bool exerciseCategoryAssigned = false;
+      // Iterate through the muscles targeted by this exercise
+      for (final muscle in exerciseLog.targetMuscles) {
+        final category = muscleToCategoryMap[muscle.toLowerCase()];
+        if (category != null &&
+            !categoriesIncrementedThisLog.contains(category)) {
+          updatedCategory[category] = (updatedCategory[category] ?? 0) + 1;
+          categoriesIncrementedThisLog.add(category);
+          exerciseCategoryAssigned = true;
+          // Optional: break here if you only want to count the category once per exercise
+          // break;
+        }
+      }
+      // If no specific muscle mapped, maybe use the overall workout category as fallback?
+      // This part needs careful consideration based on your desired logic.
+      // Example fallback (might still lead to 'Full Body' if that's the workout category)
+      if (!exerciseCategoryAssigned) {
+        final String fallbackCategory =
+            log.workoutCategory == WorkoutCategory.bums.name
+                ? lowerBody
+                : log.workoutCategory == WorkoutCategory.tums.name
+                ? core
+                : log.workoutCategory == WorkoutCategory.arms.name
+                ? upperBody
+                : log.workoutCategory == WorkoutCategory.cardio.name
+                ? cardio
+                : log.workoutCategory == WorkoutCategory.fullBody.name
+                ? fullBody
+                : other;
+
+        if (!categoriesIncrementedThisLog.contains(fallbackCategory)) {
+          updatedCategory[fallbackCategory] =
+              (updatedCategory[fallbackCategory] ?? 0) + 1;
+          categoriesIncrementedThisLog.add(fallbackCategory);
+        }
+        print(
+          "Warning: Exercise '${exerciseLog.exerciseName}' muscles (${exerciseLog.targetMuscles}) didn't map directly. Used fallback: $fallbackCategory",
+        );
       }
     }
-     // If no specific muscle mapped, maybe use the overall workout category as fallback?
-     // This part needs careful consideration based on your desired logic.
-     // Example fallback (might still lead to 'Full Body' if that's the workout category)
-     if (!exerciseCategoryAssigned) {
-         final String fallbackCategory = log.workoutCategory == WorkoutCategory.bums.name ? lowerBody :
-                                        log.workoutCategory == WorkoutCategory.tums.name ? core :
-                                        log.workoutCategory == WorkoutCategory.arms.name ? upperBody :
-                                        log.workoutCategory == WorkoutCategory.cardio.name ? cardio :
-                                        log.workoutCategory == WorkoutCategory.fullBody.name ? fullBody : other;
-
-         if (!categoriesIncrementedThisLog.contains(fallbackCategory)) {
-            updatedCategory[fallbackCategory] = (updatedCategory[fallbackCategory] ?? 0) + 1;
-            categoriesIncrementedThisLog.add(fallbackCategory);
-         }
-         print("Warning: Exercise '${exerciseLog.exerciseName}' muscles (${exerciseLog.targetMuscles}) didn't map directly. Used fallback: $fallbackCategory");
-     }
-
-  }
     // --- End of Body Focus Category Logic ---
 
     // Calculate new average duration
@@ -660,10 +676,6 @@ Map<String, int> updatedCategory = Map.from(currentStats.workoutsByCategory);
     return result;
   }
 
-  // lib/features/workout_analytics/services/workout_stats_service.dart
-
-  // ... inside WorkoutStatsService class ...
-
   Future<List<Map<String, dynamic>>> getWorkoutFrequencyData(
     String userId,
     int days,
@@ -771,5 +783,148 @@ Map<String, int> updatedCategory = Map.from(currentStats.workoutsByCategory);
       // ref.read(crashReportingServiceProvider).recordError(e, stackTrace, reason: 'Error in getWorkoutFrequencyData');
       return []; // Return empty on error
     }
+  }
+
+  Future<List<Map<String, dynamic>>> getWorkoutProgressData({
+    required String userId,
+    required AnalyticsTimeframe timeframe,
+    int periods = 8, // Default number of periods (e.g., 8 weeks, 6 months)
+  }) async {
+    if (userId.isEmpty) return [];
+
+    print(
+      "WorkoutStatsService: Getting progress data for $userId, timeframe: ${timeframe.name}, periods: $periods",
+    );
+
+    // 1. Determine Date Range
+    final now = DateTime.now();
+    DateTime startDate;
+    if (timeframe == AnalyticsTimeframe.weekly) {
+      // Go back 'periods' number of weeks from the start of the current week
+      final currentWeekStart = now.subtract(
+        Duration(days: now.weekday % 7),
+      ); // Sunday
+      startDate = DateTime(
+        currentWeekStart.year,
+        currentWeekStart.month,
+        currentWeekStart.day,
+      ).subtract(Duration(days: (periods - 1) * 7));
+    } else {
+      // Monthly
+      // Go back 'periods' number of months from the start of the current month
+      int year = now.year;
+      int month = now.month - (periods - 1);
+      while (month <= 0) {
+        month += 12;
+        year -= 1;
+      }
+      startDate = DateTime(year, month, 1);
+    }
+    final endDate = now; // Up to today
+
+    print("  - Date Range: $startDate to $endDate");
+
+    // 2. Fetch Logs
+    List<WorkoutLog> logs = [];
+    try {
+      final snapshot =
+          await _userLogsCollection(userId)
+              .where(
+                'completedAt',
+                isGreaterThanOrEqualTo: startDate.millisecondsSinceEpoch,
+              ) // Use millis
+              .where(
+                'completedAt',
+                isLessThanOrEqualTo: endDate.millisecondsSinceEpoch,
+              ) // Use millis
+              .orderBy('completedAt')
+              .get();
+
+      logs =
+          snapshot.docs
+              .map((doc) {
+                try {
+                  return WorkoutLog.fromMap({'id': doc.id, ...doc.data()});
+                } catch (e) {
+                  print(
+                    "Error parsing log ${doc.id} in getWorkoutProgressData: $e",
+                  );
+                  return null; // Handle parsing errors
+                }
+              })
+              .whereType<WorkoutLog>()
+              .toList(); // Filter out nulls
+
+      print("  - Fetched ${logs.length} logs in range.");
+    } catch (e, stackTrace) {
+      print("Error fetching logs for progress data: $e\n$stackTrace");
+      return []; // Return empty on error
+    }
+
+    if (logs.isEmpty) {
+      return [];
+    }
+
+    // 3. Group and Aggregate Data
+    Map<String, Map<String, dynamic>> aggregatedData = {};
+
+    if (timeframe == AnalyticsTimeframe.weekly) {
+      // Group by the start date of the week (Sunday)
+      final groupedByWeek = groupBy<WorkoutLog, String>(logs, (log) {
+        final completedDate = log.completedAt;
+        final weekStart = completedDate.subtract(
+          Duration(days: completedDate.weekday % 7),
+        );
+        return DateFormat(
+          'yyyy-MM-dd',
+        ).format(DateTime(weekStart.year, weekStart.month, weekStart.day));
+      });
+
+      groupedByWeek.forEach((weekStartDateStr, weeklyLogs) {
+        aggregatedData[weekStartDateStr] = {
+          'period': weekStartDateStr, // Store the week start date
+          'workouts': weeklyLogs.length,
+          'minutes': weeklyLogs.fold<int>(
+            0,
+            (sum, log) => sum + log.durationMinutes,
+          ),
+          'calories': weeklyLogs.fold<int>(
+            0,
+            (sum, log) => sum + log.caloriesBurned,
+          ),
+        };
+      });
+    } else {
+      // Monthly
+      // Group by month (YYYY-MM)
+      final groupedByMonth = groupBy<WorkoutLog, String>(logs, (log) {
+        return DateFormat('yyyy-MM').format(log.completedAt);
+      });
+
+      groupedByMonth.forEach((monthStr, monthlyLogs) {
+        aggregatedData[monthStr] = {
+          'period': monthStr, // Store the month string
+          'workouts': monthlyLogs.length,
+          'minutes': monthlyLogs.fold<int>(
+            0,
+            (sum, log) => sum + log.durationMinutes,
+          ),
+          'calories': monthlyLogs.fold<int>(
+            0,
+            (sum, log) => sum + log.caloriesBurned,
+          ),
+        };
+      });
+    }
+
+    // 4. Sort and Format Output
+    final sortedPeriods = aggregatedData.keys.toList()..sort();
+    final result =
+        sortedPeriods.map((periodKey) => aggregatedData[periodKey]!).toList();
+
+    print("  - Aggregated progress data points: ${result.length}");
+    // print("  - Result: $result"); // Optional: print full result for debugging
+
+    return result;
   }
 }

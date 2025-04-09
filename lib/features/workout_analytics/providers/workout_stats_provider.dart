@@ -1,4 +1,5 @@
 // lib/features/workout_analytics/providers/workout_stats_provider.dart
+import 'package:bums_n_tums/features/workout_analytics/models/workout_analytics_timeframe.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/workout_stats.dart';
@@ -66,46 +67,35 @@ final workoutStatsServiceProvider = Provider<WorkoutStatsService>((ref) {
   return WorkoutStatsService(analytics);
 });
 
-
 final workoutStatsProvider = FutureProvider.family<WorkoutStats, String>((
   ref,
   userId,
 ) async {
-  
   final statsService = ref.read(workoutStatsServiceProvider);
   final userStats = await statsService.getUserWorkoutStats(userId);
   final streak = await statsService.getUserWorkoutStreak(userId);
 
-  
   final now = DateTime.now();
-  final weekStart = now.subtract(
-    Duration(days: now.weekday - 1),
-  ); 
+  final weekStart = now.subtract(Duration(days: now.weekday - 1));
   final weekStartDay = DateTime(weekStart.year, weekStart.month, weekStart.day);
-  
+
   final weekEndDay = DateTime(
     now.year,
     now.month,
     now.day,
   ).add(const Duration(days: 1));
 
-  
   final firestore = FirebaseFirestore.instance;
   final weeklyLogsSnapshot =
       await firestore
-          .collection('workout_logs') 
+          .collection('workout_logs')
           .doc(userId)
-          .collection('logs') 
+          .collection('logs')
           .where(
             'completedAt',
             isGreaterThanOrEqualTo: Timestamp.fromDate(weekStartDay),
           )
-          .where(
-            'completedAt',
-            isLessThan: Timestamp.fromDate(
-              weekEndDay,
-            ), 
-          )
+          .where('completedAt', isLessThan: Timestamp.fromDate(weekEndDay))
           .get();
 
   final weeklyCompleted = weeklyLogsSnapshot.docs.length;
@@ -145,28 +135,73 @@ final userWorkoutStreakProvider = FutureProvider.family<WorkoutStreak, String>((
 final workoutFrequencyDataProvider = FutureProvider.family<
   List<Map<String, dynamic>>,
   ({String userId, int days}) // <<< Check the parameter type here
->((ref, params) async { // <<< params contains userId and days
+>((ref, params) async {
+  // <<< params contains userId and days
   // Ensure user ID is handled correctly, especially if potentially null initially
   final userId = params.userId;
   if (userId.isEmpty) {
-     print("WorkoutFrequencyDataProvider: No user ID provided, returning empty list.");
-     return []; // Return empty if no user ID
+    print(
+      "WorkoutFrequencyDataProvider: No user ID provided, returning empty list.",
+    );
+    return []; // Return empty if no user ID
   }
   final days = params.days;
-  print("WorkoutFrequencyDataProvider: Fetching for user $userId, days $days"); // Add print
+  print(
+    "WorkoutFrequencyDataProvider: Fetching for user $userId, days $days",
+  ); // Add print
   final service = ref.read(workoutStatsServiceProvider);
   try {
-     final result = await service.getWorkoutFrequencyData(userId, days);
-     print("WorkoutFrequencyDataProvider: Fetched ${result.length} frequency data points."); // Add print
-     return result;
+    final result = await service.getWorkoutFrequencyData(userId, days);
+    print(
+      "WorkoutFrequencyDataProvider: Fetched ${result.length} frequency data points.",
+    ); // Add print
+    return result;
   } catch (e, stackTrace) {
-     print("Error in workoutFrequencyDataProvider for user $userId: $e");
-     // Consider logging to crash reporting service
-     // ref.read(crashReportingServiceProvider).recordError(e, stackTrace);
-     throw e; // Re-throw error so the .when clause catches it
+    print("Error in workoutFrequencyDataProvider for user $userId: $e");
+    // Consider logging to crash reporting service
+    // ref.read(crashReportingServiceProvider).recordError(e, stackTrace);
+    throw e; // Re-throw error so the .when clause catches it
   }
 });
 
+final workoutProgressDataProvider = FutureProvider.family<
+  List<Map<String, dynamic>>,
+  ({String userId, AnalyticsTimeframe timeframe}) // Parameters needed
+>((ref, params) async {
+  final userId = params.userId;
+  final timeframe = params.timeframe;
+
+  if (userId.isEmpty) {
+    print("workoutProgressDataProvider: No user ID provided.");
+    return [];
+  }
+
+  print(
+    "workoutProgressDataProvider: Fetching for user $userId, timeframe ${timeframe.name}",
+  );
+  final service = ref.read(workoutStatsServiceProvider);
+  try {
+    // Determine number of periods based on timeframe (adjust as needed)
+    final int periods =
+        (timeframe == AnalyticsTimeframe.weekly)
+            ? 8
+            : 6; // e.g., 8 weeks or 6 months
+    final result = await service.getWorkoutProgressData(
+      userId: userId,
+      timeframe: timeframe,
+      periods: periods,
+    );
+    print(
+      "workoutProgressDataProvider: Successfully fetched ${result.length} progress points.",
+    );
+    return result;
+  } catch (e, stackTrace) {
+    print("Error in workoutProgressDataProvider for user $userId: $e");
+    // Log error
+    // ref.read(crashReportingServiceProvider)...
+    throw e; // Allow the UI to handle the error state
+  }
+});
 
 // Actions notifier for workout stats
 class WorkoutStatsActionsNotifier extends StateNotifier<AsyncValue<void>> {

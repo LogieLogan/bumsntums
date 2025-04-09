@@ -34,7 +34,6 @@ final currentUserProvider = FutureProvider<AppUser?>((ref) async {
 // Auth state notifier
 enum AuthState { initial, authenticated, unauthenticated, loading, error }
 
-// lib/features/auth/providers/auth_provider.dart (continued)
 class AuthStateNotifier extends StateNotifier<AuthState> {
   final FirebaseAuthService _authService;
 

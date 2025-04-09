@@ -1,4 +1,5 @@
 // lib/features/nutrition/providers/food_scanner_provider.dart
+import 'package:bums_n_tums/shared/providers/firebase_providers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -308,13 +309,14 @@ final openFoodFactsServiceProvider = Provider<OpenFoodFactsService>((ref) {
 });
 
 final foodRepositoryProvider = Provider<FoodRepository>((ref) {
+  // Watch the SHARED providers defined in firebase_providers.dart
+  final firestore = ref.watch(firestoreProvider);
+  final auth = ref.watch(firebaseAuthProvider); // Use firebaseAuthProvider
+  final analyticsService = ref.watch(analyticsServiceProvider);
+
   return FoodRepository(
-    firestore: ref.watch(firestoreProvider),
-    auth: ref.watch(authProvider),
-    analyticsService: ref.watch(analyticsServiceProvider),
+    firestore: firestore,
+    auth: auth,
+    analyticsService: analyticsService,
   );
 });
-
-// These would be defined elsewhere in your app
-final firestoreProvider = Provider((ref) => FirebaseFirestore.instance);
-final authProvider = Provider((ref) => FirebaseAuth.instance);

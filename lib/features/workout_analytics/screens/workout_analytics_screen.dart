@@ -172,19 +172,8 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
                   style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                userStatsAsync.when(
-                  data:
-                      (stats) => WorkoutProgressChart(
-                        stats: stats,
-                        timeframe: _timeframe,
-                      ),
-                  loading:
-                      () => const SizedBox(
-                        height: 200,
-                        child: LoadingIndicator(),
-                      ),
-                  error: (error, _) => _buildErrorWidget(error),
-                ),
+
+                WorkoutProgressChart(timeframe: _timeframe),
 
                 const SizedBox(height: 24),
 
@@ -227,7 +216,6 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
                 // ),
                 // const SizedBox(height: 16),
                 // AchievementsSection(userId: widget.userId),
-
                 const SizedBox(height: 24),
 
                 // Activity pattern
