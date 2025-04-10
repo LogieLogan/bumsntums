@@ -1,8 +1,7 @@
 // lib/features/workout_analytics/screens/workout_analytics_screen.dart
-import 'package:bums_n_tums/features/workout_analytics/widgets/achievements_summary_card.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../models/workout_stats.dart';
 import '../models/workout_analytics_timeframe.dart';
 import '../../workouts/models/workout_streak.dart';
@@ -10,7 +9,6 @@ import '../providers/workout_stats_provider.dart';
 import '../widgets/workout_progress_chart.dart';
 import '../widgets/body_focus_chart.dart';
 import '../widgets/workout_calendar_heatmap.dart';
-import '../widgets/analytics_stat_card.dart';
 import '../widgets/period_selector.dart';
 import '../../../shared/theme/color_palette.dart';
 import '../../../shared/theme/text_styles.dart';
@@ -40,7 +38,6 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
     _tabController = TabController(length: 3, vsync: this);
     _analyticsService.logScreenView(screenName: 'workout_analytics_screen');
 
-    // Initialize the user's achievements if needed
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(workoutStatsActionsProvider.notifier)
@@ -93,7 +90,6 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Summary cards
                 userStatsAsync.when(
                   data: (stats) => _buildSummarySection(stats, context),
                   loading:
@@ -106,7 +102,6 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
 
                 const SizedBox(height: 24),
 
-                // Current streak section
                 userStreakAsync.when(
                   data: (streak) => _buildStreakSection(streak, context, ref),
                   loading:
@@ -119,7 +114,6 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
 
                 const SizedBox(height: 24),
 
-                // Most Completed Exercises Section
                 Text(
                   'Most Completed Exercises',
                   style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
@@ -131,18 +125,15 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
                       return const Text('No exercise data yet.');
                     }
 
-                    // Sort exercises by completion count (descending)
                     final sortedExercises =
                         stats.exerciseCompletionCounts.entries.toList()
                           ..sort((a, b) => b.value.compareTo(a.value));
 
-                    // Take the top 3 (or fewer if there aren't that many)
                     final topExercises = sortedExercises.take(3).toList();
 
                     return ListView.builder(
                       shrinkWrap: true,
-                      physics:
-                          const NeverScrollableScrollPhysics(), // To avoid nested scrolling
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: topExercises.length,
                       itemBuilder: (context, index) {
                         final exercise = topExercises[index];
@@ -166,7 +157,6 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
 
                 const SizedBox(height: 24),
 
-                // Progress section
                 Text(
                   'Your Progress',
                   style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
@@ -177,7 +167,6 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
 
                 const SizedBox(height: 24),
 
-                // Body focus distribution
                 Text(
                   'Body Focus Areas',
                   style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
@@ -187,7 +176,6 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
                   data:
                       (stats) => BodyFocusChart(
                         workoutsByCategory: stats.workoutsByCategory,
-                        totalWorkouts: stats.totalWorkoutsCompleted,
                       ),
                   loading:
                       () => const SizedBox(
@@ -199,7 +187,6 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
 
                 const SizedBox(height: 24),
 
-                // Workout calendar heatmap
                 Text(
                   'Workout Calendar',
                   style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
@@ -207,18 +194,8 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
                 const SizedBox(height: 16),
                 const WorkoutCalendarHeatmap(),
 
-                // const SizedBox(height: 24),
-
-                // // Achievements section
-                // Text(
-                //   'Achievements',
-                //   style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
-                // ),
-                // const SizedBox(height: 16),
-                // AchievementsSection(userId: widget.userId),
                 const SizedBox(height: 24),
 
-                // Activity pattern
                 Text(
                   'Activity Pattern',
                   style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
@@ -505,7 +482,6 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
       return _buildEmptyDataWidget('No activity pattern data available');
     }
 
-    // Days of week labels
     final days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     final maxValue =
         stats.workoutsByDayOfWeek.reduce((a, b) => a > b ? a : b).toDouble();
@@ -674,7 +650,6 @@ class _WorkoutAnalyticsScreenState extends ConsumerState<WorkoutAnalyticsScreen>
         ),
       );
 
-      // Refresh the streak data
       ref.refresh(userWorkoutStreakProvider(widget.userId));
     } else if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

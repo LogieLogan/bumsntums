@@ -182,15 +182,12 @@ final workoutProgressDataProvider = FutureProvider.family<
   );
   final service = ref.read(workoutStatsServiceProvider);
   try {
-    // Determine number of periods based on timeframe (adjust as needed)
-    final int periods =
-        (timeframe == AnalyticsTimeframe.weekly)
-            ? 8
-            : 6; // e.g., 8 weeks or 6 months
+    // REMOVE periods calculation
+    // Let the service determine the range and aggregation based on timeframe
     final result = await service.getWorkoutProgressData(
       userId: userId,
       timeframe: timeframe,
-      periods: periods,
+      // Removed periods parameter
     );
     print(
       "workoutProgressDataProvider: Successfully fetched ${result.length} progress points.",

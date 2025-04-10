@@ -87,7 +87,9 @@ class WorkoutStatsService {
     }
   }
 
-  Future<List<WorkoutAchievement>> updateStatsFromWorkoutLog(WorkoutLog log) async {
+  Future<List<WorkoutAchievement>> updateStatsFromWorkoutLog(
+    WorkoutLog log,
+  ) async {
     if (log.userId.isEmpty) {
       debugPrint("Error: Cannot update stats, WorkoutLog has empty userId.");
       return [];
@@ -154,13 +156,17 @@ class WorkoutStatsService {
       });
 
       await _analytics.logEvent(name: 'workout_stats_updated');
-      if (_debugMode) print("Successfully completed transaction for user ${log.userId}. Newly unlocked: ${newlyUnlocked.length}");
+      if (_debugMode)
+        print(
+          "Successfully completed transaction for user ${log.userId}. Newly unlocked: ${newlyUnlocked.length}",
+        );
 
       // *** Return the captured list ***
       return newlyUnlocked;
-
     } catch (e, s) {
-      debugPrint('Error in updateStatsFromWorkoutLog for user ${log.userId}: $e\n$s');
+      debugPrint(
+        'Error in updateStatsFromWorkoutLog for user ${log.userId}: $e\n$s',
+      );
       // Return empty list on error to avoid breaking calling code
       return [];
     }
@@ -770,45 +776,80 @@ class WorkoutStatsService {
   Future<List<Map<String, dynamic>>> getWorkoutProgressData({
     required String userId,
     required AnalyticsTimeframe timeframe,
-    int periods = 8,
+    // Removed periods parameter, it will be determined internally
   }) async {
     if (userId.isEmpty) return [];
 
     try {
+      final now = DateTime.now();
+      DateTime startDate;
+      String Function(WorkoutLog) groupByFn;
+      DateFormat groupFormat;
+      int numberOfDataPoints; // To generate placeholders for empty periods
+
       if (kDebugMode) {
         print(
-          "Getting progress data for $userId, timeframe: ${timeframe.name}, periods: $periods",
+          "Getting progress data for $userId, timeframe: ${timeframe.name}",
         );
       }
 
-      final now = DateTime.now();
-      DateTime startDate;
-
-      if (timeframe == AnalyticsTimeframe.weekly) {
-        final currentWeekStart = now.subtract(Duration(days: now.weekday % 7));
-        startDate = DateTime(
-          currentWeekStart.year,
-          currentWeekStart.month,
-          currentWeekStart.day,
-        ).subtract(Duration(days: (periods - 1) * 7));
-      } else {
-        int year = now.year;
-        int month = now.month - (periods - 1);
-        while (month <= 0) {
-          month += 12;
-          year -= 1;
-        }
-        startDate = DateTime(year, month, 1);
+      // Determine date range, grouping function, and format based on timeframe
+      switch (timeframe) {
+        case AnalyticsTimeframe.weekly:
+          // Show last 7 days (daily aggregation)
+          numberOfDataPoints = 7;
+          startDate = DateTime(
+            now.year,
+            now.month,
+            now.day,
+          ).subtract(Duration(days: numberOfDataPoints - 1));
+          groupFormat = DateFormat('yyyy-MM-dd'); // Group by day
+          groupByFn = (log) => groupFormat.format(log.completedAt);
+          break;
+        case AnalyticsTimeframe.monthly:
+          // Show last 5 weeks (weekly aggregation)
+          numberOfDataPoints = 5; // Show ~1 month as weeks
+          final currentWeekStart = _getStartOfWeek(now);
+          startDate = currentWeekStart.subtract(
+            Duration(days: (numberOfDataPoints - 1) * 7),
+          );
+          groupFormat = DateFormat(
+            'yyyy-MM-dd',
+          ); // Group key is week start date
+          groupByFn = (log) {
+            final weekStart = _getStartOfWeek(log.completedAt);
+            return groupFormat.format(weekStart);
+          };
+          break;
+        case AnalyticsTimeframe.yearly:
+          // Show last 12 months (monthly aggregation)
+          numberOfDataPoints = 12;
+          int year = now.year;
+          int month = now.month - (numberOfDataPoints - 1);
+          while (month <= 0) {
+            month += 12;
+            year -= 1;
+          }
+          startDate = DateTime(year, month, 1);
+          groupFormat = DateFormat('yyyy-MM'); // Group by month
+          groupByFn = (log) => groupFormat.format(log.completedAt);
+          break;
       }
+
       final endDate = now;
-      final startMillis = startDate.millisecondsSinceEpoch;
+      // Fetch slightly earlier to ensure logs on the exact start date are included
+      final queryStartDate = startDate.subtract(const Duration(seconds: 1));
+      final startMillis = queryStartDate.millisecondsSinceEpoch;
       final endMillis = endDate.millisecondsSinceEpoch;
 
       if (kDebugMode) print("  - Date Range (ms): $startMillis to $endMillis");
 
       final snapshot =
           await _userLogsCollection(userId)
-              .where('completedAt', isGreaterThanOrEqualTo: startMillis)
+              .where(
+                'completedAt',
+                isGreaterThan: startMillis,
+              ) // Use isGreaterThan
               .where('completedAt', isLessThanOrEqualTo: endMillis)
               .orderBy('completedAt')
               .get();
@@ -832,46 +873,68 @@ class WorkoutStatsService {
 
       if (kDebugMode) print("  - Fetched ${logs.length} logs in range.");
 
-      if (logs.isEmpty) return [];
-
+      // --- Aggregation Logic ---
       Map<String, Map<String, dynamic>> aggregatedData = {};
-      DateFormat groupFormat;
 
-      String Function(WorkoutLog) groupByFn;
-
-      if (timeframe == AnalyticsTimeframe.weekly) {
-        groupFormat = DateFormat('yyyy-MM-dd');
-        groupByFn = (log) {
-          final completedDate = log.completedAt;
-          final weekStart = completedDate.subtract(
-            Duration(days: completedDate.weekday % 7),
-          );
-          return groupFormat.format(
-            DateTime(weekStart.year, weekStart.month, weekStart.day),
-          );
-        };
-      } else {
-        groupFormat = DateFormat('yyyy-MM');
-        groupByFn = (log) => groupFormat.format(log.completedAt);
-      }
-
-      final groupedLogs = groupBy<WorkoutLog, String>(logs, groupByFn);
-
-      groupedLogs.forEach((periodKey, periodLogs) {
+      // Initialize placeholder data for all expected periods in the range
+      for (int i = 0; i < numberOfDataPoints; i++) {
+        String periodKey;
+        switch (timeframe) {
+          case AnalyticsTimeframe.weekly: // Daily keys
+            periodKey = groupFormat.format(startDate.add(Duration(days: i)));
+            break;
+          case AnalyticsTimeframe.monthly: // Weekly start date keys
+            periodKey = groupFormat.format(
+              startDate.add(Duration(days: i * 7)),
+            );
+            break;
+          case AnalyticsTimeframe.yearly: // Monthly keys
+            DateTime monthDate = DateTime(
+              startDate.year,
+              startDate.month + i,
+              1,
+            );
+            periodKey = groupFormat.format(monthDate);
+            break;
+        }
         aggregatedData[periodKey] = {
           'period': periodKey,
-          'workouts': periodLogs.length,
-          'minutes': periodLogs.fold<int>(
-            0,
-            (sum, log) => sum + log.durationMinutes,
-          ),
-          'calories': periodLogs.fold<int>(
-            0,
-            (sum, log) => sum + log.caloriesBurned,
-          ),
+          'workouts': 0,
+          'minutes': 0,
+          'calories': 0,
         };
+      }
+
+      // Group fetched logs
+      final groupedLogs = groupBy<WorkoutLog, String>(logs, groupByFn);
+
+      // Populate aggregatedData with actual log data
+      groupedLogs.forEach((periodKey, periodLogs) {
+        // Only update if the key exists (it should due to initialization)
+        if (aggregatedData.containsKey(periodKey)) {
+          aggregatedData[periodKey] = {
+            'period': periodKey,
+            'workouts': periodLogs.length,
+            'minutes': periodLogs.fold<int>(
+              0,
+              (sum, log) => sum + log.durationMinutes,
+            ),
+            'calories': periodLogs.fold<int>(
+              0,
+              (sum, log) => sum + log.caloriesBurned,
+            ),
+          };
+        } else {
+          // This case might happen if a log's date falls slightly outside the calculated range
+          // due to timezone differences or edge cases. Log it if necessary.
+          if (kDebugMode)
+            print(
+              "Warning: Log group key '$periodKey' not found in initialized periods.",
+            );
+        }
       });
 
+      // Sort by period key and convert to list
       final sortedPeriods = aggregatedData.keys.toList()..sort();
       final result =
           sortedPeriods.map((periodKey) => aggregatedData[periodKey]!).toList();
@@ -882,11 +945,13 @@ class WorkoutStatsService {
       return result;
     } catch (e, stackTrace) {
       if (kDebugMode) {
-        print(
-          "Error fetching logs for progress data for $userId: $e\n$stackTrace",
-        );
+        print("Error in getWorkoutProgressData for $userId: $e\n$stackTrace");
       }
-      return [];
+      return []; // Return empty list on error
     }
+  }
+
+  DateTime _getStartOfWeek(DateTime date) {
+    return date.subtract(Duration(days: date.weekday - 1));
   }
 }

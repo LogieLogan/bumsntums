@@ -1,7 +1,8 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Issues/thoughts 
-workout analytics achievements
+workout analytics
+body focus areas need colour, better ui and it says 100% when it is not 100%
 
 
 project structure: 
@@ -128,14 +129,17 @@ project structure:
 │   │   │   ├── workout_analytics_timeframe.dart
 │   │   │   └── workout_stats.dart
 │   │   ├── providers
+│   │   │   ├── achievement_provider.dart
 │   │   │   ├── workout_insights_provider.dart
 │   │   │   └── workout_stats_provider.dart
 │   │   ├── screens
+│   │   │   ├── achievements_screen.dart
 │   │   │   └── workout_analytics_screen.dart
 │   │   ├── services
 │   │   │   └── workout_stats_service.dart
 │   │   └── widgets
-│   │       ├── achievements_section.dart
+│   │       ├── achievement_tile.dart
+│   │       ├── achievements_summary_card.dart
 │   │       ├── analytics_chart_card.dart
 │   │       ├── analytics_stat_card.dart
 │   │       ├── body_focus_chart.dart
@@ -331,6 +335,13 @@ project structure:
 
 Which of these files do you want to review? 
 
+system prompt - gemini
+
+provde whole complete chnages of methods if they are new methods provide the entire new method. 
+dont over use comments. use them only when absolutely nessesery for example at the top of file where it says the fils location.
+if code is the same dont output it, unless you are doing the entire method with updates then provide the current and updated code ads a sinlge complete method
+avoid usig code... //(*....*) bits when keeping the code the same. instead just dont output this aprt of the code.
+when providing target code chnages show what is chngaging and what it is chnaging to.
 
 things to do: 
 

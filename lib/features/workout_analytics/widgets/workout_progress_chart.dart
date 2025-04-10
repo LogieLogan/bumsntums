@@ -1,3 +1,8 @@
+// lib/features/workout_analytics/widgets/workout_progress_chart.dart
+
+import 'dart:math';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -159,31 +164,156 @@ class _WorkoutProgressChartState extends ConsumerState<WorkoutProgressChart>
     List<FlSpot> spots,
     List<Map<String, dynamic>> originalData,
     AnalyticsTimeframe timeframe,
-    String yAxisLabel,
+    String yAxisLabel, // e.g., 'Workouts', 'Minutes', 'Calories'
     Color color,
   ) {
-    final double minX = spots.length > 1 && spots.first.x < 0 ? -1 : 0;
-    final double maxX =
-        spots.length > 1 && spots.last.x > (originalData.length - 1)
-            ? spots.last.x
-            : (originalData.isEmpty ? 0 : originalData.length - 1.0);
-
-    final double maxY =
-        spots.isEmpty
-            ? 10.0
-            : (spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b) *
-                    1.2)
-                .clamp(5.0, double.infinity);
+    // ... (previous calculations for minX, maxX, maxY, intervals remain the same) ...
+    if (originalData.isEmpty || spots.isEmpty) {
+      return _buildEmptyDataWidget();
+    }
+    final double minX = spots.first.x;
+    final double maxX = spots.last.x;
+    final double maxSpotY = spots.map((spot) => spot.y).reduce(max);
+    final double maxY = (maxSpotY * 1.2).clamp(5.0, double.infinity);
+    final double horizontalInterval = (maxY / 5).ceilToDouble().clamp(
+      1.0,
+      double.infinity,
+    );
+    final double leftInterval = horizontalInterval;
+    double bottomInterval = 1.0;
+    if (spots.length > 10) {
+      if (timeframe == AnalyticsTimeframe.weekly)
+        bottomInterval = 2.0;
+      else if (timeframe == AnalyticsTimeframe.monthly)
+        bottomInterval = 1.0;
+      else if (timeframe == AnalyticsTimeframe.yearly)
+        bottomInterval = 2.0;
+    }
 
     return LineChart(
       LineChartData(
+        // *** MOVE animation parameters here ***
+        lineTouchData: LineTouchData(
+          // ... (touchTooltipData, handleBuiltInTouches, getTouchedSpotIndicator remain the same) ...
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (LineBarSpot touchedSpot) {
+              return AppColors.darkGrey.withOpacity(0.9);
+            },
+            getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+              return touchedBarSpots
+                  .map((barSpot) {
+                    final flSpot = barSpot;
+                    final index = flSpot.x.toInt();
+                    final dataIndex =
+                        (spots.length > 1 && spots.first.x < 0) ? index : index;
+
+                    if (dataIndex < 0 || dataIndex >= originalData.length) {
+                      return null;
+                    }
+
+                    final periodData = originalData[dataIndex];
+                    final value = flSpot.y;
+                    final periodString = periodData['period'] as String? ?? '';
+                    String periodLabel = '';
+
+                    try {
+                      switch (timeframe) {
+                        case AnalyticsTimeframe.weekly:
+                          final date = DateFormat(
+                            'yyyy-MM-dd',
+                          ).parse(periodString);
+                          periodLabel = DateFormat('EEE, MMM d').format(date);
+                          break;
+                        case AnalyticsTimeframe.monthly:
+                          final date = DateFormat(
+                            'yyyy-MM-dd',
+                          ).parse(periodString);
+                          final endDate = date.add(const Duration(days: 6));
+                          periodLabel =
+                              'Week: ${DateFormat('MMM d').format(date)} - ${DateFormat('MMM d').format(endDate)}';
+                          break;
+                        case AnalyticsTimeframe.yearly:
+                          if (periodString.contains('-')) {
+                            final date = DateFormat(
+                              'yyyy-MM',
+                            ).parse(periodString);
+                            periodLabel = DateFormat('MMMM yyyy').format(date);
+                          } else {
+                            periodLabel = periodString;
+                          }
+                          break;
+                      }
+                    } catch (e) {
+                      if (kDebugMode)
+                        print(
+                          "Error formatting tooltip label for period: $periodString - $e",
+                        );
+                      periodLabel = periodString;
+                    }
+                    String valueString;
+                    final valueInt = value.toInt();
+                    if (yAxisLabel == 'Minutes') {
+                      valueString = '$valueInt min';
+                    } else if (yAxisLabel == 'Calories') {
+                      valueString =
+                          '${NumberFormat.decimalPattern().format(valueInt)} kcal';
+                    } else {
+                      valueString =
+                          '$valueInt workout${valueInt == 1 ? '' : 's'}';
+                    }
+
+                    return LineTooltipItem(
+                      '$periodLabel\n',
+                      AppTextStyles.small.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: valueString,
+                          style: AppTextStyles.small.copyWith(
+                            color: color,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                      textAlign: TextAlign.left,
+                    );
+                  })
+                  .whereType<LineTooltipItem>()
+                  .toList();
+            },
+          ),
+          handleBuiltInTouches: true,
+          getTouchedSpotIndicator: (
+            LineChartBarData barData,
+            List<int> spotIndexes,
+          ) {
+            return spotIndexes.map((index) {
+              return TouchedSpotIndicatorData(
+                FlLine(
+                  color: AppColors.mediumGrey,
+                  strokeWidth: 1,
+                  dashArray: [4, 4],
+                ),
+                FlDotData(
+                  getDotPainter: (spot, percent, barData, index) {
+                    return FlDotCirclePainter(
+                      radius: 6,
+                      color: AppColors.white,
+                      strokeWidth: 2,
+                      strokeColor: barData.color ?? AppColors.mediumGrey,
+                    );
+                  },
+                ),
+              );
+            }).toList();
+          },
+        ), // End of lineTouchData
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
-          horizontalInterval: (maxY / 5).ceilToDouble().clamp(
-            1.0,
-            double.infinity,
-          ),
+          horizontalInterval: horizontalInterval,
           getDrawingHorizontalLine: (value) {
             return FlLine(color: AppColors.paleGrey, strokeWidth: 1);
           },
@@ -193,8 +323,9 @@ class _WorkoutProgressChartState extends ConsumerState<WorkoutProgressChart>
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 40,
-              interval: (maxY / 5).ceilToDouble().clamp(1.0, double.infinity),
+              interval: leftInterval,
               getTitlesWidget: (value, meta) {
+                if (value == 0 && meta.max > 0) return const SizedBox.shrink();
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: Text(
@@ -208,58 +339,54 @@ class _WorkoutProgressChartState extends ConsumerState<WorkoutProgressChart>
               },
             ),
           ),
-
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 30,
-
-              interval:
-                  (spots.length > 10 && timeframe == AnalyticsTimeframe.monthly)
-                      ? 2
-                      : (spots.length > 14 &&
-                          timeframe == AnalyticsTimeframe.weekly)
-                      ? 2
-                      : 1,
+              interval: bottomInterval,
               getTitlesWidget: (value, meta) {
                 final index = value.toInt();
-
                 final dataIndex =
-                    (spots.length > 1 && spots.first.x < 0) ? index - 1 : index;
+                    (spots.length > 1 && spots.first.x < 0) ? index : index;
 
                 if (dataIndex < 0 || dataIndex >= originalData.length) {
+                  return const SizedBox.shrink();
+                }
+                if (value != meta.min &&
+                    value != meta.max &&
+                    index % bottomInterval.round() != 0) {
                   return const SizedBox.shrink();
                 }
 
                 final periodData = originalData[dataIndex];
                 final periodString = periodData['period'] as String? ?? '';
-                String label = '';
+                String label = '?';
 
                 try {
-                  if (timeframe == AnalyticsTimeframe.weekly) {
-                    final date = DateFormat('yyyy-MM-dd').parse(periodString);
-                    label = DateFormat('MMM d').format(date);
-                  } else if (timeframe == AnalyticsTimeframe.monthly) {
-                    final year = int.parse(periodString.substring(0, 4));
-                    final month = int.parse(periodString.substring(5, 7));
-                    final date = DateTime(year, month);
-
-                    label = DateFormat(
-                      originalData.length > 12 ? 'MMM yy' : 'MMM',
-                    ).format(date);
-                  } else {
-                    label = periodString;
+                  switch (timeframe) {
+                    case AnalyticsTimeframe.weekly:
+                      final date = DateFormat('yyyy-MM-dd').parse(periodString);
+                      label = DateFormat('d').format(date);
+                      break;
+                    case AnalyticsTimeframe.monthly:
+                      final date = DateFormat('yyyy-MM-dd').parse(periodString);
+                      label = DateFormat('MMM d').format(date);
+                      break;
+                    case AnalyticsTimeframe.yearly:
+                      if (periodString.contains('-')) {
+                        final date = DateFormat('yyyy-MM').parse(periodString);
+                        label = DateFormat('MMM').format(date);
+                      } else {
+                        label = periodString;
+                      }
+                      break;
                   }
                 } catch (e) {
-                  print(
-                    "Error formatting date label for period: $periodString - $e",
-                  );
+                  if (kDebugMode)
+                    print(
+                      "Error formatting bottom title label for period: $periodString - $e",
+                    );
                   label = '?';
-                }
-
-                if (meta.appliedInterval > 1.0 &&
-                    index % meta.appliedInterval.round() != 0) {
-                  return const SizedBox.shrink();
                 }
 
                 return Padding(
@@ -274,7 +401,6 @@ class _WorkoutProgressChartState extends ConsumerState<WorkoutProgressChart>
               },
             ),
           ),
-
           topTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
@@ -293,27 +419,29 @@ class _WorkoutProgressChartState extends ConsumerState<WorkoutProgressChart>
             dotData: FlDotData(
               show: true,
               getDotPainter: (spot, percent, barData, index) {
-                if (spot.x < 0 || spot.x >= originalData.length) {
+                final dataIndex =
+                    (spots.length > 1 && spots.first.x < 0) ? index : index;
+                if (dataIndex < 0 || dataIndex >= originalData.length) {
                   return FlDotCirclePainter(
                     radius: 0,
                     color: Colors.transparent,
                   );
                 }
-
-                if (index ==
-                    (spots.length > 1 && spots.first.x < 0
+                final lastActualDataIndex =
+                    (spots.length > 1 && spots.first.x < 0)
                         ? spots.length - 2
-                        : spots.length - 1)) {
+                        : spots.length - 1;
+                if (index == lastActualDataIndex) {
                   return FlDotCirclePainter(
-                    radius: 6,
-                    color: Colors.white,
-                    strokeWidth: 3,
+                    radius: 5,
+                    color: AppColors.white,
+                    strokeWidth: 2,
                     strokeColor: color,
                   );
                 }
                 return FlDotCirclePainter(
-                  radius: 3,
-                  color: color.withOpacity(0.5),
+                  radius: 2,
+                  color: color,
                   strokeColor: Colors.transparent,
                 );
               },
@@ -329,96 +457,15 @@ class _WorkoutProgressChartState extends ConsumerState<WorkoutProgressChart>
             ),
           ),
         ],
-
         minX: minX,
         maxX: maxX,
         minY: 0,
         maxY: maxY,
-
-        lineTouchData: LineTouchData(
-          touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (LineBarSpot touchedSpot) {
-              // You can optionally vary the color based on the spot,
-              // but for a consistent background, just return the color.
-              return AppColors.darkGrey.withOpacity(0.8);
-            },
-            getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-              // Renamed parameter for clarity
-              return touchedBarSpots
-                  .map((barSpot) {
-                    // Iterate through spots touched on the bar(s)
-
-                    final flSpot =
-                        barSpot.bar.spots[barSpot
-                            .spotIndex]; // Get FlSpot using indices
-
-                    // --- Logic to prevent tooltips for dummy points ---
-                    if (flSpot.x < 0 || flSpot.x >= originalData.length) {
-                      return null; // Return null to hide tooltip for this dummy spot
-                    }
-                    // --- End of dummy point check ---
-
-                    // Use the index relative to the original data points
-                    final index = flSpot.x.toInt();
-                    if (index < 0 || index >= originalData.length) {
-                      // Extra safety check if indices don't align perfectly
-                      return null;
-                    }
-                    final periodData = originalData[index];
-                    final value =
-                        flSpot.y; // Use Y value from the retrieved FlSpot
-
-                    // --- Period Label Formatting (remains the same) ---
-                    String periodLabel = '';
-                    try {
-                      if (timeframe == AnalyticsTimeframe.weekly) {
-                        final date = DateFormat(
-                          'yyyy-MM-dd',
-                        ).parse(periodData['period']);
-                        periodLabel =
-                            'Week of ${DateFormat('MMM d').format(date)}';
-                      } else if (timeframe == AnalyticsTimeframe.monthly) {
-                        final date = DateFormat(
-                          'yyyy-MM',
-                        ).parse(periodData['period']);
-                        periodLabel = DateFormat('MMMM yyyy').format(date);
-                      } else {
-                        // Handle potential future yearly case
-                        periodLabel = periodData['period'] ?? 'Unknown Period';
-                      }
-                    } catch (_) {
-                      periodLabel = periodData['period'] ?? 'Unknown Period';
-                    }
-                    // --- End Period Label Formatting ---
-
-                    return LineTooltipItem(
-                      '$periodLabel\n', // Header text
-                      AppTextStyles.caption.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      children: [
-                        TextSpan(
-                          // Value text
-                          text:
-                              '${NumberFormat.decimalPattern().format(value.toInt())} ${yAxisLabel.toLowerCase()}',
-                          style: AppTextStyles.caption.copyWith(
-                            color: color,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                      textAlign: TextAlign.left,
-                    );
-                  })
-                  .whereType<LineTooltipItem>()
-                  .toList(); // Filter out any nulls created for dummy spots
-            },
-          ),
-          handleBuiltInTouches: true,
-        ),
-        // --- End MODIFIED LineTouchData ---
       ),
+      duration: const Duration(
+        milliseconds: 250,
+      ),
+      curve: Curves.linear,
     );
   }
 
@@ -427,16 +474,20 @@ class _WorkoutProgressChartState extends ConsumerState<WorkoutProgressChart>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.bar_chart, size: 64, color: AppColors.lightGrey),
+          Icon(
+            Icons.show_chart_rounded,
+            size: 50,
+            color: AppColors.lightGrey,
+          ), // Changed icon
           const SizedBox(height: 16),
           Text(
-            'Not enough data yet',
+            'No progress data yet', // Adjusted text
             style: AppTextStyles.body.copyWith(color: AppColors.mediumGrey),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            'Complete more workouts to see your progress',
+            'Keep logging workouts to see your trends!', // Adjusted text
             style: AppTextStyles.small.copyWith(color: AppColors.mediumGrey),
             textAlign: TextAlign.center,
           ),
