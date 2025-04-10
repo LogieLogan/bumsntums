@@ -1,4 +1,5 @@
 // lib/features/workout_analytics/services/workout_stats_service.dart
+
 import 'package:bums_n_tums/features/workout_analytics/models/workout_analytics_timeframe.dart';
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,167 +11,197 @@ import '../models/workout_stats.dart';
 import '../../workouts/models/workout_streak.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 
+import '../models/workout_achievement.dart';
+import '../data/achievement_definitions.dart';
+
 class WorkoutStatsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AnalyticsService _analytics;
+
   final bool _debugMode = kDebugMode;
+
+  static const String _userAnalyticsCollection = 'user_workout_analytics';
+  static const String _userStreaksCollection = 'user_streaks';
+  static const String _userLogsBaseCollection = 'workout_logs';
+  static const String _logsSubcollection = 'logs';
+  static const String _usersCollection = 'users_personal_info';
+  static const String _unlockedAchievementsSubcollection =
+      'unlocked_achievements';
 
   WorkoutStatsService(this._analytics);
 
-  static const String _logsCollectionPath = 'logs';
-  CollectionReference<Map<String, dynamic>> _userLogsCollection(String userId) {
-    return _firestore
-        .collection('workout_logs')
-        .doc(userId)
-        .collection(_logsCollectionPath);
-  }
+  DocumentReference<Map<String, dynamic>> _userAnalyticsDoc(String userId) =>
+      _firestore.collection(_userAnalyticsCollection).doc(userId);
 
-  // Get user's workout stats
+  DocumentReference<Map<String, dynamic>> _userStreakDoc(String userId) =>
+      _firestore.collection(_userStreaksCollection).doc(userId);
+
+  CollectionReference<Map<String, dynamic>> _userLogsCollection(
+    String userId,
+  ) => _firestore
+      .collection(_userLogsBaseCollection)
+      .doc(userId)
+      .collection(_logsSubcollection);
+
+  CollectionReference<Map<String, dynamic>> _userAchievementsCollection(
+    String userId,
+  ) => _firestore
+      .collection(_usersCollection)
+      .doc(userId)
+      .collection(_unlockedAchievementsSubcollection);
+
   Future<UserWorkoutStats> getUserWorkoutStats(String userId) async {
     try {
-      final doc =
-          await _firestore
-              .collection('user_workout_analytics')
-              .doc(userId)
-              .get();
-
+      final doc = await _userAnalyticsDoc(userId).get();
       if (!doc.exists) {
+        if (kDebugMode) {
+          print(
+            "No existing workout stats found for $userId, returning empty.",
+          );
+        }
         return UserWorkoutStats.empty(userId);
       }
 
       return UserWorkoutStats.fromMap({'userId': userId, ...doc.data()!});
-    } catch (e) {
-      debugPrint('Error getting user workout stats: $e');
+    } catch (e, s) {
+      debugPrint('Error getting user workout stats for $userId: $e\n$s');
+
       return UserWorkoutStats.empty(userId);
     }
   }
 
-  // Get user's workout streak
   Future<WorkoutStreak> getUserWorkoutStreak(String userId) async {
     try {
-      final doc = await _firestore.collection('user_streaks').doc(userId).get();
-
+      final doc = await _userStreakDoc(userId).get();
       if (!doc.exists) {
+        if (kDebugMode)
+          print("No existing streak found for $userId, returning empty.");
         return WorkoutStreak.empty(userId);
       }
 
       return WorkoutStreak.fromMap({'userId': userId, ...doc.data()!});
-    } catch (e) {
-      debugPrint('Error getting user workout streak: $e');
+    } catch (e, s) {
+      debugPrint('Error getting user workout streak for $userId: $e\n$s');
+
       return WorkoutStreak.empty(userId);
     }
   }
 
-  // Update user's workout stats based on completed workout
-  Future<void> updateStatsFromWorkoutLog(WorkoutLog log) async {
+  Future<List<WorkoutAchievement>> updateStatsFromWorkoutLog(WorkoutLog log) async {
+    if (log.userId.isEmpty) {
+      debugPrint("Error: Cannot update stats, WorkoutLog has empty userId.");
+      return [];
+    }
+
+    List<WorkoutAchievement> newlyUnlocked = [];
     try {
-      // Get current stats
-      final statsDoc =
-          await _firestore
-              .collection('user_workout_analytics')
-              .doc(log.userId)
-              .get();
+      final Set<String> initiallyUnlockedIds = await _getUnlockedAchievementIds(
+        log.userId,
+      );
 
-      // Get current streak info
-      final streakDoc =
-          await _firestore.collection('user_streaks').doc(log.userId).get();
-
-      // Process the workout stats update
       await _firestore.runTransaction((transaction) async {
-        // Update stats
-        if (statsDoc.exists) {
+        final statsDocRef = _userAnalyticsDoc(log.userId);
+        final streakDocRef = _userStreakDoc(log.userId);
+
+        final statsSnapshot = await transaction.get(statsDocRef);
+        final streakSnapshot = await transaction.get(streakDocRef);
+
+        UserWorkoutStats newStats;
+        if (statsSnapshot.exists) {
           final currentStats = UserWorkoutStats.fromMap({
             'userId': log.userId,
-            ...statsDoc.data()!,
+            ...statsSnapshot.data()!,
           });
-
-          // Calculate new stats
-          final newStats = _calculateUpdatedStats(currentStats, log);
-
-          transaction.update(
-            _firestore.collection('user_workout_analytics').doc(log.userId),
-            newStats.toMap(),
-          );
+          newStats = _calculateUpdatedStats(currentStats, log);
         } else {
-          // Create new stats
-          final newStats = _createInitialStats(log);
-
-          transaction.set(
-            _firestore.collection('user_workout_analytics').doc(log.userId),
-            newStats.toMap(),
-          );
+          newStats = _createInitialStats(log);
         }
 
-        // Update streak
-        final currentDate = DateTime(
+        WorkoutStreak newStreak;
+        final workoutDate = DateTime(
           log.completedAt.year,
           log.completedAt.month,
           log.completedAt.day,
         );
-
-        if (streakDoc.exists) {
+        if (streakSnapshot.exists) {
           final currentStreak = WorkoutStreak.fromMap({
             'userId': log.userId,
-            ...streakDoc.data()!,
+            ...streakSnapshot.data()!,
           });
-
-          // Calculate new streak
-          final newStreak = _calculateUpdatedStreak(currentStreak, currentDate);
-
-          transaction.update(
-            _firestore.collection('user_streaks').doc(log.userId),
-            newStreak.toMap(),
-          );
+          newStreak = _calculateUpdatedStreak(currentStreak, workoutDate);
         } else {
-          // Create new streak
-          final newStreak = WorkoutStreak(
+          newStreak = WorkoutStreak(
+            /* ... initial streak data ... */
             userId: log.userId,
             currentStreak: 1,
             longestStreak: 1,
-            lastWorkoutDate: currentDate,
-            streakProtectionsRemaining: 1, // Give new users one free protection
-          );
-
-          transaction.set(
-            _firestore.collection('user_streaks').doc(log.userId),
-            newStreak.toMap(),
+            lastWorkoutDate: workoutDate,
+            streakProtectionsRemaining: 1,
           );
         }
+
+        transaction.set(statsDocRef, newStats.toMap());
+        transaction.set(streakDocRef, newStreak.toMap());
+
+        newlyUnlocked = await _checkAndAwardAchievements(
+          userId: log.userId,
+          currentStats: newStats,
+          currentStreak: newStreak,
+          initiallyUnlockedIds: initiallyUnlockedIds,
+          firestore: _firestore,
+          transaction: transaction,
+        );
       });
 
-      // Log analytics event
-      await _analytics.logEvent(
-        name: 'workout_stats_updated',
-        parameters: {'workout_log_id': log.id},
-      );
-    } catch (e) {
-      debugPrint('Error updating stats from workout log: $e');
-      rethrow;
+      await _analytics.logEvent(name: 'workout_stats_updated');
+      if (_debugMode) print("Successfully completed transaction for user ${log.userId}. Newly unlocked: ${newlyUnlocked.length}");
+
+      // *** Return the captured list ***
+      return newlyUnlocked;
+
+    } catch (e, s) {
+      debugPrint('Error in updateStatsFromWorkoutLog for user ${log.userId}: $e\n$s');
+      // Return empty list on error to avoid breaking calling code
+      return [];
     }
   }
 
-  // Calculate updated stats based on a new workout log
+  Future<Set<String>> _getUnlockedAchievementIds(String userId) async {
+    if (userId.isEmpty) return {};
+    try {
+      final snapshot = await _userAchievementsCollection(userId).get();
+      return snapshot.docs.map((doc) => doc.id).toSet();
+    } catch (e, s) {
+      debugPrint(
+        "Warning: Could not pre-fetch unlocked achievement IDs for $userId (permissions?): $e\n$s",
+      );
+      return {};
+    }
+  }
+
   UserWorkoutStats _calculateUpdatedStats(
     UserWorkoutStats currentStats,
     WorkoutLog log,
   ) {
-    // Extract day of week (0 = Sunday)
-    final dayOfWeek = log.completedAt.weekday % 7;
+    final totalWorkouts = currentStats.totalWorkoutsCompleted + 1;
+    final totalMinutes = currentStats.totalWorkoutMinutes + log.durationMinutes;
+    final newAverageDuration =
+        totalWorkouts > 0 ? (totalMinutes ~/ totalWorkouts) : 0;
+    final totalCalories = currentStats.caloriesBurned + log.caloriesBurned;
 
-    // Extract time of day
+    final dayOfWeek = log.completedAt.weekday % 7;
+    List<int> updatedDayOfWeek = List.from(currentStats.workoutsByDayOfWeek);
+    if (updatedDayOfWeek.length != 7) {
+      updatedDayOfWeek = List.filled(7, 0);
+    }
+    updatedDayOfWeek[dayOfWeek]++;
+
     final hour = log.completedAt.hour;
     String timeOfDay = 'morning';
     if (hour >= 12 && hour < 17) {
       timeOfDay = 'afternoon';
-    } else if (hour >= 17) {
+    } else if (hour >= 17)
       timeOfDay = 'evening';
-    }
-
-    // Update workouts by day of week
-    List<int> updatedDayOfWeek = List.from(currentStats.workoutsByDayOfWeek);
-    updatedDayOfWeek[dayOfWeek]++;
-
-    // Update workouts by time of day
     Map<String, int> updatedTimeOfDay = Map.from(
       currentStats.workoutsByTimeOfDay,
     );
@@ -179,115 +210,13 @@ class WorkoutStatsService {
     Map<String, int> updatedCategory = Map.from(
       currentStats.workoutsByCategory,
     );
-
-    // Define your primary body focus categories
-    const String lowerBody = 'Lower Body';
-    const String upperBody = 'Upper Body';
-    const String core = 'Core';
-    const String fullBody =
-        'Full Body'; // Less likely to be derived from muscles
-    const String cardio = 'Cardio'; // Less likely to be derived from muscles
-    const String other = 'Other';
-
-    // Define muscle-to-category mapping (adjust as needed)
-    const Map<String, String> muscleToCategoryMap = {
-      // Lower Body
-      'gluteus maximus': lowerBody,
-      'glutes': lowerBody, // Add aliases
-      'gluteus medius': lowerBody,
-      'hamstrings': lowerBody,
-      'quadriceps': lowerBody,
-      'calves': lowerBody,
-      'adductors': lowerBody,
-      'abductors': lowerBody,
-      'hip abductors': lowerBody, // From Jumping Jacks example
-      'hip extensors': lowerBody,
-
-      // Upper Body
-      'chest': upperBody,
-      'shoulders': upperBody,
-      'triceps': upperBody,
-      'biceps': upperBody,
-      'forearms': upperBody,
-      'back': upperBody, // General back
-      'trapezius': upperBody,
-      'rhomboids': upperBody,
-      'latissimus dorsi': upperBody,
-      'upper back': upperBody,
-
-      // Core
-      'core': core,
-      'rectus abdominis': core,
-      'obliques': core,
-      'transverse abdominis': core,
-      'lower back': core, // Often considered core
-      'erector spinae': core,
-      'hip flexors': core, // Often grouped with core work
-    };
-
-    // Keep track of categories incremented for this specific log
-    // to avoid double-counting if multiple exercises hit the same category
     Set<String> categoriesIncrementedThisLog = {};
+    _updateCategoriesFromLog(
+      log,
+      updatedCategory,
+      categoriesIncrementedThisLog,
+    );
 
-    // Iterate through completed exercises in the log
-    for (final exerciseLog in log.exercisesCompleted) {
-      bool exerciseCategoryAssigned = false;
-      // Iterate through the muscles targeted by this exercise
-      for (final muscle in exerciseLog.targetMuscles) {
-        final category = muscleToCategoryMap[muscle.toLowerCase()];
-        if (category != null &&
-            !categoriesIncrementedThisLog.contains(category)) {
-          updatedCategory[category] = (updatedCategory[category] ?? 0) + 1;
-          categoriesIncrementedThisLog.add(category);
-          exerciseCategoryAssigned = true;
-          // Optional: break here if you only want to count the category once per exercise
-          // break;
-        }
-      }
-      // If no specific muscle mapped, maybe use the overall workout category as fallback?
-      // This part needs careful consideration based on your desired logic.
-      // Example fallback (might still lead to 'Full Body' if that's the workout category)
-      if (!exerciseCategoryAssigned) {
-        final String fallbackCategory =
-            log.workoutCategory == WorkoutCategory.bums.name
-                ? lowerBody
-                : log.workoutCategory == WorkoutCategory.tums.name
-                ? core
-                : log.workoutCategory == WorkoutCategory.arms.name
-                ? upperBody
-                : log.workoutCategory == WorkoutCategory.cardio.name
-                ? cardio
-                : log.workoutCategory == WorkoutCategory.fullBody.name
-                ? fullBody
-                : other;
-
-        if (!categoriesIncrementedThisLog.contains(fallbackCategory)) {
-          updatedCategory[fallbackCategory] =
-              (updatedCategory[fallbackCategory] ?? 0) + 1;
-          categoriesIncrementedThisLog.add(fallbackCategory);
-        }
-        print(
-          "Warning: Exercise '${exerciseLog.exerciseName}' muscles (${exerciseLog.targetMuscles}) didn't map directly. Used fallback: $fallbackCategory",
-        );
-      }
-    }
-    // --- End of Body Focus Category Logic ---
-
-    // Calculate new average duration
-    final totalWorkouts = currentStats.totalWorkoutsCompleted + 1;
-    final totalMinutes = currentStats.totalWorkoutMinutes + log.durationMinutes;
-    // Use double division for potentially more accurate average, though floor division (~) is fine if int is required
-    final newAverage = totalMinutes ~/ totalWorkouts;
-
-    // Update monthly trend (last 6 months)
-    List<int> updatedMonthlyTrend = List.from(currentStats.monthlyTrend);
-    if (updatedMonthlyTrend.isEmpty || updatedMonthlyTrend.length < 6) {
-      updatedMonthlyTrend = List.filled(6, 0); // Ensure it has 6 elements
-    }
-    // Increment the count for the current month (last element)
-    updatedMonthlyTrend[updatedMonthlyTrend.length - 1]++;
-
-    // --- Exercise specific stats update (Keep this logic as is) ---
     Map<String, int> updatedExerciseCompletionCounts = Map.from(
       currentStats.exerciseCompletionCounts,
     );
@@ -300,144 +229,210 @@ class WorkoutStatsService {
 
     for (final exerciseLog in log.exercisesCompleted) {
       final exerciseName = exerciseLog.exerciseName;
+      if (exerciseName.isEmpty) continue;
 
-      // Update completion count
       updatedExerciseCompletionCounts[exerciseName] =
           (updatedExerciseCompletionCounts[exerciseName] ?? 0) + 1;
 
-      // Update total reps (if applicable)
-      if (exerciseLog.repsCompleted.isNotEmpty) {
-        final latestReps = exerciseLog.repsCompleted.last;
-        if (latestReps != null) {
-          updatedTotalRepsCompleted[exerciseName] =
-              (updatedTotalRepsCompleted[exerciseName] ?? 0) +
-              latestReps *
-                  exerciseLog
-                      .setsCompleted; // Assuming all sets had the same reps for simplicity
-        }
+      int repsSum = exerciseLog.repsCompleted
+          .where((r) => r != null && r > 0)
+          .fold(0, (sum, r) => sum + r!);
+      if (repsSum > 0) {
+        updatedTotalRepsCompleted[exerciseName] =
+            (updatedTotalRepsCompleted[exerciseName] ?? 0) + repsSum;
       }
 
-      // Update total duration (if applicable)
-      if (exerciseLog.duration.isNotEmpty) {
-        final latestDuration = exerciseLog.duration.last;
-        if (latestDuration != null) {
-          updatedTotalDuration[exerciseName] =
-              (updatedTotalDuration[exerciseName] ?? Duration.zero) +
-              latestDuration * exerciseLog.setsCompleted; // Accumulate duration
-        }
+      Duration durationSum = exerciseLog.duration
+          .where((d) => d != null && d.inMilliseconds > 0)
+          .fold(Duration.zero, (sum, d) => sum + d!);
+      if (durationSum > Duration.zero) {
+        updatedTotalDuration[exerciseName] =
+            (updatedTotalDuration[exerciseName] ?? Duration.zero) + durationSum;
       }
     }
 
     return currentStats.copyWith(
       totalWorkoutsCompleted: totalWorkouts,
       totalWorkoutMinutes: totalMinutes,
+      averageWorkoutDuration: newAverageDuration,
+      caloriesBurned: totalCalories,
       workoutsByCategory: updatedCategory,
       workoutsByDayOfWeek: updatedDayOfWeek,
       workoutsByTimeOfDay: updatedTimeOfDay,
-      averageWorkoutDuration: newAverage,
-      caloriesBurned: currentStats.caloriesBurned + log.caloriesBurned,
-      lastWorkoutDate: log.completedAt,
-      lastUpdated: DateTime.now(),
-      monthlyTrend: updatedMonthlyTrend,
       exerciseCompletionCounts: updatedExerciseCompletionCounts,
       totalRepsCompleted: updatedTotalRepsCompleted,
       totalDuration: updatedTotalDuration,
-    );
-  }
-
-  // Create initial stats from first workout log
-  UserWorkoutStats _createInitialStats(WorkoutLog log) {
-    // Extract day of week (0 = Sunday)
-    final dayOfWeek = log.completedAt.weekday % 7;
-
-    // Extract time of day
-    final hour = log.completedAt.hour;
-    String timeOfDay = 'morning';
-    if (hour >= 12 && hour < 17) {
-      timeOfDay = 'afternoon';
-    } else if (hour >= 17) {
-      timeOfDay = 'evening';
-    }
-
-    // Initialize arrays for stats
-    List<int> workoutsByDayOfWeek = List.filled(7, 0);
-    workoutsByDayOfWeek[dayOfWeek]++;
-
-    Map<String, int> workoutsByTimeOfDay = {timeOfDay: 1};
-
-    Map<String, int> workoutsByCategory = {'unknown': 1};
-
-    List<int> monthlyTrend = List.filled(6, 0);
-    monthlyTrend[5] = 1; // Current month is the last element
-
-    return UserWorkoutStats(
-      userId: log.userId,
-      totalWorkoutsCompleted: 1,
-      totalWorkoutMinutes: log.durationMinutes,
-      workoutsByCategory: workoutsByCategory,
-      workoutsByDayOfWeek: workoutsByDayOfWeek,
-      workoutsByTimeOfDay: workoutsByTimeOfDay,
-      averageWorkoutDuration: log.durationMinutes,
-      longestStreak: 1,
-      currentStreak: 1,
-      caloriesBurned: log.caloriesBurned,
       lastWorkoutDate: log.completedAt,
       lastUpdated: DateTime.now(),
-      weeklyAverage: 1,
-      monthlyTrend: monthlyTrend,
-      completionRate: 100.0,
     );
   }
 
-  // Calculate updated streak based on a new workout date
+  void _updateCategoriesFromLog(
+    WorkoutLog log,
+    Map<String, int> updatedCategoryMap,
+    Set<String> categoriesIncrementedThisLog,
+  ) {
+    const String lowerBody = 'Lower Body';
+    const String upperBody = 'Upper Body';
+    const String core = 'Core';
+    const String fullBody = 'Full Body';
+    const String cardio = 'Cardio';
+    const String otherCategory = 'Other';
+
+    const Map<String, String> muscleToCategoryMap = {
+      /* ... your map ... */
+      'gluteus maximus': lowerBody,
+      'glutes': lowerBody,
+      'gluteus medius': lowerBody,
+      'hamstrings': lowerBody,
+      'quadriceps': lowerBody,
+      'calves': lowerBody,
+      'adductors': lowerBody,
+      'abductors': lowerBody,
+      'hip abductors': lowerBody,
+      'hip extensors': lowerBody,
+      'chest': upperBody,
+      'shoulders': upperBody,
+      'triceps': upperBody,
+      'biceps': upperBody,
+      'forearms': upperBody,
+      'back': upperBody,
+      'trapezius': upperBody,
+      'rhomboids': upperBody,
+      'latissimus dorsi': upperBody,
+      'upper back': upperBody,
+      'core': core,
+      'rectus abdominis': core,
+      'obliques': core,
+      'transverse abdominis': core,
+      'lower back': core,
+      'erector spinae': core,
+      'hip flexors': core,
+    };
+
+    for (final exerciseLog in log.exercisesCompleted) {
+      bool exerciseCategoryAssigned = false;
+      for (final muscle in exerciseLog.targetMuscles) {
+        final category = muscleToCategoryMap[muscle.toLowerCase().trim()];
+        if (category != null &&
+            !categoriesIncrementedThisLog.contains(category)) {
+          updatedCategoryMap[category] =
+              (updatedCategoryMap[category] ?? 0) + 1;
+          categoriesIncrementedThisLog.add(category);
+          exerciseCategoryAssigned = true;
+        }
+      }
+
+      if (!exerciseCategoryAssigned &&
+          log.workoutCategory != null &&
+          log.workoutCategory!.isNotEmpty) {
+        String fallbackCategory;
+        try {
+          WorkoutCategory wcEnum = WorkoutCategory.values.firstWhere(
+            (e) => e.name == log.workoutCategory,
+
+            orElse: () => throw Exception("Category name not in enum"),
+          );
+          switch (wcEnum) {
+            case WorkoutCategory.bums:
+              fallbackCategory = lowerBody;
+              break;
+            case WorkoutCategory.tums:
+              fallbackCategory = core;
+              break;
+            case WorkoutCategory.arms:
+              fallbackCategory = upperBody;
+              break;
+            case WorkoutCategory.cardio:
+              fallbackCategory = cardio;
+              break;
+            case WorkoutCategory.fullBody:
+              fallbackCategory = fullBody;
+              break;
+
+            default:
+              fallbackCategory = otherCategory;
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print(
+              "Warning: WorkoutCategory string '${log.workoutCategory}' not found in enum. Using '$otherCategory'. Error: $e",
+            );
+          }
+          fallbackCategory = otherCategory;
+        }
+
+        if (!categoriesIncrementedThisLog.contains(fallbackCategory)) {
+          updatedCategoryMap[fallbackCategory] =
+              (updatedCategoryMap[fallbackCategory] ?? 0) + 1;
+          categoriesIncrementedThisLog.add(fallbackCategory);
+          if (kDebugMode) {
+            print(
+              "Info: Exercise '${exerciseLog.exerciseName}' muscles (${exerciseLog.targetMuscles}) didn't map. Used workout category fallback: $fallbackCategory",
+            );
+          }
+        }
+      } else if (!exerciseCategoryAssigned &&
+          (log.workoutCategory == null || log.workoutCategory!.isEmpty)) {
+        if (!categoriesIncrementedThisLog.contains(otherCategory)) {
+          updatedCategoryMap[otherCategory] =
+              (updatedCategoryMap[otherCategory] ?? 0) + 1;
+          categoriesIncrementedThisLog.add(otherCategory);
+          if (kDebugMode) {
+            print(
+              "Warning: Exercise '${exerciseLog.exerciseName}' has no target muscles or workout category. Assigned to '$otherCategory'.",
+            );
+          }
+        }
+      }
+    }
+  }
+
+  UserWorkoutStats _createInitialStats(WorkoutLog log) {
+    UserWorkoutStats initialStats = UserWorkoutStats.empty(log.userId);
+
+    return _calculateUpdatedStats(initialStats, log);
+  }
+
   WorkoutStreak _calculateUpdatedStreak(
     WorkoutStreak currentStreak,
     DateTime workoutDate,
   ) {
-    // Clean dates (remove time component)
     final currentWorkoutDay = DateTime(
       workoutDate.year,
       workoutDate.month,
       workoutDate.day,
     );
-
     final lastWorkoutDay = DateTime(
       currentStreak.lastWorkoutDate.year,
       currentStreak.lastWorkoutDate.month,
       currentStreak.lastWorkoutDate.day,
     );
 
-    // Case 1: Same day workout - no change to streak
     if (currentWorkoutDay.isAtSameMomentAs(lastWorkoutDay)) {
       return currentStreak;
     }
 
-    // Calculate days between workouts
     final difference = currentWorkoutDay.difference(lastWorkoutDay).inDays;
 
-    // Case 2: Next day workout - streak continues
     if (difference == 1) {
       final newCurrentStreak = currentStreak.currentStreak + 1;
       final newLongestStreak =
           newCurrentStreak > currentStreak.longestStreak
               ? newCurrentStreak
               : currentStreak.longestStreak;
-
       return currentStreak.copyWith(
         currentStreak: newCurrentStreak,
         longestStreak: newLongestStreak,
         lastWorkoutDate: currentWorkoutDay,
       );
-    }
-
-    // Case 3: Missed a day but can use streak protection
-    if (difference == 2 && currentStreak.streakProtectionsRemaining > 0) {
+    } else if (difference == 2 &&
+        currentStreak.streakProtectionsRemaining > 0) {
       final newCurrentStreak = currentStreak.currentStreak + 1;
       final newLongestStreak =
           newCurrentStreak > currentStreak.longestStreak
               ? newCurrentStreak
               : currentStreak.longestStreak;
-
       return currentStreak.copyWith(
         currentStreak: newCurrentStreak,
         longestStreak: newLongestStreak,
@@ -445,68 +440,181 @@ class WorkoutStatsService {
         streakProtectionsRemaining:
             currentStreak.streakProtectionsRemaining - 1,
       );
+    } else {
+      return currentStreak.copyWith(
+        currentStreak: 1,
+        lastWorkoutDate: currentWorkoutDay,
+      );
     }
-
-    // Case 4: Streak broken - start new streak
-    return currentStreak.copyWith(
-      currentStreak: 1,
-      lastWorkoutDate: currentWorkoutDay,
-    );
   }
 
-  // Use a streak protection to save current streak
   Future<bool> useStreakProtection(String userId) async {
     try {
-      final doc = await _firestore.collection('user_streaks').doc(userId).get();
+      final docRef = _userStreakDoc(userId);
+      final doc = await docRef.get();
 
-      if (!doc.exists) {
-        return false;
-      }
-
+      if (!doc.exists) return false;
       final streak = WorkoutStreak.fromMap({'userId': userId, ...doc.data()!});
+      if (streak.streakProtectionsRemaining <= 0) return false;
 
-      if (streak.streakProtectionsRemaining <= 0) {
-        return false;
-      }
-
-      // Update streak date to today and use a protection
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
 
-      await _firestore.collection('user_streaks').doc(userId).update({
+      await docRef.update({
         'lastWorkoutDate': Timestamp.fromDate(today),
         'streakProtectionsRemaining': FieldValue.increment(-1),
       });
 
-      // Log analytics event
       await _analytics.logEvent(
         name: 'streak_protection_used',
         parameters: {'user_id': userId},
       );
-
       return true;
-    } catch (e) {
-      debugPrint('Error using streak protection: $e');
+    } catch (e, s) {
+      debugPrint('Error using streak protection for $userId: $e\n$s');
       return false;
     }
   }
 
-  // Renew streak protections (e.g., monthly subscription benefit)
   Future<void> renewStreakProtections(String userId, int protections) async {
+    if (protections <= 0) return;
     try {
-      await _firestore.collection('user_streaks').doc(userId).update({
+      await _userStreakDoc(userId).update({
         'streakProtectionsRemaining': FieldValue.increment(protections),
         'streakProtectionLastRenewed': Timestamp.fromDate(DateTime.now()),
       });
-
-      // Log analytics event
       await _analytics.logEvent(
         name: 'streak_protections_renewed',
         parameters: {'user_id': userId, 'protections_added': protections},
       );
-    } catch (e) {
-      debugPrint('Error renewing streak protections: $e');
+    } catch (e, s) {
+      debugPrint('Error renewing streak protections for $userId: $e\n$s');
       rethrow;
+    }
+  }
+
+  Future<List<WorkoutAchievement>> _checkAndAwardAchievements({
+    required String userId,
+    required UserWorkoutStats currentStats,
+    required WorkoutStreak currentStreak,
+    required Set<String> initiallyUnlockedIds,
+    required FirebaseFirestore firestore,
+    required Transaction transaction,
+  }) async {
+    List<WorkoutAchievement> newlyUnlocked = [];
+    if (userId.isEmpty) return newlyUnlocked;
+
+    try {
+      final definitions = allAchievements;
+      final achievementsCollectionRef = _userAchievementsCollection(userId);
+
+      if (_debugMode)
+        print(
+          "Checking achievements for $userId against ${initiallyUnlockedIds.length} pre-fetched unlocked IDs.",
+        );
+
+      for (final definition in definitions) {
+        if (initiallyUnlockedIds.contains(definition.id)) {
+          continue;
+        }
+
+        bool criteriaMet = false;
+
+        switch (definition.criteriaType) {
+          case AchievementCriteriaType.totalWorkouts:
+            criteriaMet =
+                currentStats.totalWorkoutsCompleted >= definition.threshold;
+            break;
+          case AchievementCriteriaType.currentStreak:
+            criteriaMet = currentStreak.currentStreak >= definition.threshold;
+            break;
+          case AchievementCriteriaType.longestStreak:
+            criteriaMet = currentStreak.longestStreak >= definition.threshold;
+            break;
+          case AchievementCriteriaType.workoutsInCategory:
+            if (definition.relatedId != null) {
+              criteriaMet =
+                  (currentStats.workoutsByCategory[definition.relatedId!] ??
+                      0) >=
+                  definition.threshold;
+            }
+            break;
+          case AchievementCriteriaType.specificExerciseCompletions:
+            if (definition.relatedId != null) {
+              criteriaMet =
+                  (currentStats.totalRepsCompleted[definition.relatedId!] ??
+                      0) >=
+                  definition.threshold;
+            }
+            break;
+        }
+
+        if (criteriaMet) {
+          final now = DateTime.now();
+          final newAchievement = WorkoutAchievement(
+            achievementId: definition.id,
+            userId: userId,
+            unlockedDate: now,
+          );
+          newlyUnlocked.add(newAchievement);
+
+          final docRef = achievementsCollectionRef.doc(definition.id);
+          transaction.set(docRef, newAchievement.toMap());
+
+          if (kDebugMode) {
+            print(
+              ">>> Awarding Achievement via Transaction for $userId: ${definition.title} (ID: ${definition.id})",
+            );
+          }
+        }
+      }
+    } catch (e, s) {
+      debugPrint(
+        "Error during achievement check/write phase for user $userId: $e\n$s",
+      );
+    }
+    return newlyUnlocked;
+  }
+
+  Future<List<DisplayAchievement>> getUnlockedAchievementsWithDefinitions(
+    String userId,
+  ) async {
+    if (userId.isEmpty) return [];
+    try {
+      final definitions = allAchievements;
+      final unlockedSnapshot = await _userAchievementsCollection(userId).get();
+
+      final Map<String, WorkoutAchievement> unlockedMap = {
+        for (var doc in unlockedSnapshot.docs)
+          doc.id: WorkoutAchievement.fromMap(doc.data(), doc.id),
+      };
+
+      if (kDebugMode) {
+        print(
+          "Fetched ${unlockedMap.length} unlocked achievements for $userId",
+        );
+      }
+
+      List<DisplayAchievement> displayList =
+          definitions.map((def) {
+            return DisplayAchievement(
+              definition: def,
+              unlockedInfo: unlockedMap[def.id],
+            );
+          }).toList();
+
+      displayList.sort((a, b) {
+        if (a.isUnlocked && !b.isUnlocked) return -1;
+        if (!a.isUnlocked && b.isUnlocked) return 1;
+
+        return a.definition.title.compareTo(b.definition.title);
+      });
+
+      return displayList;
+    } catch (e, s) {
+      debugPrint("Error fetching display achievements for $userId: $e\n$s");
+
+      return [];
     }
   }
 
@@ -515,39 +623,30 @@ class WorkoutStatsService {
     DateTime startDate,
     DateTime endDate,
   ) async {
-    try {
-      if (_debugMode) {
-        print('Attempting to fetch workout logs for user: $userId');
-        // Construct the full path for logging clarity
-        print(
-          'Path: workout_logs/$userId/$_logsCollectionPath',
-        ); // <<< UPDATED DEBUG LOG PATH
-        print('Date range: $startDate to $endDate');
-      }
+    if (userId.isEmpty) return {};
 
+    final startMillis = startDate.millisecondsSinceEpoch;
+    final endMillis = endDate.millisecondsSinceEpoch;
+
+    if (kDebugMode) {
+      print('Fetching workout logs for $userId');
+      print('Path: ${_userLogsBaseCollection}/$userId/${_logsSubcollection}');
+      print('Date range (ms): $startMillis to $endMillis');
+    }
+
+    try {
       final snapshot =
-          await _userLogsCollection(userId) // <<< USE HELPER METHOD
-              .where(
-                'completedAt',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
-              )
-              .where(
-                'completedAt',
-                isLessThanOrEqualTo: Timestamp.fromDate(endDate),
-              )
-              .orderBy(
-                'completedAt',
-                descending: true,
-              ) // Keep ordering consistent if needed elsewhere
+          await _userLogsCollection(userId)
+              .where('completedAt', isGreaterThanOrEqualTo: startMillis)
+              .where('completedAt', isLessThanOrEqualTo: endMillis)
+              .orderBy('completedAt', descending: true)
               .get();
 
-      if (_debugMode) {
-        print('Successfully retrieved ${snapshot.docs.length} workout logs');
+      if (kDebugMode) {
+        print('Retrieved ${snapshot.docs.length} workout logs for history');
       }
 
-      // Group logs by date (ignoring time)
       Map<DateTime, List<WorkoutLog>> workoutsByDate = {};
-
       for (final doc in snapshot.docs) {
         try {
           final log = WorkoutLog.fromMap({'id': doc.id, ...doc.data()});
@@ -557,374 +656,237 @@ class WorkoutStatsService {
             log.completedAt.day,
           );
 
-          if (workoutsByDate.containsKey(dateKey)) {
-            workoutsByDate[dateKey]!.add(log);
-          } else {
-            workoutsByDate[dateKey] = [log];
-          }
-        } catch (e) {
-          if (_debugMode) {
-            print('Error parsing WorkoutLog with id ${doc.id}: $e');
-            // Optionally skip this log or handle error differently
+          (workoutsByDate[dateKey] ??= []).add(log);
+        } catch (e, s) {
+          if (kDebugMode) {
+            print(
+              'Error parsing WorkoutLog ${doc.id} in getWorkoutHistoryByWeek: $e\n$s',
+            );
           }
         }
       }
 
-      // Sample data logic can remain for debugging
       if (kDebugMode && workoutsByDate.isEmpty) {
-        if (_debugMode) {
+        if (kDebugMode) {
           print(
             'No real workout logs found, returning sample data for development',
           );
         }
-        return await _generateSampleWorkoutData(userId);
+
+        return {};
       }
 
       return workoutsByDate;
-    } catch (e) {
-      if (_debugMode) {
-        print('Error getting workout history by week: $e');
-        print('Stack trace: ${StackTrace.current}');
+    } catch (e, s) {
+      if (kDebugMode) {
+        print('Error getting workout history by week for $userId: $e\n$s');
       }
       return {};
     }
-  }
-
-  Future<Map<DateTime, List<WorkoutLog>>> _generateSampleWorkoutData(
-    String userId,
-  ) async {
-    final Map<DateTime, List<WorkoutLog>> result = {};
-
-    // Create some sample dates (past few days plus today)
-    final today = DateTime.now();
-
-    // Generate a workout log for today
-    final todayLog = WorkoutLog(
-      id: 'sample-1',
-      userId: userId,
-      workoutId: 'sample-workout-1',
-      startedAt: today.subtract(const Duration(hours: 1)),
-      completedAt: today,
-      durationMinutes: 45,
-      caloriesBurned: 320,
-      exercisesCompleted: [
-        ExerciseLog(
-          exerciseName: 'Squats',
-          setsCompleted: 3,
-          repsCompleted: [12],
-          difficultyRating: 3,
-          weightUsed: [0],
-          duration: [const Duration(seconds: 1)], // Wrapped in Duration()
-        ),
-        ExerciseLog(
-          exerciseName: 'Push-ups',
-          setsCompleted: 3,
-          repsCompleted: [10],
-          difficultyRating: 4,
-          weightUsed: [40],
-          duration: [const Duration(seconds: 12)], // Wrapped in Duration()
-        ),
-      ],
-      userFeedback: const UserFeedback(rating: 4),
-    );
-
-    // Add to map
-    final dateKey = DateTime(today.year, today.month, today.day);
-    result[dateKey] = [todayLog];
-
-    // Add a workout from 2 days ago
-    final twoDaysAgo = today.subtract(const Duration(days: 2));
-    final twoDaysAgoKey = DateTime(
-      twoDaysAgo.year,
-      twoDaysAgo.month,
-      twoDaysAgo.day,
-    );
-
-    final pastLog = WorkoutLog(
-      id: 'sample-2',
-      userId: userId,
-      workoutId: 'sample-workout-2',
-      startedAt: twoDaysAgo.subtract(const Duration(minutes: 50)),
-      completedAt: twoDaysAgo,
-      durationMinutes: 50,
-      caloriesBurned: 380,
-      exercisesCompleted: [
-        ExerciseLog(
-          exerciseName: 'Lunges',
-          setsCompleted: 3,
-          repsCompleted: [10], // Make sure this is a list
-          difficultyRating: 3,
-          weightUsed: [0], // Add weightUsed for consistency
-          duration: [], // Can be an empty list if no duration
-        ),
-        ExerciseLog(
-          exerciseName: 'Plank',
-          setsCompleted: 3,
-          repsCompleted: [1], // Make sure this is a list
-          difficultyRating: 4,
-          weightUsed: [0], // Add weightUsed for consistency
-          duration: [
-            const Duration(seconds: 30),
-          ], // Let's add a duration for plank
-        ),
-      ],
-      userFeedback: const UserFeedback(rating: 5),
-    );
-
-    result[twoDaysAgoKey] = [pastLog];
-
-    return result;
   }
 
   Future<List<Map<String, dynamic>>> getWorkoutFrequencyData(
     String userId,
     int days,
   ) async {
+    if (userId.isEmpty) return [];
+
     try {
       final endDate = DateTime.now();
       final startDate = endDate.subtract(Duration(days: days));
-      final int startMillis = startDate.millisecondsSinceEpoch;
-      final int endMillis = endDate.millisecondsSinceEpoch;
-      print(
-        "WorkoutFrequencyDataProvider: Fetching for user $userId, days $days, from: $startDate (millis: $startMillis) to: $endDate (millis: $endMillis)", // Updated print
-      );
+      final startMillis = startDate.millisecondsSinceEpoch;
+      final endMillis = endDate.millisecondsSinceEpoch;
+
+      if (kDebugMode) {
+        print(
+          "Fetching frequency data for $userId, days $days ($startMillis to $endMillis)",
+        );
+      }
 
       final snapshot =
           await _userLogsCollection(userId)
-              .where(
-                'completedAt', // Field is NUMBER
-                isGreaterThanOrEqualTo: startMillis, // Compare with NUMBER
-              )
-              .where(
-                'completedAt', // Field is NUMBER
-                isLessThanOrEqualTo: endMillis, // Compare with NUMBER
-              )
-              .orderBy('completedAt') // Ordering still works on numbers
+              .where('completedAt', isGreaterThanOrEqualTo: startMillis)
+              .where('completedAt', isLessThanOrEqualTo: endMillis)
+              .orderBy('completedAt')
               .get();
-      print(
-        "WorkoutFrequencyDataProvider: Firestore query returned ${snapshot.docs.length} logs in range.",
-      ); // Add print
 
-      // Create a map of dates to count
+      if (kDebugMode) {
+        print(
+          "Firestore query returned ${snapshot.docs.length} logs for frequency data.",
+        );
+      }
+
       Map<String, int> dateCountMap = {};
-
-      // Initialize all dates in the range with 0
       for (int i = 0; i < days; i++) {
         final date = startDate.add(Duration(days: i));
-        final dateString =
-            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+        final dateString = DateFormat('yyyy-MM-dd').format(date);
         dateCountMap[dateString] = 0;
       }
 
-      // Count workouts per day
       for (final doc in snapshot.docs) {
         try {
-          // *** IMPORTANT: Ensure WorkoutLog.fromMap handles completedAt being a number ***
           final log = WorkoutLog.fromMap({'id': doc.id, ...doc.data()});
 
-          // Check if parsing worked - log.completedAt should be a DateTime object here
-          if (log.completedAt == null) {
-            print(
-              "WorkoutFrequencyDataProvider: Warning - could not parse completedAt for log ${doc.id}. Skipping.",
-            );
-            continue;
+          final dateString = DateFormat('yyyy-MM-dd').format(log.completedAt);
+
+          if (dateCountMap.containsKey(dateString)) {
+            dateCountMap[dateString] = dateCountMap[dateString]! + 1;
+          } else {
+            if (kDebugMode) {
+              print(
+                "Warning: Log date $dateString not in initial map, adding.",
+              );
+            }
+            dateCountMap[dateString] = 1;
           }
-
-          // Convert the parsed DateTime back to string for map key
-          final dateString =
-              '${log.completedAt.year}-${log.completedAt.month.toString().padLeft(2, '0')}-${log.completedAt.day.toString().padLeft(2, '0')}';
-
-          print(
-            "WorkoutFrequencyDataProvider: Processing log completed on $dateString (Log ID: ${log.id})",
-          );
-
-          // Increment count using the date string key
-          dateCountMap[dateString] = (dateCountMap[dateString] ?? 0) + 1;
-
-          print(
-            "WorkoutFrequencyDataProvider: Count for $dateString is now ${dateCountMap[dateString]}",
-          );
         } catch (e, stackTrace) {
-          // Catch specific parsing errors
-          if (_debugMode) {
+          if (kDebugMode) {
             print(
-              'Error parsing WorkoutLog with id ${doc.id} in getWorkoutFrequencyData: $e\n$stackTrace',
+              'Error parsing WorkoutLog ${doc.id} in getWorkoutFrequencyData: $e\n$stackTrace',
             );
           }
-          // Log to crash reporting service here if desired
         }
       }
 
-      // Convert to list of maps for chart data
       List<Map<String, dynamic>> result =
           dateCountMap.entries.map((entry) {
-            // --->>> ADD CONDITIONAL PRINT FOR NON-ZERO COUNTS <<<---
-            if (entry.value > 0) {
-              print(
-                "WorkoutFrequencyDataProvider: Final map includes ${entry.key} with count ${entry.value}",
-              );
-            }
             return {'date': entry.key, 'count': entry.value};
           }).toList();
 
-      // Sort by date
       result.sort((a, b) => a['date'].compareTo(b['date']));
 
-      print(
-        // Keep this print
-        "WorkoutFrequencyDataProvider: Fetched ${result.length} frequency data points total.",
-      );
+      if (kDebugMode) {
+        print("Processed ${result.length} frequency data points.");
+      }
       return result;
     } catch (e, stackTrace) {
-      // Added stackTrace
-      debugPrint('Error getting workout frequency data for user $userId: $e');
-      debugPrint('Stack trace: $stackTrace'); // Print stack trace
-      // Log to crash reporting service
-      // ref.read(crashReportingServiceProvider).recordError(e, stackTrace, reason: 'Error in getWorkoutFrequencyData');
-      return []; // Return empty on error
+      debugPrint(
+        'Error getting workout frequency data for $userId: $e\n$stackTrace',
+      );
+      return [];
     }
   }
 
   Future<List<Map<String, dynamic>>> getWorkoutProgressData({
     required String userId,
     required AnalyticsTimeframe timeframe,
-    int periods = 8, // Default number of periods (e.g., 8 weeks, 6 months)
+    int periods = 8,
   }) async {
     if (userId.isEmpty) return [];
 
-    print(
-      "WorkoutStatsService: Getting progress data for $userId, timeframe: ${timeframe.name}, periods: $periods",
-    );
-
-    // 1. Determine Date Range
-    final now = DateTime.now();
-    DateTime startDate;
-    if (timeframe == AnalyticsTimeframe.weekly) {
-      // Go back 'periods' number of weeks from the start of the current week
-      final currentWeekStart = now.subtract(
-        Duration(days: now.weekday % 7),
-      ); // Sunday
-      startDate = DateTime(
-        currentWeekStart.year,
-        currentWeekStart.month,
-        currentWeekStart.day,
-      ).subtract(Duration(days: (periods - 1) * 7));
-    } else {
-      // Monthly
-      // Go back 'periods' number of months from the start of the current month
-      int year = now.year;
-      int month = now.month - (periods - 1);
-      while (month <= 0) {
-        month += 12;
-        year -= 1;
-      }
-      startDate = DateTime(year, month, 1);
-    }
-    final endDate = now; // Up to today
-
-    print("  - Date Range: $startDate to $endDate");
-
-    // 2. Fetch Logs
-    List<WorkoutLog> logs = [];
     try {
+      if (kDebugMode) {
+        print(
+          "Getting progress data for $userId, timeframe: ${timeframe.name}, periods: $periods",
+        );
+      }
+
+      final now = DateTime.now();
+      DateTime startDate;
+
+      if (timeframe == AnalyticsTimeframe.weekly) {
+        final currentWeekStart = now.subtract(Duration(days: now.weekday % 7));
+        startDate = DateTime(
+          currentWeekStart.year,
+          currentWeekStart.month,
+          currentWeekStart.day,
+        ).subtract(Duration(days: (periods - 1) * 7));
+      } else {
+        int year = now.year;
+        int month = now.month - (periods - 1);
+        while (month <= 0) {
+          month += 12;
+          year -= 1;
+        }
+        startDate = DateTime(year, month, 1);
+      }
+      final endDate = now;
+      final startMillis = startDate.millisecondsSinceEpoch;
+      final endMillis = endDate.millisecondsSinceEpoch;
+
+      if (kDebugMode) print("  - Date Range (ms): $startMillis to $endMillis");
+
       final snapshot =
           await _userLogsCollection(userId)
-              .where(
-                'completedAt',
-                isGreaterThanOrEqualTo: startDate.millisecondsSinceEpoch,
-              ) // Use millis
-              .where(
-                'completedAt',
-                isLessThanOrEqualTo: endDate.millisecondsSinceEpoch,
-              ) // Use millis
+              .where('completedAt', isGreaterThanOrEqualTo: startMillis)
+              .where('completedAt', isLessThanOrEqualTo: endMillis)
               .orderBy('completedAt')
               .get();
 
-      logs =
+      List<WorkoutLog> logs =
           snapshot.docs
               .map((doc) {
                 try {
                   return WorkoutLog.fromMap({'id': doc.id, ...doc.data()});
                 } catch (e) {
-                  print(
-                    "Error parsing log ${doc.id} in getWorkoutProgressData: $e",
-                  );
-                  return null; // Handle parsing errors
+                  if (kDebugMode) {
+                    print(
+                      "Error parsing log ${doc.id} in getWorkoutProgressData: $e",
+                    );
+                  }
+                  return null;
                 }
               })
               .whereType<WorkoutLog>()
-              .toList(); // Filter out nulls
+              .toList();
 
-      print("  - Fetched ${logs.length} logs in range.");
+      if (kDebugMode) print("  - Fetched ${logs.length} logs in range.");
+
+      if (logs.isEmpty) return [];
+
+      Map<String, Map<String, dynamic>> aggregatedData = {};
+      DateFormat groupFormat;
+
+      String Function(WorkoutLog) groupByFn;
+
+      if (timeframe == AnalyticsTimeframe.weekly) {
+        groupFormat = DateFormat('yyyy-MM-dd');
+        groupByFn = (log) {
+          final completedDate = log.completedAt;
+          final weekStart = completedDate.subtract(
+            Duration(days: completedDate.weekday % 7),
+          );
+          return groupFormat.format(
+            DateTime(weekStart.year, weekStart.month, weekStart.day),
+          );
+        };
+      } else {
+        groupFormat = DateFormat('yyyy-MM');
+        groupByFn = (log) => groupFormat.format(log.completedAt);
+      }
+
+      final groupedLogs = groupBy<WorkoutLog, String>(logs, groupByFn);
+
+      groupedLogs.forEach((periodKey, periodLogs) {
+        aggregatedData[periodKey] = {
+          'period': periodKey,
+          'workouts': periodLogs.length,
+          'minutes': periodLogs.fold<int>(
+            0,
+            (sum, log) => sum + log.durationMinutes,
+          ),
+          'calories': periodLogs.fold<int>(
+            0,
+            (sum, log) => sum + log.caloriesBurned,
+          ),
+        };
+      });
+
+      final sortedPeriods = aggregatedData.keys.toList()..sort();
+      final result =
+          sortedPeriods.map((periodKey) => aggregatedData[periodKey]!).toList();
+
+      if (kDebugMode) {
+        print("  - Aggregated progress data points: ${result.length}");
+      }
+      return result;
     } catch (e, stackTrace) {
-      print("Error fetching logs for progress data: $e\n$stackTrace");
-      return []; // Return empty on error
-    }
-
-    if (logs.isEmpty) {
+      if (kDebugMode) {
+        print(
+          "Error fetching logs for progress data for $userId: $e\n$stackTrace",
+        );
+      }
       return [];
     }
-
-    // 3. Group and Aggregate Data
-    Map<String, Map<String, dynamic>> aggregatedData = {};
-
-    if (timeframe == AnalyticsTimeframe.weekly) {
-      // Group by the start date of the week (Sunday)
-      final groupedByWeek = groupBy<WorkoutLog, String>(logs, (log) {
-        final completedDate = log.completedAt;
-        final weekStart = completedDate.subtract(
-          Duration(days: completedDate.weekday % 7),
-        );
-        return DateFormat(
-          'yyyy-MM-dd',
-        ).format(DateTime(weekStart.year, weekStart.month, weekStart.day));
-      });
-
-      groupedByWeek.forEach((weekStartDateStr, weeklyLogs) {
-        aggregatedData[weekStartDateStr] = {
-          'period': weekStartDateStr, // Store the week start date
-          'workouts': weeklyLogs.length,
-          'minutes': weeklyLogs.fold<int>(
-            0,
-            (sum, log) => sum + log.durationMinutes,
-          ),
-          'calories': weeklyLogs.fold<int>(
-            0,
-            (sum, log) => sum + log.caloriesBurned,
-          ),
-        };
-      });
-    } else {
-      // Monthly
-      // Group by month (YYYY-MM)
-      final groupedByMonth = groupBy<WorkoutLog, String>(logs, (log) {
-        return DateFormat('yyyy-MM').format(log.completedAt);
-      });
-
-      groupedByMonth.forEach((monthStr, monthlyLogs) {
-        aggregatedData[monthStr] = {
-          'period': monthStr, // Store the month string
-          'workouts': monthlyLogs.length,
-          'minutes': monthlyLogs.fold<int>(
-            0,
-            (sum, log) => sum + log.durationMinutes,
-          ),
-          'calories': monthlyLogs.fold<int>(
-            0,
-            (sum, log) => sum + log.caloriesBurned,
-          ),
-        };
-      });
-    }
-
-    // 4. Sort and Format Output
-    final sortedPeriods = aggregatedData.keys.toList()..sort();
-    final result =
-        sortedPeriods.map((periodKey) => aggregatedData[periodKey]!).toList();
-
-    print("  - Aggregated progress data points: ${result.length}");
-    // print("  - Result: $result"); // Optional: print full result for debugging
-
-    return result;
   }
 }

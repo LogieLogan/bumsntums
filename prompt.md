@@ -1,15 +1,7 @@
 Using the Project Knowledge AND the SPECS provided as your core instructions please help me build my flutter mobile ios app on the defined area of focus. 
 
 Issues/thoughts 
-workout stats analytics widget on home screen doesnt update until app is restarted.
-'your progress' section is showing dummy data how can we get real data
-'body focus area' is 100% unknown this should be broken down into distinct catgories based on a holitic tag we have for each workout. 
-Is the workout calendar showing real data? this should be updated when completing a workout. 
-
-MAIN direction
-Consolidation of workouts analytics data so it can be evaluated and used effectively thoughtout the app in things such as planning, logging wokrouts completed and analytics.
-
-Also need to review why I have both and anaytics provider and a stats provider? is this a dupe? 
+workout analytics achievements
 
 
 project structure: 
@@ -136,7 +128,6 @@ project structure:
 │   │   │   ├── workout_analytics_timeframe.dart
 │   │   │   └── workout_stats.dart
 │   │   ├── providers
-│   │   │   ├── workout_analytics_provider.dart
 │   │   │   ├── workout_insights_provider.dart
 │   │   │   └── workout_stats_provider.dart
 │   │   ├── screens
@@ -181,6 +172,7 @@ project structure:
 │       ├── models
 │       │   ├── exercise.dart
 │       │   ├── workout.dart
+│       │   ├── workout_category_extensions.dart
 │       │   ├── workout_log.dart
 │       │   ├── workout_section.dart
 │       │   └── workout_streak.dart

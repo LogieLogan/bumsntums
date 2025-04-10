@@ -1,4 +1,5 @@
 // lib/features/home/screens/home_tab.dart
+import 'package:bums_n_tums/features/workout_analytics/widgets/achievements_summary_card.dart';
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
 import 'package:bums_n_tums/shared/providers/environment_provider.dart';
@@ -92,6 +93,8 @@ class _HomeTabState extends ConsumerState<HomeTab>
               _buildSectionHeader("Your Progress", Icons.trending_up),
               const SizedBox(height: 12),
               StatsCard(userId: widget.profile.userId),
+              const SizedBox(height: 16), // Add some space
+              const AchievementsSummaryCard(),
 
               const SizedBox(height: 32),
 

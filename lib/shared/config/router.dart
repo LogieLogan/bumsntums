@@ -1,4 +1,5 @@
 // lib/shared/config/router.dart
+import 'package:bums_n_tums/features/workout_analytics/screens/achievements_screen.dart';
 import 'package:bums_n_tums/features/workout_planning/screens/weekly_planning_screen.dart';
 import 'package:bums_n_tums/features/workout_planning/screens/workout_scheduling_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/exercise_detail_screen.dart';
@@ -89,6 +90,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
+      GoRoute(
+  path: '/achievements',
+  name: 'achievements',
+  builder: (context, state) => const AchievementsScreen(),
+),
     ],
     errorBuilder:
         (context, state) =>

@@ -65,6 +65,60 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final authState = ref.watch(authStateProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Setup Profile"), // Or dynamic title
+        actions: [
+          TextButton(
+            onPressed: () async {
+              // Optional: Show Confirmation Dialog
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      title: Text("Sign Out?"),
+                      content: Text(
+                        "Are you sure you want to sign out and use a different account? Your progress on this screen will be lost.",
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: Text("Cancel"),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: Text("Sign Out"),
+                        ),
+                      ],
+                    ),
+              );
+
+              if (confirmed == true) {
+                try {
+                  // Call sign out using the service provider
+                  await ref.read(authServiceProvider).signOut();
+
+                  // Navigate back to login screen (use your specific router logic)
+                  // Example using GoRouter assuming '/' is login or initial auth gate
+                  if (context.mounted) {
+                    // Check if widget is still in the tree
+                    context.go('/');
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Error signing out: $e")),
+                    );
+                  }
+                }
+              }
+            },
+            child: Text(
+              "Sign Out",
+              style: TextStyle(color: Colors.white), // Adjust style as needed
+            ),
+          ),
+        ],
+      ),
       resizeToAvoidBottomInset: true, // Important for keyboard handling
       body: Container(
         color: AppColors.pink,

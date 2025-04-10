@@ -1,5 +1,5 @@
 // lib/features/workout_analytics/screens/workout_analytics_screen.dart
-import 'package:bums_n_tums/features/workout_analytics/widgets/achievements_section.dart';
+import 'package:bums_n_tums/features/workout_analytics/widgets/achievements_summary_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
