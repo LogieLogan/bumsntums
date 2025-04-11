@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../providers/workout_execution_provider.dart';
 import '../widgets/execution/exercise_completion_animation.dart';
 import '../widgets/execution/exercise_content_widget.dart';

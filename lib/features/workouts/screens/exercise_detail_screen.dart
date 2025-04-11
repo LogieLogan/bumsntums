@@ -5,7 +5,7 @@ import '../models/exercise.dart';
 import '../providers/exercise_providers.dart';
 import '../widgets/exercise_demo_widget.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 
 class ExerciseDetailScreen extends ConsumerStatefulWidget {
   final String exerciseId;

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
-import '../../../../shared/theme/color_palette.dart';
+import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/analytics/firebase_analytics_service.dart';
 import '../../models/exercise.dart';
 

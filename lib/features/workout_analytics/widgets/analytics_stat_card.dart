@@ -1,7 +1,7 @@
 // lib/features/workout_analytics/widgets/analytics_stat_card.dart
 import 'package:flutter/material.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 import '../../../shared/services/unit_conversion_service.dart';
 import '../../../features/auth/models/user_profile.dart';
 

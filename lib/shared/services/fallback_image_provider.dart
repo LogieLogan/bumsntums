@@ -2,7 +2,7 @@
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../theme/color_palette.dart';
+import '../theme/app_colors.dart';
 
 class FallbackImageProvider {
   // Free exercise images from Unsplash or similar sources

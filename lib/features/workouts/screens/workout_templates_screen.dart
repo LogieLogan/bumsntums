@@ -6,7 +6,7 @@ import '../models/workout.dart';
 import '../providers/workout_editor_provider.dart';
 import '../repositories/custom_workout_repository.dart';
 import 'workout_editor_screen.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 
 class WorkoutTemplatesScreen extends ConsumerWidget {

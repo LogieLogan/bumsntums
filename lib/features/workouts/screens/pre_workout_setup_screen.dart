@@ -7,7 +7,7 @@ import '../models/workout_section.dart';
 import '../providers/workout_execution_provider.dart';
 import '../widgets/execution/exercise_settings_modal.dart';
 import '../screens/workout_execution_screen.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 
 class PreWorkoutSetupScreen extends ConsumerStatefulWidget {
   final Workout workout;

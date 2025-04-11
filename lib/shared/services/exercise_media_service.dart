@@ -3,7 +3,7 @@ import 'package:bums_n_tums/features/workouts/models/exercise.dart';
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
-import '../theme/color_palette.dart';
+import '../theme/app_colors.dart';
 
 class ExerciseMediaService {
   // Asset paths structure

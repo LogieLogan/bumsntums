@@ -1,8 +1,8 @@
 // lib/features/workouts/widgets/execution/exercise_info_sheet.dart
 import 'package:bums_n_tums/features/workouts/widgets/exercise_demo_widget.dart';
 import 'package:flutter/material.dart';
-import '../../../../shared/theme/color_palette.dart';
-import '../../../../shared/theme/text_styles.dart';
+import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_text_styles.dart';
 import '../../models/exercise.dart';
 
 class ExerciseInfoSheet extends StatelessWidget {

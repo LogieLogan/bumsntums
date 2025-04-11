@@ -5,7 +5,7 @@ import '../../models/workout_section.dart';
 import '../../models/exercise.dart';
 import '../../providers/workout_editor_provider.dart';
 import '../execution/exercise_settings_modal.dart';
-import '../../../../shared/theme/color_palette.dart';
+import '../../../../shared/theme/app_colors.dart';
 
 class SectionCard extends ConsumerWidget {
   final WorkoutSection section;

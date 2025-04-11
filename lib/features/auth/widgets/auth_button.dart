@@ -1,7 +1,7 @@
 // lib/features/auth/widgets/auth_button.dart
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/components/buttons/secondary_button.dart';
 
 enum AuthButtonType {

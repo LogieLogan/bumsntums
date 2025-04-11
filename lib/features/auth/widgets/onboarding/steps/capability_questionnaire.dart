@@ -1,7 +1,7 @@
 // lib/features/auth/widgets/onboarding/steps/capability_questionnaire.dart
 import 'package:flutter/material.dart';
-import '../../../../../shared/theme/color_palette.dart';
-import '../../../../../shared/theme/text_styles.dart';
+import '../../../../../shared/theme/app_colors.dart';
+import '../../../../../shared/theme/app_text_styles.dart';
 
 class CapabilityQuestion {
   final String question;

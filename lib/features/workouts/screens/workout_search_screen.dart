@@ -6,7 +6,7 @@ import '../providers/workout_provider.dart';
 import '../widgets/workout_card.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 
 class WorkoutSearchScreen extends ConsumerStatefulWidget {
   const WorkoutSearchScreen({super.key});

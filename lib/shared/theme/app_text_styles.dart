@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 // Remove the google_fonts import if you are exclusively using bundled fonts now
 // import 'package:google_fonts/google_fonts.dart';
-import 'color_palette.dart'; // Ensure this import points to your AppColors file
+import 'app_colors.dart'; // Ensure this import points to your AppColors file
 
 /// Text styles based on design system using bundled variable fonts
 class AppTextStyles {

@@ -1,6 +1,6 @@
 // lib/features/home/widgets/quick_action_card.dart
 import 'package:flutter/material.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_text_styles.dart';
 
 class QuickActionCard extends StatelessWidget {
   final String title;

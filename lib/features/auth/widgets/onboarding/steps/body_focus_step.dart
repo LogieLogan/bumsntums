@@ -1,7 +1,7 @@
 // lib/features/auth/widgets/onboarding/steps/body_focus_step.dart
 import 'package:flutter/material.dart';
-import '../../../../../shared/theme/color_palette.dart';
-import '../../../../../shared/theme/text_styles.dart';
+import '../../../../../shared/theme/app_colors.dart';
+import '../../../../../shared/theme/app_text_styles.dart';
 
 class BodyFocusStep extends StatefulWidget {
   final Function(List<String>) onNext;

@@ -10,7 +10,7 @@ import '../widgets/editor/section_card.dart';
 import '../widgets/editor/workout_basic_info_form.dart';
 import '../widgets/editor/equipment_and_tags_section.dart';
 import '../screens/exercise_selector_screen.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 
 class WorkoutEditorScreen extends ConsumerStatefulWidget {
   final Workout? originalWorkout; // Null if creating a new workout

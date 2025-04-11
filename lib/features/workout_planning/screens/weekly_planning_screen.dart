@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 import '../widgets/day_schedule_card.dart';
 import '../widgets/workout_day_header.dart';
 import '../models/scheduled_workout.dart'; // Keep for PlannedWorkoutItem type check
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import 'package:collection/collection.dart'; // Import for groupBy

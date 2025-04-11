@@ -1,7 +1,7 @@
 // lib/shared/theme/app_theme.dart
 import 'package:flutter/material.dart';
-import 'color_palette.dart';
-import 'text_styles.dart';
+import 'app_colors.dart';
+import 'app_text_styles.dart';
 
 /// App theme configuration
 class AppTheme {

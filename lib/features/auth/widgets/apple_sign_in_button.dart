@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 import '../services/firebase_auth_service.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 
 class AppleSignInButton extends ConsumerStatefulWidget {

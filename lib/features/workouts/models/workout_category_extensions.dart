@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'workout.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 
 extension WorkoutCategoryDisplay on WorkoutCategory {
   String get displayName {

@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/feedback_provider.dart';
-import '../../theme/color_palette.dart';
-import '../../theme/text_styles.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
 import '../buttons/primary_button.dart';
 
 class SatisfactionPrompt extends ConsumerStatefulWidget {

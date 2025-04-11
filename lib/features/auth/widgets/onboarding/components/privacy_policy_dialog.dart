@@ -4,8 +4,8 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../shared/models/legal_document.dart';
 import '../../../../../shared/services/legal_document_service.dart';
-import '../../../../../shared/theme/text_styles.dart';
-import '../../../../../shared/theme/color_palette.dart';
+import '../../../../../shared/theme/app_text_styles.dart';
+import '../../../../../shared/theme/app_colors.dart';
 
 class PrivacyPolicyDialog extends ConsumerStatefulWidget {
   final Function(bool accepted, int version) onResult;

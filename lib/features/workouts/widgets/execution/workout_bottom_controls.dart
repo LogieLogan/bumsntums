@@ -1,7 +1,7 @@
 // lib/features/workouts/widgets/execution/workout_bottom_controls.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../shared/theme/color_palette.dart';
+import '../../../../shared/theme/app_colors.dart';
 import '../../models/exercise.dart';
 import '../../providers/workout_execution_provider.dart';
 

@@ -1,7 +1,7 @@
 // lib/features/auth/widgets/onboarding/steps/workout_environment_step.dart
 import 'package:flutter/material.dart';
-import '../../../../../shared/theme/color_palette.dart';
-import '../../../../../shared/theme/text_styles.dart';
+import '../../../../../shared/theme/app_colors.dart';
+import '../../../../../shared/theme/app_text_styles.dart';
 import '../../../models/user_profile.dart';
 
 class WorkoutEnvironmentStepController {

@@ -1,7 +1,7 @@
 // lib/features/ai_workout_creation/screens/workout_creation/widgets/refinement_result.dart
 import 'package:flutter/material.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/components/buttons/secondary_button.dart';
 

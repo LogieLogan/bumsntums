@@ -2,7 +2,7 @@
 import 'package:bums_n_tums/shared/services/exercise_media_service.dart';
 import 'package:flutter/material.dart';
 import '../models/exercise.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import 'exercise_image_widget.dart';
 
 class ExerciseListItem extends StatelessWidget {

@@ -2,7 +2,7 @@
 import 'package:bums_n_tums/features/workouts/widgets/execution/exercise_info_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../shared/theme/color_palette.dart';
+import '../../../../shared/theme/app_colors.dart';
 import '../../models/exercise.dart';
 import '../../providers/workout_execution_provider.dart';
 import 'rest_timer.dart';

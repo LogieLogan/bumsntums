@@ -1,6 +1,6 @@
 // lib/features/workouts/widgets/execution/exit_confirmation_dialog.dart
 import 'package:flutter/material.dart';
-import '../../../../shared/theme/color_palette.dart';
+import '../../../../shared/theme/app_colors.dart';
 
 class ExitConfirmationDialog extends StatelessWidget {
   final VoidCallback onContinue;

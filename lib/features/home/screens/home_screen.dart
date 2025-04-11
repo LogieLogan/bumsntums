@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bums_n_tums/features/auth/providers/user_provider.dart';
 import 'package:bums_n_tums/shared/analytics/firebase_analytics_service.dart';
 import 'package:bums_n_tums/shared/components/indicators/loading_indicator.dart';
-import 'package:bums_n_tums/shared/theme/color_palette.dart';
+import 'package:bums_n_tums/shared/theme/app_colors.dart';
 import 'home_tab.dart';
 import 'profile_tab.dart';
 

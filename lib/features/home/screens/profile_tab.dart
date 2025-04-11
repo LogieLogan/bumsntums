@@ -8,8 +8,8 @@ import 'package:bums_n_tums/features/auth/models/user_profile.dart';
 import 'package:bums_n_tums/features/auth/screens/edit_profile_screen.dart';
 import 'package:bums_n_tums/features/settings/screens/gdpr_settings_screen.dart';
 import 'package:bums_n_tums/shared/components/feedback/feedback_button.dart';
-import 'package:bums_n_tums/shared/theme/color_palette.dart';
-import 'package:bums_n_tums/shared/theme/text_styles.dart';
+import 'package:bums_n_tums/shared/theme/app_colors.dart';
+import 'package:bums_n_tums/shared/theme/app_text_styles.dart';
 import '../providers/display_name_provider.dart';
 
 class ProfileTab extends ConsumerWidget {

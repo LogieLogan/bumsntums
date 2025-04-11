@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/achievement_provider.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 
 class AchievementsScreen extends ConsumerWidget {
   const AchievementsScreen({Key? key}) : super(key: key);

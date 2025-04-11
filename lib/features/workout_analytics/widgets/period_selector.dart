@@ -1,8 +1,8 @@
 // lib/features/workout_analytics/widgets/period_selector.dart
 import 'package:flutter/material.dart';
 import '../models/workout_analytics_timeframe.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 
 class PeriodSelector extends StatelessWidget {
   final AnalyticsTimeframe selectedPeriod;

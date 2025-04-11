@@ -10,7 +10,7 @@ import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart
 import 'package:bums_n_tums/features/workouts/screens/workout_editor_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_search_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_templates_screen.dart';
-import 'package:bums_n_tums/shared/theme/color_palette.dart';
+import 'package:bums_n_tums/shared/theme/app_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -4,8 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/workout_stats_provider.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';

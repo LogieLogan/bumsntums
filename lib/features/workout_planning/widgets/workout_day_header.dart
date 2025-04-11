@@ -1,7 +1,7 @@
 // lib/features/workout_planning/widgets/workout_day_header.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 
 class WorkoutDayHeader extends StatelessWidget {
   final DateTime date;

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../providers/workout_provider.dart';
 import '../models/workout_log.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

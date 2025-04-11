@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/exercise.dart';
 import '../providers/exercise_selector_provider.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 
 class ExerciseSelectorScreen extends ConsumerStatefulWidget {
   const ExerciseSelectorScreen({Key? key}) : super(key: key);

@@ -12,8 +12,8 @@ import '../providers/workout_provider.dart';
 import '../widgets/exercise_list_item.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class WorkoutDetailScreen extends ConsumerStatefulWidget {

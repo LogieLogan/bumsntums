@@ -2,8 +2,8 @@
 import 'package:bums_n_tums/features/workouts/models/workout_category_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 import '../../workouts/models/workout.dart';
 
 class DurationSelectionStep extends StatelessWidget {

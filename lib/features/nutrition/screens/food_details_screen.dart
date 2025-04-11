@@ -1,8 +1,8 @@
 // lib/features/nutrition/screens/food_details_screen.dart
 import 'package:flutter/material.dart';
 import '../models/food_item.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FoodDetailsScreen extends ConsumerWidget {

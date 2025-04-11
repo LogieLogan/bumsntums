@@ -2,7 +2,7 @@
 import 'package:bums_n_tums/features/workouts/models/workout_log.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../shared/theme/color_palette.dart'; // Adjust import path
+import '../../../shared/theme/app_colors.dart'; // Adjust import path
 
 class LoggedWorkoutItemWidget extends StatelessWidget {
   final WorkoutLog workoutLog;

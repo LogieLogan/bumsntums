@@ -1,8 +1,8 @@
 // lib/features/ai_workout_creation/screens/workout_creation/widgets/workout_result.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 import '../../workouts/repositories/custom_workout_repository.dart';
 import '../../workouts/models/workout.dart';
 import '../../workouts/models/exercise.dart';

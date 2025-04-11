@@ -10,8 +10,8 @@ import '../widgets/workout_progress_chart.dart';
 import '../widgets/body_focus_chart.dart';
 import '../widgets/workout_calendar_heatmap.dart';
 import '../widgets/period_selector.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 

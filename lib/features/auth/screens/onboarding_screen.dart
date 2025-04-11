@@ -6,7 +6,7 @@ import '../providers/auth_provider.dart';
 import '../providers/user_provider.dart';
 import '../widgets/onboarding/profile_setup_coordinator.dart'; // Updated import
 import '../../../shared/constants/app_constants.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import 'package:go_router/go_router.dart';

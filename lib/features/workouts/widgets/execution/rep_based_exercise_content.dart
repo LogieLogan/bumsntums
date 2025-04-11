@@ -1,6 +1,6 @@
 // lib/features/workouts/widgets/execution/rep_based_exercise_content.dart
 import 'package:flutter/material.dart';
-import '../../../../shared/theme/color_palette.dart';
+import '../../../../shared/theme/app_colors.dart';
 
 class RepBasedExerciseContent extends StatelessWidget {
   final int reps;

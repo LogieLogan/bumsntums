@@ -1,7 +1,7 @@
 // lib/features/workouts/widgets/execution/workout_top_bar.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../shared/theme/color_palette.dart';
+import '../../../../shared/theme/app_colors.dart';
 import '../../models/workout.dart';
 import '../../providers/workout_execution_provider.dart';
 import 'exit_confirmation_dialog.dart';

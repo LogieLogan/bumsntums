@@ -1,7 +1,7 @@
 // lib/features/home/widgets/ai_workout_creator_card.dart
 import 'package:flutter/material.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 import '../../ai_workout_creation/screens/ai_workout_screen.dart';
 
 class AIWorkoutCreatorCard extends StatelessWidget {

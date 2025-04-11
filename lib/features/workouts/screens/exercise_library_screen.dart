@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/exercise_providers.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../widgets/exercise_list_item.dart';
 import '../widgets/exercise_filter_bar.dart';
 import 'package:go_router/go_router.dart';

@@ -1,7 +1,7 @@
 // lib/shared/services/resource_loader_service.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../theme/color_palette.dart';
+import '../theme/app_colors.dart';
 
 class ResourceLoaderService {
   // Load SVG icon with fallback

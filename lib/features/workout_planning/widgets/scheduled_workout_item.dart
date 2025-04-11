@@ -2,7 +2,7 @@
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:flutter/material.dart';
 import '../models/scheduled_workout.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 
 class ScheduledWorkoutItem extends StatelessWidget {
   final ScheduledWorkout scheduledWorkout;

@@ -8,8 +8,8 @@ import '../widgets/workout_card.dart';
 import 'workout_detail_screen.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
-import '../../../shared/theme/color_palette.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_text_styles.dart';
 
 class BeginnerWorkoutsScreen extends ConsumerStatefulWidget {
   const BeginnerWorkoutsScreen({Key? key}) : super(key: key);

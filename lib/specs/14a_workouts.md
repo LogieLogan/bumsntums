@@ -232,16 +232,16 @@ Community trend insights that highlight popular workouts
 - [x] Basic workout statistics (counts, duration)
 - [x] Workout streak tracking
 - [x] Basic calendar visualization of workouts
-- [ ] Enhanced analytics dashboard
+- [x] Enhanced analytics dashboard
 - [ ] Exercise performance tracking
-- [ ] Body focus balance analysis
-- [ ] Visual progress charts
-- [ ] Personal records tracking
-- [ ] Milestone achievement system
-- [ ] Weekly and monthly performance reports
-- [ ] Progress sharing functionality
+- [x] Body focus balance analysis
+- [x] Visual progress charts
+- [x] Milestone achievement system
+- [x] Weekly and monthly performance reports
+- [ ] Progress sharing functionality (social media links)
 - [ ] Goal progress visualization
-- [ ] Comprehensive workout export
+- [x] Comprehensive workout export
+- [ ] Logging workouts, feeds into workoutlogging and stats
 
 ### Workout Planning
 - [x] Basic calendar for workout scheduling

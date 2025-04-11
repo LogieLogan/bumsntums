@@ -1,7 +1,7 @@
 // lib/features/workouts/widgets/workout_card.dart
 import 'package:flutter/material.dart';
 import '../models/workout.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/services/exercise_media_service.dart';
 
 class WorkoutCard extends StatelessWidget {

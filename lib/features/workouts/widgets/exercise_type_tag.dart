@@ -1,6 +1,6 @@
 // lib/features/workouts/widgets/exercise_type_tag.dart
 import 'package:flutter/material.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 
 class ExerciseTypeTag extends StatelessWidget {
   final String type;

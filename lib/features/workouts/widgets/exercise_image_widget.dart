@@ -1,7 +1,7 @@
 // lib/features/workouts/widgets/exercise_image_widget.dart
 import 'package:flutter/material.dart';
 import '../../../shared/services/exercise_media_service.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../models/exercise.dart';
 import '../models/workout.dart';
 

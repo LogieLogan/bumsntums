@@ -7,9 +7,9 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../shared/services/gdpr_service.dart';
-import '../../../shared/theme/text_styles.dart';
+import '../../../shared/theme/app_text_styles.dart';
 import '../../../shared/components/buttons/primary_button.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 
 class GdprSettingsScreen extends ConsumerStatefulWidget {
   const GdprSettingsScreen({Key? key}) : super(key: key);

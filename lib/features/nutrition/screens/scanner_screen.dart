@@ -6,7 +6,7 @@ import '../services/barcode_scanner_service.dart';
 import 'food_details_screen.dart';
 import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/components/indicators/loading_indicator.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 
 class ScannerScreen extends ConsumerStatefulWidget {
   const ScannerScreen({super.key});

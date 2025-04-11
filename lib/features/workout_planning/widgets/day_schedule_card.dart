@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/workout_planning_provider.dart';
-import '../../../shared/theme/color_palette.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import 'logged_workout_item_widget.dart';
 import 'scheduled_workout_item.dart';

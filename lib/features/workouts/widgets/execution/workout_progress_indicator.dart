@@ -1,6 +1,6 @@
 // lib/features/workouts/widgets/execution/workout_progress_indicator.dart
 import 'package:flutter/material.dart';
-import '../../../../shared/theme/color_palette.dart';
+import '../../../../shared/theme/app_colors.dart';
 
 class WorkoutProgressIndicator extends StatelessWidget {
   final int currentExerciseIndex;

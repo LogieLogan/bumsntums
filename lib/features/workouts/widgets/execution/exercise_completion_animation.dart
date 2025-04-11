@@ -1,6 +1,6 @@
 // lib/features/workouts/widgets/execution/exercise_completion_animation.dart
 import 'package:flutter/material.dart';
-import '../../../../shared/theme/color_palette.dart';
+import '../../../../shared/theme/app_colors.dart';
 
 class ExerciseCompletionAnimation extends StatelessWidget {
   final VoidCallback onAnimationComplete;

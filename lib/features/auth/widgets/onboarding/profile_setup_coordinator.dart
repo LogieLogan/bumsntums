@@ -3,8 +3,8 @@ import 'package:bums_n_tums/features/auth/widgets/onboarding/steps/capability_qu
 import 'package:bums_n_tums/features/auth/widgets/onboarding/steps/dietary_preferences_step.dart';
 import 'package:bums_n_tums/shared/models/legal_document.dart';
 import 'package:bums_n_tums/shared/services/legal_document_service.dart';
-import 'package:bums_n_tums/shared/theme/color_palette.dart';
-import 'package:bums_n_tums/shared/theme/text_styles.dart';
+import 'package:bums_n_tums/shared/theme/app_colors.dart';
+import 'package:bums_n_tums/shared/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/user_profile.dart';

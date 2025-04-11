@@ -1,6 +1,6 @@
 // Rename to: lib/features/workouts/widgets/execution/between_sets_timer.dart
 import 'package:flutter/material.dart';
-import '../../../../shared/theme/color_palette.dart';
+import '../../../../shared/theme/app_colors.dart';
 import 'dart:async';
 
 class BetweenSetsTimer extends StatefulWidget {

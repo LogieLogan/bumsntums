@@ -1,6 +1,6 @@
 // lib/shared/components/indicators/loading_indicator.dart
 import 'package:flutter/material.dart';
-import '../../theme/color_palette.dart';
+import '../../theme/app_colors.dart';
 
 class LoadingIndicator extends StatelessWidget {
   final String? message;
