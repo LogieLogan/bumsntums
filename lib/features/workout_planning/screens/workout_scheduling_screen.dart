@@ -79,13 +79,6 @@ class _WorkoutSchedulingScreenState
         title: Text(widget.isLoggingMode ? 'Log Workout' : 'Schedule Workout'),
         // The TabBar is now placed within the body Column
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed:
-            _isSaving ? null : () => _showWorkoutCreationOptions(context),
-        label: const Text('Create Workout'),
-        icon: const Icon(Icons.add),
-        backgroundColor: AppColors.salmon, // Or your theme's FAB color
-      ),
       body: Stack(
         // Stack for loading overlay
         children: [
@@ -97,10 +90,24 @@ class _WorkoutSchedulingScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Date display
-                Text(
-                  'Date: ${dateFormatter.format(widget.scheduledDate)}',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Date: ${dateFormatter.format(widget.scheduledDate)}',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      tooltip: 'Create Workout',
+                      onPressed: () {
+                        _showWorkoutCreationOptions(context);
+                      },
+                    ),
+                  ],
                 ),
+
                 const SizedBox(height: 16),
 
                 // Time selection
