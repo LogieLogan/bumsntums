@@ -1,8 +1,16 @@
 system prompt
 
-All i do is copy paste. What you output is what i paste. If you output broken code using palceholder ors icons or comments then it will break the code.
+Prioritize Absolute Completeness: My primary focus will be ensuring that any code block I provide is fully runnable and complete within its defined scope (e.g., a full method, a full class definition if multiple parts change significantly, or a specific widget build block).
+No Placeholders/Ellipses (Strict Enforcement): I will treat ..., /* ... */, and any form of placeholder within code blocks as strictly forbidden, exactly as you instructed. If I cannot provide the actual code for a section within the requested scope, I will omit that section or the entire block if necessary, rather than provide a broken placeholder.
+Context Over Excessive Snippeting: While targeted fixes are important, if modifying a few lines within a method risks confusion or requires understanding the surrounding unchanged lines for context, I will provide the entire method as the targeted fix. This reduces the chance of me accidentally removing necessary code or using placeholders.
+Internal Review Simulation: Before outputting code, I will perform a stricter internal check specifically looking for:
+Any ... or /* */ placeholders.
+Incomplete logic or variables.
+Code that relies on context not provided within the same block.
+Ensuring I haven't replaced existing, correct code (like the analytics line) with a summary comment.
+Direct Feedback Loop: Please continue to point out immediately when I make this mistake, as you just did. This immediate correction is the most effective way to reinforce the requirement.
 
-Avoid using ellipses (...), placeholders, or shortened forms in code.
+Avoid using ellipses (...), placeholders, or shortened forms in code. i.e do ot do this child: Row( /* ... Week navigation buttons and text ... */ ), either provide the row or leave this part out completely and provide a more targeted fix 
 
 If a method/fucntion/file has no changes dont output the unchnaged code
 
@@ -32,10 +40,10 @@ Bums & Tums is a fitness application designed specifically for beginner women wh
 - **Firebase ML Kit**: Food label and barcode scanning
 - **Riverpod**: State management solution
 
-Focus area (steps after thought steps): 
-log workout on weekly planning screen saves workout to the day logged and updates analytics accordingly
+FOCUS AREA:
+Utlising gemini API key either as a replacement or in conjunction with open ai API key (already implemented and working). Gemini should be primary key to use and model to use but if possible openai as a backup. If not possible gemini should be the main key but I want to retain the implementation code incase i want to return to openai.
 
-This is the Current project structure file names (these files have been created so far and you should review them as needed)
+Keys are held in .env file. the flutter_dotenv package is used. 
 
 ├── app.dart
 ├── features
@@ -235,6 +243,7 @@ This is the Current project structure file names (these files have been created 
 │       │   ├── workout_editor_screen.dart
 │       │   ├── workout_execution_screen.dart
 │       │   ├── workout_history_screen.dart
+│       │   ├── workout_log_detail_screen.dart
 │       │   ├── workout_search_screen.dart
 │       │   └── workout_templates_screen.dart
 │       ├── services
@@ -331,9 +340,9 @@ This is the Current project structure file names (these files have been created 
 │   │   ├── shake_detector_service.dart
 │   │   └── unit_conversion_service.dart
 │   ├── theme
-│   │   ├── app_theme.dart
-│   │   ├── color_palette.dart
-│   │   └── text_styles.dart
+│   │   ├── app_colors.dart
+│   │   ├── app_text_styles.dart
+│   │   └── app_theme.dart
 │   └── utils
 │       └── exercise_reference_utils.dart
 └── specs
@@ -360,7 +369,6 @@ This is the Current project structure file names (these files have been created 
     ├── 13_ux_ui_spec.md
     ├── 14a_workouts.md
     ├── 14b_workout_analytics.md
-    ├── 14b_workout_planning.md
     └── 14c_workout_map.md
 
 NOW YOU ASK TO REVIEW FILES.
