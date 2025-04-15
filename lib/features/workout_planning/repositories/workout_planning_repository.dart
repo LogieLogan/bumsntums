@@ -1,5 +1,4 @@
 // lib/features/workout_planning/repositories/workout_planning_repository.dart
-import 'package:bums_n_tums/shared/analytics/firebase_analytics_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
@@ -13,8 +12,8 @@ class WorkoutPlanningRepository {
   final WorkoutService _workoutService;
   final _uuid = const Uuid();
 
-  WorkoutPlanningRepository({WorkoutService? workoutService})
-    : _workoutService = workoutService ?? WorkoutService(AnalyticsService());
+  WorkoutPlanningRepository({required WorkoutService workoutService})
+    : _workoutService = workoutService;
 
   Future<WorkoutPlan?> getActiveWorkoutPlan(String userId) async {
     try {
@@ -115,35 +114,47 @@ class WorkoutPlanningRepository {
     final scheduledWorkoutData = {
       'workoutId': workoutId,
       'userId': userId,
+      'planId': planId,
       'scheduledDate': scheduledDate.millisecondsSinceEpoch,
       'preferredTimeHour': preferredTime?.hour,
       'preferredTimeMinute': preferredTime?.minute,
-      'isCompleted': false,
+      'isCompleted': false, // Always false initially
       'createdAt': DateTime.now().millisecondsSinceEpoch,
     };
 
-    await _firestore
+    final docRef = _firestore
         .collection('workout_plans')
         .doc(planId)
         .collection('scheduled_workouts')
-        .doc(scheduledWorkoutId)
-        .set(scheduledWorkoutData);
+        .doc(scheduledWorkoutId);
 
-    // Get the workout details
+    await docRef.set(scheduledWorkoutData);
+
+    // Fetch the full workout details to return a complete ScheduledWorkout object
     Workout? workout;
     try {
+      // Ensure the service is initialized maybe? Or assume it is.
       workout = await _workoutService.getWorkoutById(workoutId);
+      if (workout == null) {
+        print(
+          "Warning: Could not fetch workout details for newly scheduled item $workoutId",
+        );
+        // Create a minimal workout object to avoid null issues downstream?
+        // Or rely on the caller to handle potential null workout? Let's rely on caller for now.
+      }
     } catch (e) {
-      print('Error fetching workout: $e');
+      print('Error fetching workout details during schedule: $e');
+      // Proceed without full workout details if fetch fails
     }
 
+    // Return the newly created ScheduledWorkout object
     return ScheduledWorkout.fromMap({
       ...scheduledWorkoutData,
       'id': scheduledWorkoutId,
+      'planId': planId,
     }, workout: workout);
   }
 
-  // Mark workout as completed
   Future<void> markWorkoutCompleted(
     String planId,
     String scheduledWorkoutId, {
@@ -173,7 +184,6 @@ class WorkoutPlanningRepository {
         .update(scheduledWorkout.toMap());
   }
 
-  // Delete a scheduled workout
   Future<void> deleteScheduledWorkout(
     String planId,
     String scheduledWorkoutId,
@@ -251,22 +261,24 @@ class WorkoutPlanningRepository {
     DateTime start,
     DateTime end,
   ) async {
+    print(
+      "Repo: Fetching scheduled workouts for $userId from ${start.toIso8601String()} to ${end.toIso8601String()}",
+    );
+    print(
+      "Repo: Querying 'scheduledDate' >= ${start.millisecondsSinceEpoch} and <= ${end.millisecondsSinceEpoch}",
+    );
     try {
-      // Get all active plans for the user
       final plansSnapshot =
           await _firestore
               .collection('workout_plans')
               .where('userId', isEqualTo: userId)
               .where('isActive', isEqualTo: true)
               .get();
-
       if (plansSnapshot.docs.isEmpty) {
         return [];
       }
 
       final allScheduledWorkouts = <ScheduledWorkout>[];
-
-      // For each plan, get scheduled workouts in the date range
       for (final planDoc in plansSnapshot.docs) {
         final scheduledWorkoutsSnapshot =
             await _firestore
@@ -283,34 +295,36 @@ class WorkoutPlanningRepository {
                 )
                 .get();
 
-        final workouts = await Future.wait(
-          scheduledWorkoutsSnapshot.docs.map((doc) async {
-            final data = doc.data();
-            final workoutId = data['workoutId'];
-
-            // Fetch only basic workout info
-            Workout? workout;
-            try {
-              final workoutDoc =
-                  await _firestore.collection('workouts').doc(workoutId).get();
-              if (workoutDoc.exists) {
-                final workoutData = workoutDoc.data()!;
-                workout = _createLightweightWorkout(workoutId, workoutData);
-              }
-            } catch (e) {
-              print('Error fetching workout basic info: $e');
-            }
-
-            return ScheduledWorkout.fromMap({
-              ...data,
+        final List<ScheduledWorkout> planItems = [];
+        for (final doc in scheduledWorkoutsSnapshot.docs) {
+          final data = doc.data();
+          final workoutId = data['workoutId'] as String?;
+          final planId = planDoc.id;
+          if (workoutId == null) {
+            continue;
+          }
+          Workout? workout;
+          try {
+            workout = await _workoutService.getWorkoutById(workoutId);
+          } catch (e) {
+            print('Error fetching workout $workoutId: $e');
+          }
+          planItems.add(
+            ScheduledWorkout.fromMap({
               'id': doc.id,
-            }, workout: workout);
-          }).toList(),
+              'planId': planId,
+              ...data,
+            }, workout: workout),
+          );
+        }
+        allScheduledWorkouts.addAll(planItems);
+        print(
+          "Repo: Found ${planItems.length} items in plan ${planDoc.id} for the date range.",
         );
-
-        allScheduledWorkouts.addAll(workouts);
       }
-
+      print(
+        "Repo: Total scheduled items found: ${allScheduledWorkouts.length}",
+      );
       return allScheduledWorkouts;
     } catch (e) {
       print('Error fetching scheduled workouts: $e');

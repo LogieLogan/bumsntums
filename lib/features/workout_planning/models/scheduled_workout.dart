@@ -10,6 +10,7 @@ class ScheduledWorkout {
   final TimeOfDay? preferredTime;
   final bool isCompleted;
   final DateTime? completedAt;
+  final String planId;
   
   // For UI representation
   final Workout? workout; // The actual workout data
@@ -23,6 +24,7 @@ class ScheduledWorkout {
     this.isCompleted = false,
     this.completedAt,
     this.workout,
+    required this.planId,
   });
 
   factory ScheduledWorkout.fromMap(Map<String, dynamic> map, {Workout? workout}) {
@@ -30,6 +32,7 @@ class ScheduledWorkout {
       id: map['id'] ?? '',
       workoutId: map['workoutId'] ?? '',
       userId: map['userId'] ?? '',
+      planId: map['planId'] ?? '',
       scheduledDate: map['scheduledDate'] != null 
           ? DateTime.fromMillisecondsSinceEpoch(map['scheduledDate']) 
           : DateTime.now(),
@@ -49,6 +52,7 @@ class ScheduledWorkout {
       'id': id,
       'workoutId': workoutId,
       'userId': userId,
+      'planId': planId,
       'scheduledDate': scheduledDate.millisecondsSinceEpoch,
       'preferredTimeHour': preferredTime?.hour,
       'preferredTimeMinute': preferredTime?.minute,
@@ -61,16 +65,19 @@ class ScheduledWorkout {
     String? id,
     String? workoutId,
     String? userId,
+    String? planId,
     DateTime? scheduledDate,
     TimeOfDay? preferredTime,
     bool? isCompleted,
     DateTime? completedAt,
     Workout? workout,
+    bool clearCompletedAt = false,
   }) {
     return ScheduledWorkout(
       id: id ?? this.id,
       workoutId: workoutId ?? this.workoutId,
       userId: userId ?? this.userId,
+      planId: planId ?? this.planId,
       scheduledDate: scheduledDate ?? this.scheduledDate,
       preferredTime: preferredTime ?? this.preferredTime,
       isCompleted: isCompleted ?? this.isCompleted,

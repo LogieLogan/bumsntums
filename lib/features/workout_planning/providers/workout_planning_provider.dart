@@ -1,292 +1,522 @@
 // lib/features/workout_planning/providers/workout_planning_provider.dart
 import 'package:bums_n_tums/features/workouts/models/workout_log.dart';
-import 'package:bums_n_tums/features/workouts/services/workout_service.dart'; // Need WorkoutService to fetch logs
-import 'package:bums_n_tums/features/workouts/providers/workout_provider.dart'; // Provider for WorkoutService
-import 'package:cloud_firestore/cloud_firestore.dart'; // Direct Firestore access for logs
+import 'package:bums_n_tums/features/workouts/services/workout_service.dart';
+import 'package:bums_n_tums/features/workouts/providers/workout_provider.dart';
+import 'package:bums_n_tums/features/workout_analytics/services/workout_stats_service.dart';
+import 'package:bums_n_tums/features/workout_analytics/providers/workout_stats_provider.dart';
+import 'package:bums_n_tums/features/workouts/models/workout.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../repositories/workout_planning_repository.dart';
-import '../models/workout_plan.dart'; // Keep for potential reference if needed
+import '../models/workout_plan.dart'; // Import needed for _ensureAndGetActivePlanId
 import '../models/scheduled_workout.dart';
 
-// --- 1. Define PlannerItem Sealed Class ---
 abstract class PlannerItem extends Equatable {
-  DateTime get itemDate; // Common property for sorting/grouping by date
-  String get id; // Common ID property
+  DateTime get itemDate;
+  String get id;
 }
 
 class PlannedWorkoutItem extends PlannerItem {
   final ScheduledWorkout scheduledWorkout;
-
   PlannedWorkoutItem(this.scheduledWorkout);
-
   @override
   DateTime get itemDate => scheduledWorkout.scheduledDate;
-
   @override
-  String get id => scheduledWorkout.id; // Use scheduledWorkout's ID
-
+  String get id => scheduledWorkout.id;
   @override
   List<Object?> get props => [scheduledWorkout];
 }
 
 class LoggedWorkoutItem extends PlannerItem {
   final WorkoutLog workoutLog;
-
   LoggedWorkoutItem(this.workoutLog);
-
-  // Use completedAt for logs, ensure it's non-null or handle appropriately
   @override
   DateTime get itemDate => workoutLog.completedAt;
-
   @override
-  String get id => workoutLog.id; // Use workoutLog's ID
-
+  String get id => workoutLog.id;
   @override
   List<Object?> get props => [workoutLog];
 }
-// --- End PlannerItem Definition ---
 
-
-// Repository provider (remains the same)
-final workoutPlanningRepositoryProvider = Provider<WorkoutPlanningRepository>((ref) {
-  // If WorkoutPlanningRepository needs WorkoutService, provide it here
+final workoutPlanningRepositoryProvider = Provider<WorkoutPlanningRepository>((
+  ref,
+) {
   final workoutService = ref.watch(workoutServiceProvider);
   return WorkoutPlanningRepository(workoutService: workoutService);
 });
 
-// --- DEPRECATE OR REMOVE these providers as the notifier will handle the combined view ---
-// final activeWorkoutPlanProvider = ...
-// final scheduledWorkoutsProvider = ...
-// final workoutPlansProvider = ...
-// final weeklyWorkoutsProvider = ...
-// ---
-
-// --- 2. Change Notifier State and Dependencies ---
-// Renamed Notifier for clarity
-class PlannerItemsNotifier extends StateNotifier<AsyncValue<List<PlannerItem>>> {
+class PlannerItemsNotifier
+    extends StateNotifier<AsyncValue<List<PlannerItem>>> {
   final WorkoutPlanningRepository _planningRepository;
-  final WorkoutService _workoutService; // Dependency for fetching logs
+  final WorkoutService _workoutService;
   final String _userId;
-  // Store the currently fetched range to avoid redundant fetches if needed
+  final WorkoutStatsService _statsService;
   DateTime? _fetchedRangeStart;
   DateTime? _fetchedRangeEnd;
+  final Ref _ref;
 
-  PlannerItemsNotifier(this._planningRepository, this._workoutService, this._userId)
-      : super(const AsyncValue.loading()) {
-    // Initial load could fetch for the current week, or wait for UI trigger
-    // Let's wait for an explicit fetch call for now
+  PlannerItemsNotifier(
+    this._planningRepository,
+    this._workoutService,
+    this._statsService,
+    this._userId,
+    this._ref,
+  ) : super(const AsyncValue.loading()) {
+    // Initial fetch logic remains the same
+    final now = DateTime.now();
+    final initialStartDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: now.weekday - 1));
+    final initialEndDate = initialStartDate.add(const Duration(days: 6));
+    print(
+      "Notifier Initialized for user $_userId. Triggering initial fetch for $initialStartDate to $initialEndDate.",
+    );
+    fetchPlannerItemsForRange(initialStartDate, initialEndDate);
   }
 
-  // --- 4. Modify Fetching Logic ---
-  Future<void> fetchPlannerItemsForRange(DateTime startDate, DateTime endDate) async {
-    // Optional: Check if the requested range is already loaded
-    // if (_fetchedRangeStart == startDate && _fetchedRangeEnd == endDate && state is AsyncData) {
-    //   return; // Already loaded this range
-    // }
+  Future<void> fetchPlannerItemsForRange(
+    DateTime startDateInput,
+    DateTime endDateInput,
+  ) async {
+    // Date normalization...
+    final DateTime normalizedStartDate = DateTime(
+      startDateInput.year,
+      startDateInput.month,
+      startDateInput.day,
+      0,
+      0,
+      0,
+      0,
+    );
+    final DateTime normalizedEndDateExclusive = DateTime(
+      endDateInput.year,
+      endDateInput.month,
+      endDateInput.day,
+      0,
+      0,
+      0,
+      0,
+    ).add(const Duration(days: 1));
+    final DateTime normalizedEndDateInclusive = DateTime(
+      endDateInput.year,
+      endDateInput.month,
+      endDateInput.day,
+      23,
+      59,
+      59,
+      999,
+    );
 
-    state = const AsyncValue.loading();
-    _fetchedRangeStart = startDate;
-    _fetchedRangeEnd = endDate;
+    if (state is! AsyncLoading ||
+        _fetchedRangeStart != normalizedStartDate ||
+        _fetchedRangeEnd != normalizedEndDateInclusive) {
+      if (mounted) {
+        state = const AsyncValue.loading();
+      } else {
+        return;
+      }
+    }
+    _fetchedRangeStart = normalizedStartDate;
+    _fetchedRangeEnd = normalizedEndDateInclusive;
+    print(
+      "Notifier: Starting fetch for NORMALISED range: $normalizedStartDate to $normalizedEndDateExclusive (exclusive end)",
+    );
 
     try {
-      // Fetch scheduled workouts
-      final scheduledWorkoutsFuture = _planningRepository.getScheduledWorkouts(_userId, startDate, endDate);
+      final scheduledWorkoutsFuture = _planningRepository.getScheduledWorkouts(
+        _userId,
+        normalizedStartDate,
+        normalizedEndDateInclusive,
+      );
+      final workoutLogsFuture =
+          FirebaseFirestore.instance
+              .collection('workout_logs')
+              .doc(_userId)
+              .collection('logs')
+              .where(
+                'completedAt',
+                isGreaterThanOrEqualTo: Timestamp.fromDate(normalizedStartDate),
+              ) // Start of start day
+              .where(
+                'completedAt',
+                isLessThan: Timestamp.fromDate(normalizedEndDateExclusive),
+              ) // Strictly less than start of next day
+              .orderBy('completedAt', descending: true)
+              .get();
 
-      // Fetch workout logs (using WorkoutService or direct query)
-      // Option A: Using WorkoutService (if it has a getLogsByDateRange method)
-      // final workoutLogsFuture = _workoutService.getWorkoutLogs(_userId, startDate, endDate);
-
-      // Option B: Direct Firestore Query (as WorkoutService might not have this yet)
-      final workoutLogsFuture = FirebaseFirestore.instance
-          .collection('workout_logs')
-          .doc(_userId)
-          .collection('logs')
-          .where('completedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
-          .where('completedAt', isLessThanOrEqualTo: Timestamp.fromDate(endDate.add(const Duration(days: 1)))) // Ensure end date inclusivity
-          .orderBy('completedAt', descending: true) // Order as needed
-          .get();
-
-
-      // Wait for both fetches to complete
       final results = await Future.wait([
-          scheduledWorkoutsFuture,
-          workoutLogsFuture,
+        scheduledWorkoutsFuture,
+        workoutLogsFuture,
       ]);
-
       final scheduledWorkouts = results[0] as List<ScheduledWorkout>;
       final logSnapshot = results[1] as QuerySnapshot<Map<String, dynamic>>;
-
-      final workoutLogs = logSnapshot.docs.map((doc) {
-         try {
+      final List<WorkoutLog> workoutLogs = List<WorkoutLog>.from(
+        logSnapshot.docs.map((doc) {
+          try {
             return WorkoutLog.fromMap({'id': doc.id, ...doc.data()});
           } catch (e) {
             print("Error parsing WorkoutLog ${doc.id}: $e");
-            return null; // Handle parsing error, maybe filter out nulls later
+            return null;
           }
-      }).whereNotNull().toList(); // Filter out any logs that failed to parse
+        }).whereNotNull(), // whereNotNull is crucial before List.from
+      );
 
+      print(
+        "Notifier: Fetched ${scheduledWorkouts.length} scheduled workouts.",
+      );
+      print("Notifier: Fetched ${workoutLogs.length} workout logs.");
 
-      // Combine into PlannerItem list
       final List<PlannerItem> combinedItems = [];
-
-      // Add planned items
       for (final sw in scheduledWorkouts) {
-          // *** Crucial Decision: Avoid Duplicates ***
-          // If a scheduled workout is marked completed, should we show it *and* the log?
-          // Option 1: Show both (distinguish visually in UI)
-          // Option 2: If completed, *only* show the LoggedWorkoutItem.
-          // Option 3: If completed, show the LoggedWorkoutItem, potentially linking back to the plan details.
-
-          // Let's go with Option 1 for now (show both if completed), UI can decide how to display.
-          // You might refine this later.
-          combinedItems.add(PlannedWorkoutItem(sw));
+        combinedItems.add(PlannedWorkoutItem(sw));
       }
-
-      // Add logged items
       for (final log in workoutLogs) {
         combinedItems.add(LoggedWorkoutItem(log));
       }
-
-      // Sort by date (optional, but good for consistency)
       combinedItems.sort((a, b) => a.itemDate.compareTo(b.itemDate));
 
-      state = AsyncValue.data(combinedItems);
+      print(
+        "Notifier: Combined list has ${combinedItems.length} items. Scheduling state update.",
+      );
 
-    } catch (e, stackTrace) {
-      print("Error fetching planner items: $e");
-      state = AsyncValue.error(e, stackTrace);
-    }
-  }
-
-  // --- 5. Update CRUD Methods (Example: Deleting) ---
-
-  // Schedule Workout: Adds a PlannedWorkoutItem
-  Future<void> scheduleWorkout( String workoutId, DateTime scheduledDate, {TimeOfDay? preferredTime}) async {
-       // Find the active plan ID first (or handle cases without plans)
-       // This logic might need adjustment based on whether you still require plans
-       final activePlan = await _planningRepository.getActiveWorkoutPlan(_userId); // You might need a way to get the plan ID
-       if (activePlan == null) {
-         // Handle error: Cannot schedule without an active plan (or adjust logic)
-         print("Error: No active workout plan found to schedule workout.");
-         // Optionally update state to reflect the error
-         // state = AsyncValue.error("No active plan", StackTrace.current);
-         return;
-       }
-
-       try {
-           final scheduledWorkout = await _planningRepository.scheduleWorkout(
-               activePlan.id, // Use the fetched plan ID
-               workoutId,
-               _userId,
-               scheduledDate,
-               preferredTime: preferredTime,
-           );
-
-           // Add to current state if it's within the fetched range
-           if (state.hasValue &&
-               _fetchedRangeStart != null && _fetchedRangeEnd != null &&
-               !scheduledDate.isBefore(_fetchedRangeStart!) &&
-               !scheduledDate.isAfter(_fetchedRangeEnd!))
-           {
-               final currentItems = List<PlannerItem>.from(state.value!);
-               currentItems.add(PlannedWorkoutItem(scheduledWorkout));
-               currentItems.sort((a, b) => a.itemDate.compareTo(b.itemDate));
-               state = AsyncValue.data(currentItems);
-           } else {
-               // If outside range, just invalidate to force refetch next time range is viewed
-               // Or trigger a refetch immediately if desired
-               fetchPlannerItemsForRange(_fetchedRangeStart!, _fetchedRangeEnd!);
-           }
-       } catch (e, stackTrace) {
-           state = AsyncValue.error(e, stackTrace); // Propagate error
-       }
-   }
-
-
-  // Delete Item (Handles both Planned and Logged - though logging deletion might be restricted)
-  Future<void> deletePlannerItem(PlannerItem item) async {
-      if (!state.hasValue) return;
-
-      final currentItems = List<PlannerItem>.from(state.value!);
-      final itemIndex = currentItems.indexWhere((i) => i.id == item.id);
-      if (itemIndex == -1) return; // Item not found
-
-      // Optimistic UI update
-      currentItems.removeAt(itemIndex);
-      state = AsyncValue.data(List.from(currentItems)); // Create new list
-
-      try {
-          if (item is PlannedWorkoutItem) {
-              // Find the plan ID associated with this scheduled item - this is tricky now!
-              // You might need to fetch the plan ID or adjust the repository method.
-              // For simplicity, let's assume you can get the plan ID.
-              final plan = await _planningRepository.getActiveWorkoutPlan(_userId); // Example fetch
-              if (plan != null) {
-                 await _planningRepository.deleteScheduledWorkout(plan.id, item.scheduledWorkout.id);
-              } else {
-                throw Exception("Could not find plan to delete scheduled workout from.");
-              }
-          } else if (item is LoggedWorkoutItem) {
-              // Decide if deleting logs from the planner is allowed.
-              // If so, call a method in WorkoutService or repository to delete the log.
-              // Example: await _workoutService.deleteWorkoutLog(item.workoutLog.id);
-              print("Deleting workout logs is not implemented in this example.");
-              // If deletion fails, revert UI state
-              // fetchPlannerItemsForRange(_fetchedRangeStart!, _fetchedRangeEnd!); // Re-fetch to correct
-              throw UnimplementedError("Deleting workout logs not implemented.");
+      // --- Delay state update using microtask ---
+      if (mounted) {
+        Future.microtask(() {
+          if (mounted) {
+            // Check mounted again inside microtask
+            print("Notifier: Microtask executing. Setting state to data.");
+            state = AsyncValue.data(combinedItems);
           }
-      } catch (e, stackTrace) {
-          print("Error deleting planner item: $e");
-          // Revert optimistic update on failure
-           fetchPlannerItemsForRange(_fetchedRangeStart!, _fetchedRangeEnd!); // Re-fetch
-           // Optionally update state to AsyncError temporarily
+        });
       }
-  }
-
-
-  // --- 6. Remove/Adjust Plan-Specific Logic ---
-  // - createWorkoutPlan might live elsewhere (e.g., a separate PlanManagementProvider)
-  // - markWorkoutCompleted (on a ScheduledWorkout) is less relevant now, as completion creates a LoggedWorkoutItem.
-  // - updateScheduledWorkout needs similar logic to deletePlannerItem regarding plan ID.
-
-
-  // Helper to potentially refresh data if needed externally
-  void refreshCurrentRange() {
-    if (_fetchedRangeStart != null && _fetchedRangeEnd != null) {
-      fetchPlannerItemsForRange(_fetchedRangeStart!, _fetchedRangeEnd!);
+      // --- End Delay ---
+    } catch (e, stackTrace) {
+      print("Notifier: Error fetching planner items: $e\n$stackTrace");
+      if (mounted) {
+        // Update error state immediately or also microtask? Let's do immediate for errors.
+        state = AsyncValue.error(e, stackTrace);
+      }
     }
   }
 
-
-  // Method to add a manually logged workout (called after saving via WorkoutService)
-  // This is primarily for optimistic UI updates if desired, otherwise invalidation handles it.
-  void addManuallyLoggedWorkout(WorkoutLog log) {
-      if (state.hasValue &&
-          _fetchedRangeStart != null && _fetchedRangeEnd != null &&
-          !log.completedAt.isBefore(_fetchedRangeStart!) &&
-           log.completedAt.isBefore(_fetchedRangeEnd!.add(const Duration(days: 1)))) // Check if within range
-      {
-           final currentItems = List<PlannerItem>.from(state.value!);
-           // Avoid adding duplicates if invalidation already added it
-           if (!currentItems.any((item) => item is LoggedWorkoutItem && item.workoutLog.id == log.id)) {
-               currentItems.add(LoggedWorkoutItem(log));
-               currentItems.sort((a, b) => a.itemDate.compareTo(b.itemDate));
-               state = AsyncValue.data(currentItems);
-           }
-       }
-       // No need to else{} here, as invalidation from WorkoutCompletionScreen should handle refreshes
-       // if the log is outside the currently viewed range.
+  // Ensure _ensureAndGetActivePlanId is present and correct
+  Future<String?> _ensureAndGetActivePlanId() async {
+    WorkoutPlan? activePlan = await _planningRepository.getActiveWorkoutPlan(
+      _userId,
+    );
+    if (activePlan == null) {
+      print("No active plan found. Creating a default plan for user: $_userId");
+      try {
+        final now = DateTime.now();
+        final defaultEndDate = DateTime(now.year + 10, now.month, now.day);
+        activePlan = await _planningRepository.createWorkoutPlan(
+          _userId,
+          "My Schedule",
+          now,
+          defaultEndDate,
+          description: "Default schedule for workouts.",
+        );
+        print("Default plan created with ID: ${activePlan.id}");
+      } catch (e) {
+        print("Error creating default workout plan: $e");
+        return null;
+      }
+    }
+    return activePlan.id;
   }
 
+  // scheduleWorkout method remains unchanged from last correct version
+  Future<ScheduledWorkout> scheduleWorkout(
+    String workoutId,
+    DateTime scheduledDate, {
+    TimeOfDay? preferredTime,
+  }) async {
+    final String? planId = await _ensureAndGetActivePlanId();
+    if (planId == null) {
+      print(
+        "Error: Could not find or create a workout plan ID to schedule workout.",
+      );
+      throw Exception("Failed to get or create a plan for scheduling.");
+    }
+    try {
+      final scheduledWorkout = await _planningRepository.scheduleWorkout(
+        planId,
+        workoutId,
+        _userId,
+        scheduledDate,
+        preferredTime: preferredTime,
+      );
+      print("Notifier: Workout scheduled successfully: ${scheduledWorkout.id}");
+
+      // --- Optimistic Local State Update ---
+      // Only update if current state is data and within the fetched range
+      if (state is AsyncData<List<PlannerItem>> &&
+          _fetchedRangeStart != null &&
+          _fetchedRangeEnd != null &&
+          !scheduledDate.isBefore(_fetchedRangeStart!) &&
+          scheduledDate.isBefore(
+            _fetchedRangeEnd!.add(const Duration(days: 1)),
+          )) {
+        final currentItems = List<PlannerItem>.from(state.value!);
+        // Avoid duplicates if already present (unlikely but safe)
+        if (!currentItems.any((item) => item.id == scheduledWorkout.id)) {
+          currentItems.add(PlannedWorkoutItem(scheduledWorkout));
+          currentItems.sort((a, b) => a.itemDate.compareTo(b.itemDate));
+          if (mounted) {
+            state = AsyncValue.data(currentItems);
+            print(
+              "Notifier: Optimistically added scheduled item ${scheduledWorkout.id} to local state.",
+            );
+          }
+        }
+      }
+      return scheduledWorkout;
+    } catch (e, stackTrace) {
+      print("Error in scheduleWorkout repository call: $e\n$stackTrace");
+      throw Exception("Failed to schedule workout: $e");
+    }
+  }
+
+  Future<void> markScheduledItemComplete(
+    ScheduledWorkout scheduledWorkout,
+  ) async {
+    if (scheduledWorkout.isCompleted) {
+      print(
+        "Notifier: Workout ${scheduledWorkout.id} is already marked complete.",
+      );
+      return;
+    }
+
+    Workout? workout = await _fetchWorkoutDetailsIfNeededInternal(
+      scheduledWorkout,
+    );
+
+    if (workout == null || workout.exercises.isEmpty) {
+      print(
+        "Notifier: Fetching full workout details for ${scheduledWorkout.workoutId} before marking complete.",
+      );
+      try {
+        workout = await _workoutService.getWorkoutById(
+          scheduledWorkout.workoutId,
+        );
+        if (workout == null) {
+          throw Exception(
+            "Could not find details for workout ID: ${scheduledWorkout.workoutId}. Cannot complete.",
+          );
+        }
+        print("Notifier: Fetched full workout details: ${workout.title}");
+      } catch (e) {
+        print("Notifier: Error fetching full workout details: $e");
+        throw Exception("Error fetching workout details: $e");
+      }
+    }
+
+    try {
+      final now = DateTime.now();
+      final completedAt = DateTime(
+        scheduledWorkout.scheduledDate.year,
+        scheduledWorkout.scheduledDate.month,
+        scheduledWorkout.scheduledDate.day,
+        now.hour,
+        now.minute,
+        now.second,
+      );
+      final durationMinutes = workout.durationMinutes;
+      final startedAt = completedAt.subtract(
+        Duration(minutes: durationMinutes),
+      );
+
+      final newLog = WorkoutLog(
+        id: const Uuid().v4(),
+        userId: _userId,
+        workoutId: workout.id,
+        startedAt: startedAt,
+        completedAt: completedAt,
+        durationMinutes: durationMinutes,
+        caloriesBurned: workout.estimatedCaloriesBurn,
+        exercisesCompleted: const [],
+        userFeedback: const UserFeedback(rating: 3),
+        isShared: false,
+        privacy: 'private',
+        isOfflineCreated: false,
+        syncStatus: 'synced',
+        workoutCategory: workout.category.name,
+        workoutName: workout.title,
+        targetAreas: workout.tags,
+      );
+
+      await _workoutService.logCompletedWorkout(newLog);
+      await _statsService.updateStatsFromWorkoutLog(
+        newLog,
+      ); // Use injected service
+
+      final String? planId = await _ensureAndGetActivePlanId();
+      if (planId == null) {
+        throw Exception("Could not find active plan to mark workout complete.");
+      }
+      await _planningRepository.markWorkoutCompleted(
+        planId,
+        scheduledWorkout.id,
+        completedAt: completedAt,
+      );
+
+      print(
+        "Notifier: Successfully marked item ${scheduledWorkout.id} complete and updated stats.",
+      );
+
+      print("Notifier: Invalidating stats providers after marking complete...");
+      _ref.invalidate(workoutStatsProvider(_userId)); // For Home Screen Card
+      _ref.invalidate(userWorkoutStatsProvider(_userId)); // Detailed stats
+      _ref.invalidate(userWorkoutStreakProvider(_userId)); // Streak
+      // Optionally invalidate frequency/progress if they might be affected
+      // _ref.invalidate(workoutFrequencyDataProvider((userId: _userId, days: 90)));
+      print("Notifier: Stats providers invalidated.");
+
+      if (state is AsyncData<List<PlannerItem>>) {
+        final currentItems = List<PlannerItem>.from(state.value!);
+        final itemIndex = currentItems.indexWhere(
+          (item) =>
+              item is PlannedWorkoutItem && item.id == scheduledWorkout.id,
+        );
+        if (itemIndex != -1) {
+          currentItems[itemIndex] = PlannedWorkoutItem(
+            scheduledWorkout.copyWith(
+              isCompleted: true,
+              completedAt: completedAt,
+            ),
+          );
+          currentItems.sort((a, b) => a.itemDate.compareTo(b.itemDate));
+          if (mounted) {
+            state = AsyncValue.data(currentItems);
+            print(
+              "Notifier: Optimistically updated item ${scheduledWorkout.id} to completed in local state.",
+            );
+          }
+        } else {
+          print(
+            "Notifier: Warning - Could not find item ${scheduledWorkout.id} in local state for optimistic update after completion.",
+          );
+          // Optionally add just the log if the scheduled item wasn't found
+          if (!currentItems.any(
+            (i) => i is LoggedWorkoutItem && i.id == newLog.id,
+          )) {
+            currentItems.add(LoggedWorkoutItem(newLog));
+            currentItems.sort((a, b) => a.itemDate.compareTo(b.itemDate));
+            if (mounted) {
+              state = AsyncValue.data(currentItems);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print(
+        "Notifier: Error during mark complete process for ${scheduledWorkout.id}: $e",
+      );
+      throw Exception("Failed to mark workout complete: $e");
+    }
+  }
+
+  Future<void> deletePlannerItem(PlannerItem itemToDelete) async {
+    // Store current items before backend call
+    List<PlannerItem>? previousItems;
+    if (state is AsyncData<List<PlannerItem>>) {
+      previousItems = List.from(state.value!);
+    }
+
+    // --- Optimistic UI removal (optional but improves UX) ---
+    if (previousItems != null) {
+      final itemIndex = previousItems.indexWhere(
+        (item) => item.id == itemToDelete.id,
+      );
+      if (itemIndex != -1) {
+        previousItems.removeAt(itemIndex);
+        if (mounted) {
+          state = AsyncValue.data(
+            List.from(previousItems),
+          ); // Show removed state immediately
+          print(
+            "Notifier: Optimistically removed item ${itemToDelete.id} from local state.",
+          );
+        }
+      }
+    }
+    // --- End Optimistic Removal ---
+
+    // Perform actual backend deletion
+    if (itemToDelete is PlannedWorkoutItem) {
+      final String? planId = await _ensureAndGetActivePlanId();
+      if (planId == null) {
+        throw Exception("Failed to find plan context...");
+      }
+      try {
+        await _planningRepository.deleteScheduledWorkout(
+          planId,
+          itemToDelete.scheduledWorkout.id,
+        );
+        print(
+          "Notifier: Deleted PlannedWorkoutItem ${itemToDelete.id} from backend.",
+        );
+        // No need to manually update state again if optimistic removal was done
+      } catch (e) {
+        print("Notifier: Error deleting planned item ${itemToDelete.id}: $e");
+        // --- Revert Optimistic Removal on Error ---
+        if (previousItems != null && mounted) {
+          // If deletion failed, restore the previous state
+          state = AsyncValue.data(previousItems);
+          print(
+            "Notifier: Reverted optimistic removal for ${itemToDelete.id} due to error.",
+          );
+        }
+        // --- End Revert ---
+        throw e;
+      }
+    } else {
+      // Revert state if optimistic removal was done for an unsupported type
+      if (previousItems != null && mounted) {
+        state = AsyncValue.data(previousItems);
+      }
+      throw UnimplementedError("Deleting logged workouts is not supported.");
+    }
+  }
+
+  Future<Workout?> _fetchWorkoutDetailsIfNeededInternal(
+    ScheduledWorkout scheduledWorkout,
+  ) async {
+    Workout? workout = scheduledWorkout.workout;
+    if (workout == null || workout.exercises.isEmpty) {
+      try {
+        workout = await _workoutService.getWorkoutById(
+          scheduledWorkout.workoutId,
+        );
+      } catch (e) {
+        print("Notifier internal fetch error: $e");
+        return null;
+      }
+    }
+    return workout;
+  }
 }
 
-// --- 7. Update Provider Definitions ---
-// Renamed provider
-final plannerItemsNotifierProvider = StateNotifierProvider.family<PlannerItemsNotifier, AsyncValue<List<PlannerItem>>, String>((ref, userId) {
+final plannerItemsNotifierProvider = StateNotifierProvider.family<
+  PlannerItemsNotifier,
+  AsyncValue<List<PlannerItem>>,
+  String
+>((ref, userId) {
   final planningRepository = ref.watch(workoutPlanningRepositoryProvider);
-  final workoutService = ref.watch(workoutServiceProvider); // Get WorkoutService instance
-  return PlannerItemsNotifier(planningRepository, workoutService, userId);
+  final workoutService = ref.watch(workoutServiceProvider);
+  final statsService = ref.watch(workoutStatsServiceProvider);
+  // Pass the ref itself to the notifier so it can invalidate other providers
+  return PlannerItemsNotifier(
+    planningRepository,
+    workoutService,
+    statsService,
+    userId,
+    ref,
+  );
 });

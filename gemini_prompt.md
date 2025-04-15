@@ -1,22 +1,26 @@
 system prompt
 
-provde whole complete chnages of methods if they are new methods provide the entire new method. 
-dont over use comments. use them only when absolutely nessesery for example at the top of file where it says the fils location.
-if code is the same dont output it, unless you are doing the entire method with updates then provide the current and updated code ads a sinlge complete method
-avoid usig code... //(*....*) bits when keeping the code the same. instead just dont output this aprt of the code.
-If the code change is small then provide a targeted chnage to that part only, when providing target code chnages show what is chngaging and what it is chnaging to.
-Any code you procide must be ready to copy. no + or - signs or sytactically wrong characters
+All i do is copy paste. What you output is what i paste. If you output broken code using palceholder ors icons or comments then it will break the code.
 
-Overview
-# Bums & Tums - Project Overview
+Avoid using ellipses (...), placeholders, or shortened forms in code.
 
-## Project Summary
-**Project Name:** Bums & Tums  
-**Platform:** Flutter (iOS first, Android later)  
-**Backend:** Firebase (Firestore, Authentication, Cloud Functions, Firebase ML Kit, Storage)  
-**AI Integration:** OpenAI API (OpenAI-mini for cost efficiency)
-**Monetization:** Apple In-App Purchases  
-**Target Audience:** Beginner women focused on weight loss and toning
+If a method/fucntion/file has no changes dont output the unchnaged code
+
+Only provide updated and new code in its full form (e.g. dont break it up with placeholders)
+
+Each method has its own code block if updating multiple methods put the chnages to each method in a new code block with a short explanation
+
+ONLY provide the entire method if you are actually providing all the code (no placeholders)
+
+NO PLACEHOLDER CODE ONLY FULL FUNCTIONING CODE
+
+If replacing constants, enums, or config values, provide the updated constant along with its context (e.g., full block or section).
+
+Do not include explanation text in code blocks unless absolutely necessary (e.g., a comment to prevent misuse of logic).
+
+Always use real, runnable code—no pseudo-code, placeholder variables, or incomplete logic.
+
+
 
 ## Vision
 Bums & Tums is a fitness application designed specifically for beginner women who want to focus on weight loss and toning. The app provides personalized workout recommendations, food scanning and nutritional analysis, and a supportive community to help users achieve their fitness goals.
@@ -28,44 +32,10 @@ Bums & Tums is a fitness application designed specifically for beginner women wh
 - **Firebase ML Kit**: Food label and barcode scanning
 - **Riverpod**: State management solution
 
-## Key Features
-- Personalized workout recommendations focused on "Bums & Tums"
-- Food scanning with nutritional analysis
-- Progress tracking
-- Social community and challenges
-- AI-powered fitness advice
-
-## Document Index
-- [01_user_journeys.md](01_user_journeys.md) - User experience flows and journeys
-- [02_design_system.md](02_design_system.md) - Design guidelines and UI components
-- [03_technical_architecture.md](03_technical_architecture.md) - Project structure and patterns
-- [04_firebase_architecture.md](04_firebase_architecture.md) - Database schema and cloud functions
-- [05_ai_integration.md](05_ai_integration.md) - OpenAI implementation details
-- [06a_auth_system.md](06a_auth_system.md) - Authentication system
-- [06b_food_scanning.md](06b_food_scanning.md) - Food scanning and nutrition tracking
-- [06c_workouts.md](06c_workouts.md) - Workout features
-- [06d_social_features.md](06d_social_features.md) - Social and community features
-- [06e_challenges.md](06e_challenges.md) - Challenges system
-- [06f_in_app_purchases.md](06f_in_app_purchases.md) - Subscription model
-- [07_analytics_and_monitoring.md](07_analytics_and_monitoring.md) - Analytics and crash reporting
-- [08_security_and_compliance.md](08_security_and_compliance.md) - Security measures and data privacy
-- [09_implementation_plan.md](09_implementation_plan.md) - Development timeline and phases
-- [10_early_feedback.md](10_early_feedback.md) - User testing and feedback mechanisms
-
 Focus area (steps after thought steps): 
 log workout on weekly planning screen saves workout to the day logged and updates analytics accordingly
 
-
-Thought Steps to follow:
-1. Review project files surrounding the focus area, trying to get a understanding of how the app works in this specific sphere of the app.
-2. Ask questions based on reviewed files and request next tranch of files for review wit the goal of understanding the focus area
-3. build up project/app map of intergrations, features, methods on focus area
-4. Ask more questions if needed (itterate until understood)
-5. Remaining focused on focus area review the current codes implementation and review if ready to take new feature.
-6. Once knowledge sphere is properly understood move to focus area
-
-
-This Current project structure file names (these files have been created so far and you should review them as needed)
+This is the Current project structure file names (these files have been created so far and you should review them as needed)
 
 ├── app.dart
 ├── features
@@ -393,7 +363,5 @@ This Current project structure file names (these files have been created so far 
     ├── 14b_workout_planning.md
     └── 14c_workout_map.md
 
-Which of these files do you want to review? 
+NOW YOU ASK TO REVIEW FILES.
 
-
-Starting files: 

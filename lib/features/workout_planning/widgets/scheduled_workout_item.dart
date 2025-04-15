@@ -95,10 +95,7 @@ class ScheduledWorkoutItem extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                workout?.title ??
-                                    _getWorkoutNameFromId(
-                                      scheduledWorkout.workoutId,
-                                    ),
+                                workout?.title ?? 'Unknown Workout',
                                 style: textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -219,29 +216,6 @@ class ScheduledWorkoutItem extends StatelessWidget {
     );
   }
 
-  String _getWorkoutNameFromId(String workoutId) {
-    final parts = workoutId.split('-');
-    if (parts.length >= 2) {
-      final category = parts[0];
-      String categoryName =
-          category.substring(0, 1).toUpperCase() + category.substring(1);
-
-      // Try to extract more descriptive name if available
-      if (parts.length > 2) {
-        final descriptor = parts[1];
-        if (descriptor.isNotEmpty) {
-          String descriptorName =
-              descriptor.substring(0, 1).toUpperCase() +
-              descriptor.substring(1);
-          return '$categoryName $descriptorName Workout';
-        }
-      }
-
-      return '$categoryName Workout';
-    }
-    return 'Workout';
-  }
-
   // Helper method to get category from workout ID
   WorkoutCategory _getCategoryFromId(String workoutId) {
     final parts = workoutId.split('-');
@@ -345,6 +319,7 @@ class ScheduledWorkoutItem extends StatelessWidget {
         return 'Workout';
     }
   }
+
   // Build difficulty badge
   Widget _buildDifficultyBadge(WorkoutDifficulty difficulty) {
     final Color color;

@@ -26,12 +26,16 @@ class WorkoutCompletionScreen extends ConsumerStatefulWidget {
   final Workout workout;
   final Duration elapsedTime;
   final List<ExerciseLog> exercisesCompleted;
+  final String? originPlanId;
+  final String? originScheduledWorkoutId;
 
   const WorkoutCompletionScreen({
     Key? key,
     required this.workout,
     required this.elapsedTime,
     required this.exercisesCompleted,
+    this.originPlanId,
+    this.originScheduledWorkoutId,
   }) : super(key: key);
 
   @override
@@ -394,54 +398,84 @@ class _WorkoutCompletionScreenState
     );
 
     try {
-      // Get services
       final workoutService = ref.read(workoutServiceProvider);
       final statsService = ref.read(workoutStatsServiceProvider);
+      final planningRepo = ref.read(
+        workoutPlanningRepositoryProvider,
+      ); // Get planning repo
 
       // 1. Save the workout log
-      await workoutService.logCompletedWorkout(
-        finalWorkoutLog,
-      ); // Use the newly constructed log
+      await workoutService.logCompletedWorkout(finalWorkoutLog);
       print(
         "Workout log saved successfully via WorkoutService (ID: ${finalWorkoutLog.id}).",
       );
 
-      // 2. Update stats AND capture newly unlocked achievements
+      // 2. Update stats AND capture achievements
       final List<WorkoutAchievement> newlyUnlocked = await statsService
-          .updateStatsFromWorkoutLog(
-            finalWorkoutLog,
-          ); // Use the newly constructed log
+          .updateStatsFromWorkoutLog(finalWorkoutLog);
       print(
         "Stats updated. Newly unlocked achievements: ${newlyUnlocked.length}",
       );
 
-      // --- Invalidate providers ---
-      print("Invalidating relevant providers...");
-      ref.invalidate(
-        userAchievementsProvider,
-      ); // Invalidate achievement provider
-      // Add other necessary invalidations based on your app's needs
-      print("Providers invalidated.");
-      // --- End Invalidation ---
+      // --- 3. Mark original scheduled item as complete (if applicable) ---
+      if (widget.originPlanId != null &&
+          widget.originScheduledWorkoutId != null) {
+        print(
+          "Workout originated from schedule. Marking original item complete...",
+        );
+        try {
+          await planningRepo.markWorkoutCompleted(
+            widget.originPlanId!,
+            widget.originScheduledWorkoutId!,
+            completedAt:
+                finalWorkoutLog.completedAt, // Use actual completion time
+          );
+          print(
+            "Successfully marked scheduled item ${widget.originScheduledWorkoutId} in plan ${widget.originPlanId} as complete.",
+          );
+        } catch (e) {
+          print("Error marking original scheduled workout complete: $e");
+          // Log this error but don't necessarily stop the whole process
+          ref
+              .read(crashReportingServiceProvider)
+              .recordError(
+                e,
+                StackTrace.current,
+                reason: 'Failed to mark original scheduled item complete',
+              );
+        }
+      }
+      // --- End Step 3 ---
 
-      // --- Log Analytics ---
+      // 4. Invalidate providers (including planner)
+      print("Invalidating relevant providers...");
+      ref.invalidate(userAchievementsProvider);
+      ref.invalidate(
+        workoutStatsProvider(userId),
+      ); // Invalidate simple home screen stats
+      ref.invalidate(
+        userWorkoutStatsProvider(userId),
+      ); // Invalidate detailed stats
+      ref.invalidate(userWorkoutStreakProvider(userId)); // Invalidate streak
+      ref.invalidate(
+        plannerItemsNotifierProvider(userId),
+      );
+      print("Providers invalidated.");
+
+      // 5. Log Analytics
       _analyticsService.logEvent(
         name: 'workout_log_saved',
-        parameters: {/* ... your parameters ... */},
+        parameters: {/* ... */},
       );
-      // --- End Analytics ---
 
-      // 3. Show Achievement Feedback if needed
+      // 6. Show Achievement Feedback (if needed)
       if (newlyUnlocked.isNotEmpty && mounted) {
-        await _showAchievementsUnlockedDialog(
-          context,
-          newlyUnlocked,
-        ); // Call dialog function
+        await _showAchievementsUnlockedDialog(context, newlyUnlocked);
       }
 
-      if (!mounted) return; // Check mounted AFTER potential dialog await
+      if (!mounted) return;
 
-      // 4. Navigate Home AFTER everything else
+      // 7. Navigate Home
       _navigateHome();
     } catch (e, stackTrace) {
       print("Error saving workout log/updating stats: $e");

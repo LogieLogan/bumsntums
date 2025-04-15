@@ -10,7 +10,6 @@ import '../../workouts/models/workout_log.dart';
 import '../models/workout_stats.dart';
 import '../../workouts/models/workout_streak.dart';
 import '../../../shared/analytics/firebase_analytics_service.dart';
-
 import '../models/workout_achievement.dart';
 import '../data/achievement_definitions.dart';
 

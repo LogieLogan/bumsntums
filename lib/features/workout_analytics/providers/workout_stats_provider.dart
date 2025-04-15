@@ -1,5 +1,6 @@
 // lib/features/workout_analytics/providers/workout_stats_provider.dart
 
+import 'package:bums_n_tums/features/auth/providers/user_provider.dart';
 import 'package:bums_n_tums/features/workout_analytics/models/workout_analytics_timeframe.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -72,19 +73,27 @@ final workoutStatsProvider = FutureProvider.family<WorkoutStats, String>((
   ref,
   userId,
 ) async {
+  // Fetch necessary services and data concurrently
   final statsService = ref.read(workoutStatsServiceProvider);
-  final userStats = await statsService.getUserWorkoutStats(userId);
-  final streak = await statsService.getUserWorkoutStreak(userId);
+  final userProfileAsync = ref.watch(userProfileProvider); // Watch user profile
 
+  // Fetch stats and streak in parallel
+  final statsFutures = Future.wait([
+    statsService.getUserWorkoutStats(userId),
+    statsService.getUserWorkoutStreak(userId),
+  ]);
+
+  // Fetch weekly logs
   final now = DateTime.now();
-  final weekStart = now.subtract(Duration(days: now.weekday - 1));
+  // Ensure week starts on Monday consistently
+  final weekStart = now.subtract(
+    Duration(days: (now.weekday + 6) % 7),
+  ); // Handles Sunday edge case
   final weekStartDay = DateTime(weekStart.year, weekStart.month, weekStart.day);
-
-  final weekEndDay = DateTime(
-    now.year,
-    now.month,
-    now.day,
-  ).add(const Duration(days: 1));
+  // Use end of the week for the query to include Sunday fully
+  final weekEnd = weekStart.add(
+    const Duration(days: 7),
+  ); // Start of next Monday
 
   final firestore = FirebaseFirestore.instance;
   final weeklyLogsSnapshot =
@@ -96,21 +105,37 @@ final workoutStatsProvider = FutureProvider.family<WorkoutStats, String>((
             'completedAt',
             isGreaterThanOrEqualTo: Timestamp.fromDate(weekStartDay),
           )
-          .where('completedAt', isLessThan: Timestamp.fromDate(weekEndDay))
+          .where(
+            'completedAt',
+            isLessThan: Timestamp.fromDate(weekEnd),
+          ) // Use exclusive end
           .get();
 
   final weeklyCompleted = weeklyLogsSnapshot.docs.length;
 
-  // Assuming weeklyGoal is stored elsewhere or defaults
-  // TODO: Fetch weeklyGoal from user profile or settings if needed
-  final weeklyGoal = 5; // Placeholder
+  // Await stats and streak results
+  final statsResults = await statsFutures;
+  final userStats = statsResults[0] as UserWorkoutStats;
+  final streak = statsResults[1] as WorkoutStreak;
+
+  // --- Get weekly goal from User Profile ---
+  // Use the watched user profile state
+  final userProfile =
+      userProfileAsync.value; // Get the profile data if available
+  // Use profile value if available and not null, otherwise default to 3
+  final weeklyGoal = userProfile?.weeklyWorkoutDays ?? 3;
+  // --- End Get weekly goal ---
+
+  print(
+    "Stats Card Provider: weeklyGoal=$weeklyGoal, weeklyCompleted=$weeklyCompleted",
+  ); // Add log
 
   return WorkoutStats(
     totalWorkouts: userStats.totalWorkoutsCompleted,
     totalMinutes: userStats.totalWorkoutMinutes,
     totalCaloriesBurned: userStats.caloriesBurned,
-    weeklyGoal: weeklyGoal,
-    weeklyCompleted: weeklyCompleted,
+    weeklyGoal: weeklyGoal, // Use fetched/defaulted goal
+    weeklyCompleted: weeklyCompleted, // Use calculated completed count
     currentStreak: streak.currentStreak,
     lastWorkoutDate: userStats.lastWorkoutDate,
   );

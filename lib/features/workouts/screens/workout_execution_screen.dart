@@ -14,7 +14,15 @@ import '../widgets/execution/workout_top_bar.dart';
 import 'workout_completion_screen.dart';
 
 class WorkoutExecutionScreen extends ConsumerStatefulWidget {
-  const WorkoutExecutionScreen({Key? key}) : super(key: key);
+  final String? originPlanId;
+  final String? originScheduledWorkoutId;
+
+  // Update Constructor
+  const WorkoutExecutionScreen({
+    Key? key,
+    this.originPlanId,
+    this.originScheduledWorkoutId,
+  }) : super(key: key);
 
   @override
   ConsumerState<WorkoutExecutionScreen> createState() =>
@@ -53,6 +61,8 @@ class _WorkoutExecutionScreenState
                   workout: executionState.workout,
                   elapsedTime: executionState.elapsedTime,
                   exercisesCompleted: executionState.completedExerciseLogs,
+                  originPlanId: widget.originPlanId,
+                  originScheduledWorkoutId: widget.originScheduledWorkoutId,
                 ),
           ),
         );

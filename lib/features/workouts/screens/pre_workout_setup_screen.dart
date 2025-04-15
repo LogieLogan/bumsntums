@@ -11,9 +11,16 @@ import '../../../shared/theme/app_colors.dart';
 
 class PreWorkoutSetupScreen extends ConsumerStatefulWidget {
   final Workout workout;
+  // Add optional origin identifiers
+  final String? originPlanId;
+  final String? originScheduledWorkoutId;
 
-  const PreWorkoutSetupScreen({Key? key, required this.workout})
-    : super(key: key);
+  const PreWorkoutSetupScreen({
+    Key? key,
+    required this.workout,
+    this.originPlanId, // Make optional
+    this.originScheduledWorkoutId, // Make optional
+  }) : super(key: key);
 
   @override
   ConsumerState<PreWorkoutSetupScreen> createState() =>
@@ -365,16 +372,24 @@ class _PreWorkoutSetupScreenState extends ConsumerState<PreWorkoutSetupScreen> {
     ref
         .read(workoutExecutionProvider.notifier)
         .startWorkout(
-          _workout,
+          _workout, // Use potentially modified workout state
           voiceGuidanceEnabled: _voiceGuidanceEnabled,
           showRestTimers: _showRestTimers,
           showCountdowns: _showCountdowns,
         );
 
-    // Navigate to the execution screen
-    Navigator.push(
+    // Navigate to the execution screen, passing the origin IDs
+    Navigator.pushReplacement(
+      // Use pushReplacement if setup screen shouldn't be in back stack
       context,
-      MaterialPageRoute(builder: (context) => const WorkoutExecutionScreen()),
+      MaterialPageRoute(
+        builder:
+            (context) => WorkoutExecutionScreen(
+              // Pass the origin IDs along
+              originPlanId: widget.originPlanId,
+              originScheduledWorkoutId: widget.originScheduledWorkoutId,
+            ),
+      ),
     );
   }
 
