@@ -1,4 +1,5 @@
 // lib/shared/navigation/navigation.dart
+import 'package:bums_n_tums/features/ai/screens/chat_sessions_list_screen.dart';
 import 'package:bums_n_tums/features/workout_analytics/screens/workout_analytics_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_history_screen.dart';
 import 'package:flutter/material.dart';
@@ -85,7 +86,7 @@ class AppNavigation {
   static void navigateToAIChat(BuildContext context) {
     Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (context) => const AIChatScreen()));
+    ).push(MaterialPageRoute(builder: (context) => const ChatSessionsListScreen()));
   }
 
   /// Navigate to AI workout creator

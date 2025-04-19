@@ -1,4 +1,5 @@
 // lib/features/home/screens/home_tab.dart
+import 'package:bums_n_tums/features/ai/screens/chat_sessions_list_screen.dart';
 import 'package:bums_n_tums/features/workout_analytics/widgets/achievements_summary_card.dart';
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
@@ -344,7 +345,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
                     () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const AIChatScreen(),
+                          builder: (context) => const ChatSessionsListScreen(),
                         ),
                       );
                     },

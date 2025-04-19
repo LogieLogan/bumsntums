@@ -156,6 +156,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen>
   }
 
   void _startGeneration() {
+    debugPrint("AIWorkoutScreen: _startGeneration called.");
     // Add haptic feedback
     HapticFeedback.mediumImpact();
 
@@ -166,16 +167,21 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen>
 
       _scrollToTop();
       _animationController.forward();
+      debugPrint("AIWorkoutScreen: Calling _generateWorkout...");
       _generateWorkout();
     });
 
-    _analytics.logEvent(name: 'workout_generation_started');
+    _analytics.logEvent(name: 'workout_generation_started_ui');
   }
 
   Future<void> _generateWorkout() async {
+    debugPrint("AIWorkoutScreen: _generateWorkout method entered.");
     try {
       final userProfile = await ref.read(userProfileProvider.future);
       if (userProfile == null) {
+        debugPrint(
+          "AIWorkoutScreen: Cannot generate workout - User profile is null.",
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Unable to load user profile')),
@@ -210,6 +216,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen>
 
       // Reset any previous parameters
       notifier.reset();
+      debugPrint("AIWorkoutScreen: Setting parameters in notifier...");
 
       // Set new parameters
       notifier.setParameters(
@@ -222,13 +229,16 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen>
                 : null,
         equipment: equipment,
       );
-
+      debugPrint("AIWorkoutScreen: Calling notifier.generateWorkout...");
       await notifier.generateWorkout(
         userId: userProfile.userId,
         userProfileData: userProfileData, // Pass the profile data
       );
-
+      debugPrint("AIWorkoutScreen: notifier.generateWorkout completed.");
       if (mounted) {
+        debugPrint(
+          "AIWorkoutScreen: Workout generation successful, moving to result step.",
+        );
         _animationController.reverse().then((_) {
           setState(() {
             _currentStep = CreationStep.result;
@@ -238,6 +248,7 @@ class _AIWorkoutScreenState extends ConsumerState<AIWorkoutScreen>
         });
       }
     } catch (e) {
+      debugPrint("AIWorkoutScreen: Error caught in _generateWorkout: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error generating workout: ${e.toString()}')),

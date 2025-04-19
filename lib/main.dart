@@ -1,91 +1,165 @@
-import 'dart:async';
-import 'package:bums_n_tums/shared/providers/environment_provider.dart';
-import 'package:bums_n_tums/shared/services/environment_service.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'firebase_options_dev.dart';
-import 'app.dart';
-import 'flavors.dart';
-import 'shared/analytics/crash_reporting_service.dart';
-import 'features/nutrition/services/ml_kit_service.dart';
-import 'shared/utils/exercise_reference_utils.dart';
+// // main.dart
+// import 'dart:async';
+// import 'package:bums_n_tums/shared/providers/environment_provider.dart';
+// import 'package:bums_n_tums/shared/services/environment_service.dart';
+// import 'package:firebase_app_check/firebase_app_check.dart';
+// import 'package:flutter/foundation.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:permission_handler/permission_handler.dart';
+// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+// import 'firebase_options_dev.dart';
+// import 'app.dart';
+// import 'flavors.dart';
+// import 'shared/analytics/crash_reporting_service.dart';
+// import 'features/nutrition/services/ml_kit_service.dart';
+// import 'shared/utils/exercise_reference_utils.dart';
+// import 'dart:io' show Platform; // Import Platform
 
-FutureOr<void> main() async {
-  // Ensure Flutter is initialized
-  WidgetsFlutterBinding.ensureInitialized();
+// FutureOr<void> main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   // Set flavor - Ensure this matches the entry point (main_dev.dart)
+//   F.appFlavor = Flavor.dev; // Assuming you ran main_dev.dart
+//   await _requestPermissions();
 
-  // Set the flavor
-  F.appFlavor = Flavor.prod;
+//   if (kDebugMode) {
+//     print("Initializing Environment Service...");
+//   }
+//   final environmentService = EnvironmentService();
+//   await environmentService.initialize();
+//   if (kDebugMode) {
+//     print("Environment Service initialized successfully");
+//   }
 
-  // Request necessary permissions for iOS
-  await _requestPermissions();
+//   if (kDebugMode) {
+//     print("Initializing Firebase Core...");
+//   }
+//   try {
+//     await Firebase.initializeApp(
+//       options: DefaultFirebaseOptions.currentPlatform, // Uses options from file
+//     );
+//     if (kDebugMode) {
+//       print("Firebase Core initialized successfully");
+//     }
+//   } catch (e) {
+//     if (kDebugMode) {
+//       print("!!!!!!!! Firebase Core Initialization FAILED: $e !!!!!!!!");
+//     }
+//     // Optionally, stop the app or show an error UI if core fails
+//     return;
+//   }
 
-  // Initialize Environment Service first - create a single instance to reuse
-  print("Initializing Environment Service...");
-  final environmentService = EnvironmentService();
-  await environmentService.initialize();
-  print("Environment Service initialized successfully");
+//  // --- App Check Initialization - FORCED DEBUG PROVIDER ---
+//   if (kDebugMode) {
+//     print("Attempting Firebase App Check activation (FORCING DEBUG)...");
+//   }
+//   try {
+//     // --- ALWAYS use AppleProvider.debug for this test ---
+//     if (kDebugMode) {
+//       print("[AppCheck] Forcing AppleProvider.debug for testing.");
+//     }
+//     await FirebaseAppCheck.instance.activate(
+//       appleProvider: AppleProvider.debug, // Force debug provider
+//     );
+//     // --- If this line is reached, activation itself didn't throw ---
+//     if (kDebugMode) {
+//       print("[AppCheck] activate() method finished.");
+//     }
 
-  try {
-    // Initialize Firebase Core next
-    print("Initializing Firebase Core...");
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    print("Firebase Core initialized successfully");
+//     // --- Try attaching listener AFTER activate attempt ---
+//     if (kDebugMode) {
+//       print("[AppCheck] Attaching onTokenChange listener...");
+//     }
+//     FirebaseAppCheck.instance.onTokenChange.listen((token) {
+//       if (kDebugMode) {
+//         print("###########################################################");
+//       }
+//       if (kDebugMode) {
+//         print("[AppCheck] onTokenChange emitted token: ${token ?? 'null'}");
+//       }
+//       if (kDebugMode) {
+//         print("###########################################################");
+//       }
+//     });
+//     if (kDebugMode) {
+//       print("[AppCheck] Listener attached.");
+//     }
 
-    // Initialize MLKit after Firebase
-    print("Initializing MLKit...");
-    await MLKitService.initialize();
-    print("MLKit initialized successfully");
+//     // --- Try getting token manually AFTER activate attempt ---
+//     if (kDebugMode) {
+//       print("[AppCheck] Attempting manual getToken()...");
+//     }
+//     String? currentToken = await FirebaseAppCheck.instance.getToken(true); // Force refresh
+//     if (kDebugMode) {
+//       print("[AppCheck] Manual getToken() result: ${currentToken ?? 'null'}");
+//     }
 
-    // Just adding a dummy call to ensure the plugin is registered
-    // This won't actually scan anything, but helps ensure the plugin is loaded
-    try {
-      FlutterBarcodeScanner.getBarcodeStreamReceiver(
-        "#ff6666",
-        "Cancel",
-        true,
-        ScanMode.DEFAULT,
-      );
-    } catch (e) {
-      // Ignore any errors - we're just trying to initialize the plugin
-      print("Barcode scanner plugin initialized");
-    }
-  } catch (e) {
-    print("Error during initialization: $e");
-    // Log the error to a crash reporting service if available
-    CrashReportingService().recordError(e, StackTrace.current);
-  }
+//   } catch (e, s) { // Catch stack trace too
+//     if (kDebugMode) {
+//       print("!!!!!!!! Firebase App Check Activation FAILED: $e !!!!!!!!");
+//     }
+//     if (kDebugMode) {
+//       print("!!!!!!!! Stack Trace: $s !!!!!!!!");
+//     } // Log stack trace
+//     // Log to Crashlytics if initialized
+//     try {
+//         CrashReportingService().recordError(
+//             Exception("AppCheck Activation Failed: $e"), s,
+//             reason: "AppCheck Activation Failure");
+//     } catch (crashlyticsError) {
+//         if (kDebugMode) {
+//           print("Error reporting AppCheck failure to Crashlytics: $crashlyticsError");
+//         }
+//     }
+//   }
 
-  await initializeExerciseCache();
-  print("Exercise cache initialized successfully");
-  // Run the app
-  runApp(
-    ProviderScope(
-      overrides: [
-        // Provide a FutureProvider that returns our pre-initialized instance
-        environmentServiceInitProvider.overrideWith((_) async {
-          print('Returning pre-initialized environment service');
-          return environmentService;
-        }),
-      ],
-      child: const App(),
-    ),
-  );
-}
+//   try {
+//     if (kDebugMode) {
+//       print("Initializing MLKit...");
+//     }
+//     await MLKitService.initialize();
+//     if (kDebugMode) {
+//       print("MLKit initialized successfully");
+//     }
+//     // ... Barcode scanner init ...
+//   } catch (e) {
+//     if (kDebugMode) {
+//       print("Error during post-AppCheck initialization: $e");
+//     }
+//     CrashReportingService().recordError(e, StackTrace.current);
+//   }
 
-// Function to request permissions
-Future<void> _requestPermissions() async {
-  // For iOS, we need to request permission for notifications and camera
-  Map<Permission, PermissionStatus> statuses =
-      await [
-        Permission.notification,
-        Permission.camera, // Add camera permission request here
-      ].request();
+//   await initializeExerciseCache();
+//   if (kDebugMode) {
+//     print("Exercise cache initialized successfully");
+//   }
 
-  print("Permission statuses: $statuses");
-}
+//   runApp(
+//     ProviderScope(
+//       overrides: [
+//         environmentServiceInitProvider.overrideWith((_) async {
+//           return environmentService;
+//         }),
+//       ],
+//       child: const App(),
+//     ),
+//   );
+// }
+
+// Future<void> _requestPermissions() async {
+//   // Only request permissions if on iOS
+//   if (Platform.isIOS) {
+//     Map<Permission, PermissionStatus> statuses = await [
+//       Permission.notification,
+//       Permission.camera,
+//     ].request();
+//     if (kDebugMode) {
+//       print("iOS Permission statuses: $statuses");
+//     }
+//   } else {
+//     if (kDebugMode) {
+//       print("Skipping iOS permission request on non-iOS platform.");
+//     }
+//   }
+// }

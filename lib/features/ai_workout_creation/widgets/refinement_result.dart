@@ -234,7 +234,7 @@ class RefinementResult extends StatelessWidget {
             // Undo changes button
             Expanded(
               child: SecondaryButton(
-                text: 'Undo Changes',
+                text: 'Undo',
                 iconData: Icons.undo,
                 onPressed: onUndoChanges,
               ),

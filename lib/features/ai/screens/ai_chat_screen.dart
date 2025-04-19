@@ -1,4 +1,6 @@
 // lib/features/ai/screens/ai_chat_screen.dart
+import 'dart:math';
+
 import 'package:bums_n_tums/features/ai_workout_creation/screens/ai_workout_screen.dart';
 import 'package:bums_n_tums/shared/providers/environment_provider.dart';
 import 'package:flutter/gestures.dart';
@@ -11,7 +13,9 @@ import '../providers/ai_chat_provider.dart';
 import '../models/message.dart';
 
 class AIChatScreen extends ConsumerStatefulWidget {
-  const AIChatScreen({Key? key}) : super(key: key);
+  final String sessionId;
+
+  const AIChatScreen({required this.sessionId, Key? key}) : super(key: key);
 
   @override
   ConsumerState<AIChatScreen> createState() => _AIChatScreenState();
@@ -20,6 +24,10 @@ class AIChatScreen extends ConsumerStatefulWidget {
 class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  static const String _initialWelcomeMessage =
+      "Hi there! How can I help you with your fitness journey today?";
+  static const String _clearedChatMessage = "Chat cleared. How can I help?";
 
   @override
   void initState() {
@@ -35,16 +43,9 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   }
 
   Future<void> _loadConversationHistory() async {
-    if (!mounted) return; // Check if widget is still mounted
-
-    final userProfile = await ref.read(userProfileProvider.future);
-    if (!mounted) return; // Check again after the await
-
-    if (userProfile != null) {
-      await ref
-          .read(aiChatProvider.notifier)
-          .loadConversation(userProfile.userId);
-    }
+    debugPrint(
+      "AIChatScreen: Loading conversation for session ID: ${widget.sessionId}",
+    );
   }
 
   void _scrollToBottom() {
@@ -60,354 +61,273 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   }
 
   void _sendMessage() async {
+    debugPrint(
+      "AIChatScreen: _sendMessage called for session ${widget.sessionId}",
+    );
     final message = _messageController.text.trim();
     if (message.isEmpty) return;
 
-    final userProfile = await ref.read(userProfileProvider.future);
+    // --- TARGETED FIX: Ensure profile and map are handled ---
+    final userProfile = ref.read(userProfileProvider).value;
     if (userProfile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to load user profile')),
+      debugPrint(
+        "AIChatScreen: Failed to send message - User profile is null.",
       );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User profile not loaded')),
+        );
+      }
       return;
     }
 
-    _messageController.clear();
+    Map<String, dynamic>?
+    profileMap; // Keep as nullable initially for error handling
+    try {
+      profileMap = userProfile.toMap(); // Call the method
+      if (profileMap == null) {
+        // Explicitly check if toMap returned null
+        throw Exception("toMap() method returned null");
+      }
+      debugPrint(
+        "AIChatScreen: Successfully created profileMap: ${profileMap.toString().substring(0, min(profileMap.toString().length, 100))}...",
+      ); // Log part of the map
+    } catch (e) {
+      debugPrint(
+        "AIChatScreen: Error converting profile to map or profile incomplete: $e",
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error processing profile data')),
+        );
+      }
+      profileMap = null; // Ensure it's null on error
+    }
 
-    // Send message with userId instead of userProfile
-    await ref
-        .read(aiChatProvider.notifier)
-        .sendMessage(userId: userProfile.userId, message: message);
+    // Only proceed if profileMap is NOT null
+    if (profileMap != null) {
+      debugPrint(
+        "AIChatScreen: Calling notifier sendMessage with profile map...",
+      );
+      _messageController.clear();
 
-    _scrollToBottom();
+      // --- TARGETED FIX: Pass the required profile map ---
+      await ref
+          .read(aiChatProviderFamily(widget.sessionId).notifier)
+          .sendMessage(
+            message: message,
+            userProfileDataMap: profileMap, // Pass the NON-NULL map
+          );
+
+      debugPrint(
+        "AIChatScreen: sendMessage notifier call completed for session ${widget.sessionId}",
+      );
+      _scrollToBottom();
+    } else {
+      // Handle the case where profileMap could not be created
+      debugPrint(
+        "AIChatScreen: Cannot send message, profile map creation failed.",
+      );
+      // Optionally show a snackbar message here too
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not process profile for AI context.'),
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Add this at the start of your build method to handle environment initialization
-    final envInitState = ref.watch(environmentServiceInitProvider);
+    final chatState = ref.watch(aiChatProviderFamily(widget.sessionId));
 
-    if (envInitState is AsyncLoading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('AI Fitness Coach')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
+    final userProfileAsync = ref.watch(userProfileProvider);
 
-    if (envInitState is AsyncError) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('AI Fitness Coach')),
-        body: Center(
-          child: Text(
-            'Error initializing chat: ${envInitState.error}',
-            style: TextStyle(color: AppColors.error),
-          ),
-        ),
-      );
-    }
+    ref.listen<
+      AsyncValue<AIChatState>
+    >(aiChatProviderFamily(widget.sessionId), (previousState, nextState) {
+      // Check if the next state is data and has more messages than the previous data state
+      final previousData =
+          previousState?.valueOrNull; // Safely get previous data
+      final nextData = nextState.valueOrNull; // Safely get next data
 
-    // Continue with your original build code for when environment is initialized
-    final chatState = ref.watch(aiChatProvider);
-
-    if (chatState.error != null) {
-      String errorMessage = chatState.error!;
-
-      // Handle rate limit errors with more user-friendly message
-      if (chatState.error!.contains('Rate limit exceeded')) {
-        errorMessage = chatState.error!;
-      } else {
-        errorMessage = 'Something went wrong. Please try again later.';
+      // Only scroll if both states have data and the new one has more messages
+      if (previousData != null &&
+          nextData != null &&
+          nextData.messages.length > previousData.messages.length) {
+        debugPrint(
+          "AIChatScreen: New message detected via ref.listen, scrolling.",
+        );
+        _scrollToBottom();
       }
+      // Optional: Handle transitions to error or loading states if needed
+    });
 
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.error.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(errorMessage, style: TextStyle(color: AppColors.error)),
-        ),
-      );
-    }
+    return PopScope(
+      // canPop defaults to true, allowing back navigation
+      onPopInvoked: (didPop) {
+        // This is called AFTER the pop has happened or been prevented
+        if (didPop) {
+          // If the screen successfully popped, trigger title generation
+          debugPrint(
+            "AIChatScreen (Session: ${widget.sessionId}): Popped. Triggering title generation.",
+          );
+          // Call the notifier method (fire-and-forget is acceptable)
+          ref
+              .read(aiChatProviderFamily(widget.sessionId).notifier)
+              .generateAndSaveTitle();
+        } else {
+          debugPrint(
+            "AIChatScreen (Session: ${widget.sessionId}): Pop prevented.",
+          );
+        }
+      },
 
-    // Auto-scroll when new messages arrive
-    if (chatState.messages.isNotEmpty) {
-      _scrollToBottom();
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('AI Fitness Coach'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            onPressed: () {
-              ref.read(aiChatProvider.notifier).clearChat();
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Welcome message if no messages
-          if (chatState.messages.isEmpty)
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.fitness_center,
-                        size: 64,
-                        color: AppColors.salmon.withOpacity(0.5),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Your AI Fitness Coach',
-                        style: AppTextStyles.h2,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Ask me anything about workouts, nutrition, or fitness advice tailored to your goals!',
-                        style: AppTextStyles.body,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Workouts category
-                      _buildSuggestionCategory(
-                        title: 'Workout Ideas',
-                        icon: Icons.fitness_center,
-                        color: AppColors.salmon,
-                        suggestions: [
-                          'Create a quick bums workout',
-                          'What\'s a good full-body stretch routine?',
-                          'How do I do a proper squat?',
-                          'Suggest exercises without equipment',
-                        ],
-                        showWorkoutGeneratorLink: true,
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Nutrition category
-                      _buildSuggestionCategory(
-                        title: 'Nutrition Advice',
-                        icon: Icons.restaurant,
-                        color: AppColors.popGreen,
-                        suggestions: [
-                          'What should I eat before a workout?',
-                          'How much protein do I need?',
-                          'Quick post-workout meal ideas',
-                          'How can I reduce sugar cravings?',
-                        ],
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Motivation category
-                      _buildSuggestionCategory(
-                        title: 'Motivation & Tips',
-                        icon: Icons.psychology,
-                        color: AppColors.popBlue,
-                        suggestions: [
-                          'How to stay consistent with workouts?',
-                          'I feel discouraged, what should I do?',
-                          'Tips for morning workout routine',
-                          'How long until I see results?',
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('AI Fitness Coach'),
+          actions: [
+            if (userProfileAsync is AsyncData && userProfileAsync.value != null)
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                tooltip: 'Clear This Chat',
+                onPressed: () {
+                  // final userId = userProfileAsync.value!.userId; // No longer needed here
+                  // Corrected call: No arguments needed for notifier's clearChat
+                  ref
+                      .read(aiChatProviderFamily(widget.sessionId).notifier)
+                      .clearChat();
+                  debugPrint(
+                    "AIChatScreen: Clear Chat button pressed for session ${widget.sessionId}",
+                  );
+                  // Optionally navigate back after clearing?
+                  // Navigator.pop(context);
+                },
               ),
-            ),
-
-          // Chat messages
-          if (chatState.messages.isNotEmpty)
+          ],
+        ),
+        body: Column(
+          children: [
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                itemCount: chatState.messages.length,
-                itemBuilder: (context, index) {
-                  final message = chatState.messages[index];
-                  return _ChatMessageWidget(
-                    message: message,
-                    onFeedback:
-                        !message.isUserMessage
-                            ? (isPositive) async {
-                              await ref
-                                  .read(aiChatProvider.notifier)
-                                  .provideMessageFeedback(
-                                    messageId: message.id,
-                                    isPositive: isPositive,
-                                  );
-                            }
-                            : null,
-                    onActionLink: (action) {
-                      // Handle special links/actions
-                      if (action == 'workout_generator') {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const AIWorkoutScreen(),
-                          ),
-                        );
-                      }
-                      // Add other action handlers as needed
+              child: chatState.when(
+                // Use .when to handle AsyncValue states
+                data: (stateData) {
+                  // stateData is the actual AIChatState here
+                  // --- Access messages from stateData ---
+                  if (stateData.messages.isEmpty) {
+                    // Optional: Show a message if the loaded chat is empty
+                    // (Shouldn't happen often with welcome message logic)
+                    return const Center(
+                      child: Text("Send a message to start!"),
+                    );
+                  }
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    itemCount:
+                        stateData.messages.length, // Access via stateData
+                    itemBuilder: (context, index) {
+                      final message =
+                          stateData.messages[index]; // Access via stateData
+                      return _ChatMessageWidget(
+                        message: message,
+                        onFeedback:
+                            !message.isUserMessage
+                                ? (isPositive) async {
+                                  final userProfile = userProfileAsync.value;
+                                  if (userProfile != null) {
+                                    // --- TARGETED FIX ---
+                                    await ref
+                                        .read(
+                                          aiChatProviderFamily(
+                                            widget.sessionId,
+                                          ).notifier,
+                                        )
+                                        .provideMessageFeedback(
+                                          // REMOVE userId parameter from this call
+                                          // userId: userProfile.userId,
+                                          messageId: message.id,
+                                          isPositive: isPositive,
+                                        );
+                                    // --- END FIX ---
+                                  } else {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Cannot submit feedback: User profile not loaded.',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                }
+                                : null,
+                        onActionLink: (action) {
+                          if (action == 'workout_generator') {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const AIWorkoutScreen(),
+                              ),
+                            );
+                          }
+                        },
+                      );
                     },
                   );
                 },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error:
+                    (error, stack) =>
+                        Center(child: Text("Error loading chat: $error")),
               ),
             ),
 
-          // Loading indicator
-          if (chatState.isLoading)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-            ),
-
-          // Error message
-          if (chatState.error != null)
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Error: ${chatState.error}',
-                style: TextStyle(color: AppColors.error),
-              ),
-            ),
-
-          // Input area
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: InputDecoration(/* ... */),
+                      textInputAction: TextInputAction.send,
+                      // --- TARGETED FIX for onSubmitted ---
+                      // Disable submit if AsyncValue itself is loading OR if the data state indicates loading
+                      onSubmitted:
+                          (_) =>
+                              (chatState.isLoading ||
+                                      (chatState.valueOrNull?.isLoading ??
+                                          false))
+                                  ? null // Do nothing if loading
+                                  : _sendMessage(), // Otherwise send
                     ),
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _sendMessage(),
                   ),
-                ),
-                const SizedBox(width: 8),
-                FloatingActionButton(
-                  mini: true,
-                  onPressed: chatState.isLoading ? null : _sendMessage,
-                  backgroundColor: AppColors.salmon,
-                  child: const Icon(Icons.send),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSuggestionCategory({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required List<String> suggestions,
-    bool showWorkoutGeneratorLink = false,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: AppTextStyles.h3.copyWith(color: color, fontSize: 18),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children:
-                suggestions.map((suggestion) {
-                  return _SuggestionChip(
-                    label: suggestion,
-                    color: color,
-                    onTap: () {
-                      _messageController.text = suggestion;
-                      _sendMessage();
-                    },
-                  );
-                }).toList(),
-          ),
-          // Add workout generator button if requested
-          if (showWorkoutGeneratorLink) ...[
-            const SizedBox(height: 16),
-            InkWell(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const AIWorkoutScreen(),
+                  const SizedBox(width: 8),
+                  FloatingActionButton(
+                    mini: true,
+                    // --- TARGETED FIX for onPressed ---
+                    // Disable button if AsyncValue itself is loading OR if the data state indicates loading
+                    onPressed:
+                        (chatState.isLoading ||
+                                (chatState.valueOrNull?.isLoading ?? false))
+                            ? null // Disable if loading
+                            : _sendMessage, // Otherwise allow send
+                    backgroundColor: AppColors.salmon,
+                    child: const Icon(Icons.send),
                   ),
-                );
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.salmon,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.auto_awesome, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Create Custom Workout',
-                      style: AppTextStyles.body.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+                ],
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -426,11 +346,9 @@ class _ChatMessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Process content to detect and extract action links
     String displayContent = message.content;
     Map<String, String> actionLinks = {};
 
-    // Look for pattern [Text](action_name)
     final linkPattern = RegExp(r'\[(.*?)\]\((.*?)\)');
     final matches = linkPattern.allMatches(message.content);
 
@@ -466,7 +384,6 @@ class _ChatMessageWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Build rich text with action links
             _buildRichText(context, displayContent, actionLinks),
             const SizedBox(height: 4),
             Row(
@@ -477,10 +394,9 @@ class _ChatMessageWidget extends StatelessWidget {
                   style: AppTextStyles.caption,
                 ),
 
-                // Only show feedback options for AI messages
                 if (!message.isUserMessage && onFeedback != null) ...[
                   const Spacer(),
-                  // Thumbs up button
+
                   IconButton(
                     icon: Icon(
                       Icons.thumb_up,
@@ -497,7 +413,7 @@ class _ChatMessageWidget extends StatelessWidget {
                       minHeight: 24,
                     ),
                   ),
-                  // Thumbs down button
+
                   IconButton(
                     icon: Icon(
                       Icons.thumb_down,
@@ -537,12 +453,10 @@ class _ChatMessageWidget extends StatelessWidget {
 
     int i = 0;
     for (var part in parts) {
-      // Add normal text
       if (part.isNotEmpty) {
         spans.add(TextSpan(text: part));
       }
 
-      // Add action link if there is one
       if (i < parts.length - 1) {
         String placeholder = '---ACTION_LINK_$i---';
         String? action = actionLinks[placeholder];
@@ -550,7 +464,6 @@ class _ChatMessageWidget extends StatelessWidget {
         if (action != null) {
           String linkText = '';
 
-          // Extract the original link text from the content
           final match = RegExp(
             r'\[(.*?)\]\(' + action + r'\)',
           ).firstMatch(message.content);

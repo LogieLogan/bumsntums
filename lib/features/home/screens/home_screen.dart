@@ -1,5 +1,6 @@
 // lib/features/home/screens/home_screen.dart
 import 'package:bums_n_tums/features/ai/screens/ai_chat_screen.dart';
+import 'package:bums_n_tums/features/ai/screens/chat_sessions_list_screen.dart';
 import 'package:bums_n_tums/features/nutrition/screens/scanner_screen.dart';
 import 'package:bums_n_tums/features/workout_planning/screens/weekly_planning_screen.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_browse_screen.dart';
@@ -56,9 +57,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline),
+            tooltip: 'AI Chat History', // Update tooltip
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const AIChatScreen()),
+                MaterialPageRoute(builder: (context) => const ChatSessionsListScreen()), // Change here
               );
             },
           ),
