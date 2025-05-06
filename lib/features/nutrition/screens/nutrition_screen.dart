@@ -6,25 +6,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
-
-// Import Nutrition features
 import '../providers/nutrition_provider.dart';
 import '../models/food_log_entry.dart';
 import '../models/food_item.dart';
-import '../models/estimated_goals.dart'; // Import EstimatedGoals
+import '../models/estimated_goals.dart';
 import '../services/barcode_scanner_service.dart';
-import '../services/open_food_facts_service.dart';
 import 'configure_log_entry_screen.dart';
+import 'quick_add_screen.dart';
 import '../widgets/food_log_entry_tile.dart';
-
-// Import Shared features
 import '../../../shared/components/indicators/loading_indicator.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_text_styles.dart';
 import '../../../shared/providers/firebase_providers.dart';
 
-
-// --- NutritionScreen Widget Definition ---
 class NutritionScreen extends ConsumerStatefulWidget {
   const NutritionScreen({super.key});
 
@@ -32,9 +26,8 @@ class NutritionScreen extends ConsumerStatefulWidget {
   ConsumerState<NutritionScreen> createState() => _NutritionScreenState();
 }
 
-
 class _NutritionScreenState extends ConsumerState<NutritionScreen> {
-  // State, initState, date/log methods remain the same
+  // ... (existing state and methods up to _buildDailySummaryCard) ...
   bool _isScanningOrFetching = false;
 
   @override
@@ -78,6 +71,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
           child: Wrap( children: <Widget>[
               Padding( padding: const EdgeInsets.only(bottom: 15.0, left: 10.0), child: Text("Log Food", style: AppTextStyles.h3),),
               ListTile( leading: const Icon(Icons.qr_code_scanner_outlined, color: AppColors.offWhite), title: const Text('Scan Barcode'), onTap: () { Navigator.pop(context); _startScan(); }, ),
+              ListTile( leading: const Icon(Icons.add_circle_outline_rounded, color: AppColors.popBlue), title: const Text('Quick Add (Estimate)'), onTap: () { Navigator.pop(context); Navigator.of(context).push( MaterialPageRoute(builder: (context) => const QuickAddScreen()),);},),
           ],),
         );
       },
@@ -115,17 +109,14 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
     if (mounted) { setState(() => _isScanningOrFetching = false); }
   }
 
-  // --- Build Method (using diaryState) ---
   @override
   Widget build(BuildContext context) {
     final userId = ref.watch(userIdProvider);
     if (userId == null) {
-      if (kDebugMode) { print("<<< NutritionScreen Build: userId is NULL"); }
       return const Scaffold(body: Center(child: LoadingIndicator(message: "Authenticating...")));
     }
 
     final diaryState = ref.watch(nutritionDiaryProvider(userId));
-    if (kDebugMode) { /* Debug prints from previous step */ }
 
     return Scaffold(
       appBar: AppBar(
@@ -139,7 +130,6 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
         children: [
           _buildDateNavigator(diaryState.selectedDate),
           const Divider(height: 1),
-          // Pass both log state and goal state to summary card
           _buildDailySummaryCard(diaryState.logEntriesState, diaryState.estimatedGoalsState),
           Expanded(
             child: _buildLoggedItemsList(diaryState.logEntriesState),
@@ -154,10 +144,6 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
       ),
     );
   }
-  // --- End Build Method ---
-
-
-  // --- UI Builder Methods ---
 
   Widget _buildDateNavigator(DateTime selectedDate) {
     return Padding(
@@ -173,11 +159,12 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
     );
   }
 
-  // --- Updated Daily Summary Card ---
   Widget _buildDailySummaryCard(
     AsyncValue<List<FoodLogEntry>> logState,
     AsyncValue<EstimatedGoals> goalState,
   ) {
+    final numberFormat = NumberFormat("#,##0");
+
     return Card(
       margin: const EdgeInsets.all(16.0),
       elevation: 2,
@@ -185,22 +172,18 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-             // Add Row for Title and Info Icon
              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                    Text('Daily Summary', style: AppTextStyles.h3),
                    goalState.maybeWhen(
-                      data: (goals) => goals.areMet // Only show info icon if goals were estimated
+                      data: (goals) => goals.areMet
                          ? IconButton(
-                              icon: const Icon(Icons.info_outline, color: Colors.grey),
-                              iconSize: 20,
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(), // Remove default padding
+                              icon: const Icon(Icons.info_outline, color: Colors.grey), iconSize: 20, padding: EdgeInsets.zero, constraints: const BoxConstraints(),
                               tooltip: 'Goals estimated based on your profile.',
                               onPressed: () {
-                                 // TODO: Show a dialog explaining goal estimation
                                  showDialog(context: context, builder: (context) => AlertDialog(
                                     title: const Text("Estimated Goals"),
                                     content: const Text("These nutritional goals are estimated based on your profile (age, weight, height, activity level, fitness goal). Adjustments can be made in settings (feature coming soon!). Focus on consistency!"),
@@ -208,50 +191,43 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                                  ));
                               },
                            )
-                         : const SizedBox.shrink(), // Hide icon if using defaults
-                      orElse: () => const SizedBox.shrink(), // Hide icon while loading/error
+                         : const SizedBox.shrink(),
+                      orElse: () => const SizedBox.shrink(),
                    ),
                 ],
              ),
             const SizedBox(height: 16),
-
-            // Combine goal and log states for display
-            // Show loading if either is loading
             if (logState is AsyncLoading || goalState is AsyncLoading)
-              const Row(
-                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                 children: [
-                    CircularProgressIndicator(strokeWidth: 2.0),
-                    CircularProgressIndicator(strokeWidth: 2.0),
-                    CircularProgressIndicator(strokeWidth: 2.0),
-                    CircularProgressIndicator(strokeWidth: 2.0),
-                 ],
+              SizedBox( // Constrain the height of the loading state
+                // --- Increased Height ---
+                height: 80, // Try a slightly larger height
+                // --- End Increased Height ---
+                child: Center(child: LoadingIndicator(message: "Calculating...")),
               )
-            // Show error if either has an error
             else if (logState is AsyncError || goalState is AsyncError)
-              Text(
-                 'Error loading summary data',
-                 style: AppTextStyles.body.copyWith(color: AppColors.error),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: Text( 'Error loading summary data', style: AppTextStyles.body.copyWith(color: AppColors.error), textAlign: TextAlign.center,),
               )
-            // Otherwise, show data (assuming both have loaded successfully)
             else
-              Builder(builder: (context) { // Use Builder to ensure data is available
-                 final logs = logState.asData?.value ?? []; // Get logs or empty list
-                 final goals = goalState.asData?.value ?? EstimatedGoals.defaults(); // Get goals or defaults
+              Builder(builder: (context) {
+                 final logs = logState.asData?.value ?? [];
+                 final goals = goalState.asData?.value ?? EstimatedGoals.defaults();
 
-                 // Calculate totals
                  double totalCalories = logs.fold(0.0, (sum, entry) => sum + entry.calculatedCalories);
                  double totalProtein = logs.fold(0.0, (sum, entry) => sum + entry.calculatedProtein);
                  double totalCarbs = logs.fold(0.0, (sum, entry) => sum + entry.calculatedCarbs);
                  double totalFat = logs.fold(0.0, (sum, entry) => sum + entry.calculatedFat);
 
-                 return Row(
-                   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                 return Column(
                    children: [
-                     _buildMacroSummary('Calories', totalCalories.toStringAsFixed(0), goals.targetCalories.toString(), AppColors.salmon),
-                     _buildMacroSummary('Protein', '${totalProtein.toStringAsFixed(0)}g', '${goals.targetProtein}g', AppColors.popBlue),
-                     _buildMacroSummary('Carbs', '${totalCarbs.toStringAsFixed(0)}g', '${goals.targetCarbs}g', AppColors.popGreen),
-                     _buildMacroSummary('Fat', '${totalFat.toStringAsFixed(0)}g', '${goals.targetFat}g', AppColors.popCoral),
+                     _buildMacroSummary( label: 'Calories', value: totalCalories, goal: goals.targetCalories.toDouble(), unit: 'kcal', color: AppColors.salmon, formatter: numberFormat,),
+                     const SizedBox(height: 12),
+                     _buildMacroSummary( label: 'Protein', value: totalProtein, goal: goals.targetProtein.toDouble(), unit: 'g', color: AppColors.popBlue, formatter: numberFormat,),
+                     const SizedBox(height: 12),
+                     _buildMacroSummary( label: 'Carbs', value: totalCarbs, goal: goals.targetCarbs.toDouble(), unit: 'g', color: AppColors.popGreen, formatter: numberFormat,),
+                     const SizedBox(height: 12),
+                     _buildMacroSummary( label: 'Fat', value: totalFat, goal: goals.targetFat.toDouble(), unit: 'g', color: AppColors.popCoral, formatter: numberFormat,),
                    ],
                  );
               }),
@@ -260,26 +236,22 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
       ),
     );
   }
-  // --- End Updated Daily Summary Card ---
 
-
-   Widget _buildMacroSummary(String label, String value, String goal, Color color) {
-    return Flexible(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center, // Center align text
-        children: [
-          Text(label, style: AppTextStyles.small.copyWith(color: AppColors.mediumGrey)),
-          const SizedBox(height: 4),
-          Text(value, style: AppTextStyles.h3.copyWith(color: color), textAlign: TextAlign.center),
-          const SizedBox(height: 2),
-          Text('Goal: $goal', style: AppTextStyles.caption.copyWith(color: AppColors.mediumGrey), textAlign: TextAlign.center),
-        ],
-      ),
+  // ... (_buildMacroSummary, _buildLoggedItemsList, and other methods) ...
+  Widget _buildMacroSummary({ required String label, required double value, required double goal, required String unit, required Color color, required NumberFormat formatter,}) {
+    double progress = (goal > 0 && value >= 0) ? (value / goal) : 0.0; progress = progress.clamp(0.0, 1.0);
+    return Column( crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(label, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w500)),
+            Text( '${formatter.format(value)} / ${formatter.format(goal)} $unit', style: AppTextStyles.body.copyWith(color: AppColors.mediumGrey),),],),
+        const SizedBox(height: 6),
+        LinearProgressIndicator( value: progress, backgroundColor: color.withOpacity(0.2), valueColor: AlwaysStoppedAnimation<Color>(color), minHeight: 8, borderRadius: BorderRadius.circular(4),),
+      ],
     );
   }
 
-  // _buildLoggedItemsList remains the same as previous correct version
    Widget _buildLoggedItemsList(AsyncValue<List<FoodLogEntry>> logState) {
+    final userId = ref.read(userIdProvider);
     return logState.when(
       data: (logs) {
         if (logs.isEmpty) { return Center( child: Padding( padding: const EdgeInsets.symmetric( vertical: 32.0, horizontal: 20.0,), child: Text( "Nothing logged for this day yet.\nTap '+' to add an item!", style: AppTextStyles.body.copyWith(color: Colors.grey.shade600), textAlign: TextAlign.center,),),); }
@@ -294,7 +266,31 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding( padding: const EdgeInsets.only( top: 16.0, bottom: 8.0, left: 8.0,), child: Text( mealType.name[0].toUpperCase() + mealType.name.substring(1), style: AppTextStyles.h3,),),
-                    Column( children: entriesForMeal.map((entry) => FoodLogEntryTile( entry: entry,)).toList(),),
+                    Column( children: entriesForMeal.map((entry) {
+                         return FoodLogEntryTile(
+                           entry: entry,
+                           onTap: () async {
+                              if (userId == null) return;
+                              if (entry.foodItemId.startsWith('quickadd-')) { await Navigator.of(context).push( MaterialPageRoute( builder: (_) => QuickAddScreen(existingEntry: entry),),);
+                              } else {
+                                setState(() => _isScanningOrFetching = true); FoodItem? fetchedFoodItem;
+                                try { if (entry.foodItemBarcode != null) { fetchedFoodItem = await ref.read(openFoodFactsServiceProvider).getProductByBarcode(entry.foodItemBarcode!); }
+                                  final FoodItem? finalFoodItemForScreen = fetchedFoodItem;
+                                  if (finalFoodItemForScreen != null && mounted) { await Navigator.of(context).push( MaterialPageRoute( builder: (_) => ConfigureLogEntryScreen( foodItem: finalFoodItemForScreen, existingEntry: entry,),),);
+                                  } else if (mounted) { ScaffoldMessenger.of(context).showSnackBar( const SnackBar(content: Text("Could not load original food details for editing."), backgroundColor: Colors.orange),); }
+                                } catch (e) { if (mounted) { ScaffoldMessenger.of(context).showSnackBar( SnackBar(content: Text("Error loading details for edit: ${e.toString()}"), backgroundColor: AppColors.error),); }}
+                                finally { if (mounted) { setState(() => _isScanningOrFetching = false); }}
+                              }
+                           },
+                           onDelete: () {
+                               showDialog( context: context, builder: (BuildContext dialogContext) { return AlertDialog( title: const Text('Delete Log Entry?'), content: Text('Are you sure you want to delete "${entry.foodItemName}"? This action cannot be undone.'),
+                                  actions: <Widget>[ TextButton( child: const Text('Cancel'), onPressed: () { Navigator.of(dialogContext).pop(); },),
+                                    TextButton( style: TextButton.styleFrom(foregroundColor: AppColors.error), child: const Text('Delete'),
+                                      onPressed: () async { Navigator.of(dialogContext).pop(); if (userId != null) { try { await ref.read(nutritionDiaryProvider(userId).notifier).deleteLogEntry(entry.id); if (mounted) { ScaffoldMessenger.of(context).showSnackBar( SnackBar(content: Text('${entry.foodItemName} deleted.')), ); } }
+                                        catch (e) { if (mounted) { ScaffoldMessenger.of(context).showSnackBar( SnackBar(content: Text('Error deleting entry: ${e.toString()}'), backgroundColor: AppColors.error),); }}}},),],);},);
+                           },
+                         );
+                       }).toList(),),
                     const Divider(height: 24, thickness: 0.5),
                   ],
                 );
@@ -305,11 +301,9 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
       error: (err, stack) => Center( child: Padding( padding: const EdgeInsets.all(16.0), child: Text( "Error loading log: ${err.toString()}", style: const TextStyle(color: AppColors.error),),),),
     );
   }
+}
 
-} // End of _NutritionScreenState
-
-
-// --- Providers userIdProvider, httpClientProvider remain the same ---
+// ... (Providers remain the same) ...
 final userIdProvider = Provider<String?>((ref) {
   final authState = ref.watch(firebaseAuthProvider);
   return authState.currentUser?.uid;
