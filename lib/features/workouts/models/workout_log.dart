@@ -1,5 +1,8 @@
 // lib/features/workouts/models/workout_log.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+
+enum WorkoutLogSource { scheduled, logged, manual, imported }
 
 class WorkoutLog extends Equatable {
   final String id;
@@ -18,6 +21,7 @@ class WorkoutLog extends Equatable {
   final String? workoutCategory;
   final String? workoutName;
   final List<String> targetAreas;
+  final WorkoutLogSource source;
 
   const WorkoutLog({
     required this.id,
@@ -36,6 +40,7 @@ class WorkoutLog extends Equatable {
     this.workoutCategory,
     this.workoutName,
     this.targetAreas = const [],
+    this.source = WorkoutLogSource.manual,
   });
 
   @override
@@ -53,6 +58,10 @@ class WorkoutLog extends Equatable {
     privacy,
     isOfflineCreated,
     syncStatus,
+    workoutCategory,
+    workoutName,
+    targetAreas,
+    source,
   ];
 
   WorkoutLog copyWith({
@@ -72,6 +81,7 @@ class WorkoutLog extends Equatable {
     String? workoutCategory,
     String? workoutName,
     List<String>? targetAreas,
+    WorkoutLogSource? source,
   }) {
     return WorkoutLog(
       id: id ?? this.id,
@@ -90,16 +100,17 @@ class WorkoutLog extends Equatable {
       workoutCategory: workoutCategory ?? this.workoutCategory,
       workoutName: workoutName ?? this.workoutName,
       targetAreas: targetAreas ?? this.targetAreas,
+      source: source ?? this.source,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'userId': userId,
       'workoutId': workoutId,
-      'startedAt': startedAt.millisecondsSinceEpoch,
-      'completedAt': completedAt.millisecondsSinceEpoch,
+
+      'startedAt': Timestamp.fromDate(startedAt),
+      'completedAt': Timestamp.fromDate(completedAt),
       'durationMinutes': durationMinutes,
       'caloriesBurned': caloriesBurned,
       'exercisesCompleted': exercisesCompleted.map((e) => e.toMap()).toList(),
@@ -111,16 +122,27 @@ class WorkoutLog extends Equatable {
       'workoutCategory': workoutCategory,
       'workoutName': workoutName,
       'targetAreas': targetAreas,
+      'source': source.name,
     };
   }
 
   factory WorkoutLog.fromMap(Map<String, dynamic> map) {
+    DateTime _dateTimeFromTimestamp(dynamic timestamp) {
+      if (timestamp is Timestamp) {
+        return timestamp.toDate();
+      } else if (timestamp is int) {
+        return DateTime.fromMillisecondsSinceEpoch(timestamp);
+      }
+
+      return DateTime.now();
+    }
+
     return WorkoutLog(
       id: map['id'] ?? '',
       userId: map['userId'] ?? '',
       workoutId: map['workoutId'] ?? '',
-      startedAt: DateTime.fromMillisecondsSinceEpoch(map['startedAt']),
-      completedAt: DateTime.fromMillisecondsSinceEpoch(map['completedAt']),
+      startedAt: _dateTimeFromTimestamp(map['startedAt']),
+      completedAt: _dateTimeFromTimestamp(map['completedAt']),
       durationMinutes: map['durationMinutes']?.toInt() ?? 0,
       caloriesBurned: map['caloriesBurned']?.toInt() ?? 0,
       exercisesCompleted:
@@ -134,12 +156,17 @@ class WorkoutLog extends Equatable {
       privacy: map['privacy'] ?? 'private',
       isOfflineCreated: map['isOfflineCreated'] ?? false,
       syncStatus: map['syncStatus'] ?? 'synced',
-      workoutCategory: map['workoutCategory'] ?? 'synced',
-      workoutName: map['workoutName'] ?? 'synced',
+      workoutCategory: map['workoutCategory'],
+      workoutName: map['workoutName'],
       targetAreas:
           map['targetAreas'] != null
               ? List<String>.from(map['targetAreas'])
               : [],
+
+      source: WorkoutLogSource.values.firstWhere(
+        (e) => e.name == map['source'],
+        orElse: () => WorkoutLogSource.manual,
+      ),
     );
   }
 }
@@ -147,12 +174,11 @@ class WorkoutLog extends Equatable {
 class ExerciseLog extends Equatable {
   final String exerciseName;
   final int setsCompleted;
-  final List<int?> repsCompleted; // Allow different reps per set
-  final List<double?> weightUsed; // Allow different weights per set
-  final List<Duration?>
-  duration; // For timed exercises, allow different durations per set
-  final double? distance; // For distance-based exercises
-  final double? speed; // For speed-based exercises
+  final List<int?> repsCompleted;
+  final List<double?> weightUsed;
+  final List<Duration?> duration;
+  final double? distance;
+  final double? speed;
   final int difficultyRating;
   final String? notes;
   final List<String> targetMuscles;
@@ -222,13 +248,16 @@ class ExerciseLog extends Equatable {
       speed: (map['speed'] as num?)?.toDouble(),
       difficultyRating: map['difficultyRating']?.toInt() ?? 3,
       notes: map['notes'],
-      targetMuscles: map['targetMuscles'] != null ? List<String>.from(map['targetMuscles']) : [],
+      targetMuscles:
+          map['targetMuscles'] != null
+              ? List<String>.from(map['targetMuscles'])
+              : [],
     );
   }
 }
 
 class UserFeedback extends Equatable {
-  final int rating; // 1-5
+  final int rating;
   final bool feltEasy;
   final bool feltTooHard;
   final String? comments;

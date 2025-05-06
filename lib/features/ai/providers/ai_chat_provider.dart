@@ -117,7 +117,7 @@ class AIChatNotifier extends StateNotifier<AsyncValue<AIChatState>> {
       await _messagesCollectionRef().parent?.set({
         'lastUpdatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint(
         "AIChatNotifier(Session: $_sessionId): Error saving message: $e",
       );
@@ -175,7 +175,7 @@ class AIChatNotifier extends StateNotifier<AsyncValue<AIChatState>> {
           'session_id': _sessionId,
         },
       );
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint(
         "AIChatNotifier(Session: $_sessionId): Error providing feedback: $e",
       );
@@ -456,7 +456,7 @@ Generate a very concise title (3-6 words maximum) that accurately summarizes the
           "AIChatNotifier(Session: $_sessionId): AI did not return a valid title.",
         );
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint(
         "AIChatNotifier(Session: $_sessionId): Error generating title: $e",
       );

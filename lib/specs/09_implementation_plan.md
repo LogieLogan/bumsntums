@@ -39,18 +39,17 @@
 - Profile page
 
 **To-Do List:**
-- [ ] Implement OCR for nutrition labels
+- [x] Implement OCR for nutrition labels
 - [ ] Set up OpenAI service token limits and caching
 - [x] Create and test prompt templates for workout recommendations
 - [x] Add progress tracking features
 - [ ] Implement conversion funnels in analytics
 - [ ] Build food diary and nutrition tracking
-- [ ] Intergrate 
 - [x] Enhance workout execution experience
 - [x] Implement GDPR/CCPA data handling compliance
 - [x] Create data export and deletion functionality
 - [ ] Implement accessibility features
-- [ ] Polish up app bar on all tabs. curently all have the same chat fucntion but each screen should have their own. i.e. home chat, workout screen action button with drop downs for my templates, my workouts. Aslo the app bar always says bums and tums when it shoudl only say this on the home tab and then on wrkouts its hould be wrokout and scna scna and weekly plan
+- [x] Polish up app bar on all tabs. curently all have the same chat fucntion but each screen should have their own. i.e. home chat, workout screen action button with drop downs for my templates, my workouts. Aslo the app bar always says bums and tums when it shoudl only say this on the home tab and then on wrkouts its hould be wrokout and scna scna and weekly plan
 - [ ] weekly pan screen shouldnt need to be tab view and should just be weekly plan screen as the app bar title and then the res tof the screent he weekly plan view. again an action bar here instead of chat with relevant actions for this screen. 
 - [x] Implement profile page features
 - [ ] Set up TestFlight/Firebase App Distribution for testing

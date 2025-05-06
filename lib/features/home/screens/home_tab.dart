@@ -1,12 +1,12 @@
 // lib/features/home/screens/home_tab.dart
-import 'package:bums_n_tums/features/ai/screens/chat_sessions_list_screen.dart';
+import 'package:bums_n_tums/features/ai/screens/chat_sessions_list_screen.dart'; // Keep this import
 import 'package:bums_n_tums/features/workout_analytics/widgets/achievements_summary_card.dart';
 import 'package:bums_n_tums/features/workouts/models/workout.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_detail_screen.dart';
 import 'package:bums_n_tums/shared/providers/environment_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bums_n_tums/features/ai/screens/ai_chat_screen.dart';
+// Removed duplicate import: import 'package:bums_n_tums/features/ai/screens/ai_chat_screen.dart';
 import 'package:bums_n_tums/features/auth/models/user_profile.dart';
 import 'package:bums_n_tums/features/workouts/screens/workout_browse_screen.dart';
 import 'package:bums_n_tums/features/ai_workout_creation/screens/ai_workout_screen.dart';
@@ -21,7 +21,7 @@ class HomeTab extends ConsumerStatefulWidget {
   final Function(int) onTabChange;
 
   const HomeTab({Key? key, required this.profile, required this.onTabChange})
-    : super(key: key);
+      : super(key: key);
 
   @override
   ConsumerState<HomeTab> createState() => _HomeTabState();
@@ -58,65 +58,88 @@ class _HomeTabState extends ConsumerState<HomeTab>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeInAnimation,
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome card with user info
-              WelcomeCard(profile: widget.profile),
+    // Wrap the content with Scaffold and add AppBar
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Bums & Tums'),
+        // Keep the chat action specific to the Home tab for now
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            tooltip: 'AI Chat History',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ChatSessionsListScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      body: FadeTransition(
+        opacity: _fadeInAnimation,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Welcome card with user info
+                WelcomeCard(profile: widget.profile),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Highlighted AI Workout Creator - Featured at the top
-              _buildAIWorkoutFeature(),
+                // Highlighted AI Workout Creator - Featured at the top
+                _buildAIWorkoutFeature(),
 
-              const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-              // Quick Actions Section
-              _buildSectionHeader("Quick Actions", Icons.flash_on),
-              const SizedBox(height: 12),
-              _buildQuickActionsGrid(context),
+                // Quick Actions Section
+                _buildSectionHeader("Quick Actions", Icons.flash_on),
+                const SizedBox(height: 12),
+                _buildQuickActionsGrid(context),
 
-              const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-              // Today's Recommendation
-              _buildSectionHeader("Today's Suggestion", Icons.recommend),
-              const SizedBox(height: 12),
-              _buildRecommendedWorkout(),
+                // Today's Recommendation
+                _buildSectionHeader("Today's Suggestion", Icons.recommend),
+                const SizedBox(height: 12),
+                _buildRecommendedWorkout(),
 
-              const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-              // Your stats section
-              _buildSectionHeader("Your Progress", Icons.trending_up),
-              const SizedBox(height: 12),
-              StatsCard(userId: widget.profile.userId),
-              const SizedBox(height: 16), // Add some space
-              const AchievementsSummaryCard(),
+                // Your stats section
+                _buildSectionHeader("Your Progress", Icons.trending_up),
+                const SizedBox(height: 12),
+                StatsCard(userId: widget.profile.userId),
+                const SizedBox(height: 16), // Add some space
+                const AchievementsSummaryCard(),
 
-              const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-              // // Calendar and Analytics
-              // _buildSectionHeader("Calendar & Analytics", Icons.upcoming),
-              // const SizedBox(height: 12),
-              // _buildProgressTrackingFeatures(),
+                // // Calendar and Analytics (Removed as per previous layout)
+                // _buildSectionHeader("Calendar & Analytics", Icons.upcoming),
+                // const SizedBox(height: 12),
+                // _buildProgressTrackingFeatures(), // Assuming this is defined elsewhere or removed
 
-              // const SizedBox(height: 32),
+                // const SizedBox(height: 32),
 
-              // Coming Soon Features (Challenges & Progress Tracking)
-              _buildSectionHeader("Coming Soon", Icons.upcoming),
-              const SizedBox(height: 12),
-              _buildComingSoonFeatures(),
-              const SizedBox(height: 16),
-            ],
+                // Coming Soon Features (Challenges & Progress Tracking)
+                _buildSectionHeader("Coming Soon", Icons.upcoming),
+                const SizedBox(height: 12),
+                _buildComingSoonFeatures(),
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  // --- All helper methods (_buildSectionHeader, _buildAIWorkoutFeature, etc.) remain unchanged ---
+  // --- Paste all existing helper methods from the previous version of home_tab.dart here ---
 
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
@@ -313,11 +336,9 @@ class _HomeTabState extends ConsumerState<HomeTab>
                     Icons.play_circle_filled,
                     AppColors.salmon,
                     () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const WorkoutBrowseScreen(),
-                        ),
-                      );
+                      // Navigate to workout browse *screen* (already has AppBar)
+                      // Or use the onTabChange callback if preferred:
+                      widget.onTabChange(1); // Switch to workout tab
                     },
                   ),
                 ),
@@ -343,6 +364,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
                     Icons.chat_bubble_outline,
                     AppColors.popBlue,
                     () {
+                      // Navigate directly to chat list screen
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => const ChatSessionsListScreen(),
@@ -358,7 +380,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
                     Icons.calendar_month,
                     AppColors.popGreen,
                     () {
-                      widget.onTabChange(3); // Switch to profile tab
+                      widget.onTabChange(3); // Switch to plan tab
                     },
                   ),
                 ),
@@ -478,6 +500,8 @@ class _HomeTabState extends ConsumerState<HomeTab>
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -542,7 +566,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
           },
           loading: () => const Center(child: CircularProgressIndicator()),
           error:
-              (_, __) => Container(
+              (err, stack) => Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -555,8 +579,12 @@ class _HomeTabState extends ConsumerState<HomeTab>
                   ],
                 ),
                 padding: const EdgeInsets.all(16),
-                child: const Center(
-                  child: Text("Could not load recommendation"),
+                child: Center(
+                  child: Text(
+                    "Could not load recommendation.\nError: ${err.toString()}", // Show error
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: AppColors.mediumGrey),
+                    ),
                 ),
               ),
         );

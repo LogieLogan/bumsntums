@@ -138,20 +138,20 @@ FutureOr<void> main() async {
   }
 
   // --- App-Specific Services ---
-  try {
-    if (kDebugMode) print("💡 Initializing MLKit Service...");
-    await MLKitService.initialize();
-    if (kDebugMode) print("✅ MLKit Service initialized successfully");
-  } catch (e, s) {
-    if (kDebugMode) print("🔥 MLKit Service Init FAILED: $e");
-    try {
-      CrashReportingService().recordError(
-        Exception("MLKit Init Failed (DEV): $e"),
-        s,
-        reason: "MLKit Init Failure",
-      );
-    } catch (_) {}
-  }
+  // try {
+  //   if (kDebugMode) print("💡 Initializing MLKit Service...");
+  //   await MLKitService.initialize();
+  //   if (kDebugMode) print("✅ MLKit Service initialized successfully");
+  // } catch (e, s) {
+  //   if (kDebugMode) print("🔥 MLKit Service Init FAILED: $e");
+  //   try {
+  //     CrashReportingService().recordError(
+  //       Exception("MLKit Init Failed (DEV): $e"),
+  //       s,
+  //       reason: "MLKit Init Failure",
+  //     );
+  //   } catch (_) {}
+  // }
 
   try {
     if (kDebugMode) print("🏋️ Initializing Exercise Cache...");

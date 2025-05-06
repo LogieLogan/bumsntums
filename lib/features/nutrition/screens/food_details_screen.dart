@@ -7,11 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FoodDetailsScreen extends ConsumerWidget {
   final FoodItem foodItem;
-  
-  const FoodDetailsScreen({
-    super.key,
-    required this.foodItem,
-  });
+
+  const FoodDetailsScreen({super.key, required this.foodItem});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,19 +21,21 @@ class FoodDetailsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Food image header
             if (foodItem.imageUrl != null)
               Container(
                 height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                ),
+                decoration: BoxDecoration(color: Colors.grey[200]),
                 child: Image.network(
                   foodItem.imageUrl!,
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Center(
-                    child: Icon(Icons.no_food, size: 80, color: Colors.grey),
-                  ),
+                  errorBuilder:
+                      (context, error, stackTrace) => const Center(
+                        child: Icon(
+                          Icons.no_food,
+                          size: 80,
+                          color: Colors.grey,
+                        ),
+                      ),
                 ),
               )
             else
@@ -47,27 +46,23 @@ class FoodDetailsScreen extends ConsumerWidget {
                   child: Icon(Icons.no_food, size: 80, color: Colors.grey),
                 ),
               ),
-              
-            // Food name and brand
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    foodItem.name,
-                    style: AppTextStyles.h2,
-                  ),
+                  Text(foodItem.name, style: AppTextStyles.h2),
                   if (foodItem.brand != null)
                     Text(
                       foodItem.brand!,
-                      style: AppTextStyles.body.copyWith(color: AppColors.mediumGrey),
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.mediumGrey,
+                      ),
                     ),
                 ],
               ),
             ),
-            
-            // Nutrition info card
+
             if (foodItem.nutritionInfo != null)
               _buildNutritionCard(foodItem.nutritionInfo!, context)
             else
@@ -84,8 +79,40 @@ class FoodDetailsScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              
-            // Barcode info
+
+            if (foodItem.ingredientsList != null &&
+                foodItem.ingredientsList!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                child: Card(
+                  margin: EdgeInsets.zero,
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Ingredients:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          foodItem.ingredientsList!,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -94,18 +121,17 @@ class FoodDetailsScreen extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Text(
                     'Barcode: ${foodItem.barcode}',
-                    style: AppTextStyles.small.copyWith(color: AppColors.mediumGrey),
+                    style: AppTextStyles.small.copyWith(
+                      color: AppColors.mediumGrey,
+                    ),
                   ),
                 ],
               ),
             ),
-            
-            // Add to food diary button
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Implement adding to food diary
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Coming soon: Add to food diary'),
@@ -127,13 +153,14 @@ class FoodDetailsScreen extends ConsumerWidget {
       ),
     );
   }
-  
-  Widget _buildNutritionCard(NutritionInfo nutritionInfo, BuildContext context) {
+
+  Widget _buildNutritionCard(
+    NutritionInfo nutritionInfo,
+    BuildContext context,
+  ) {
     return Card(
       margin: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -142,22 +169,14 @@ class FoodDetailsScreen extends ConsumerWidget {
           children: [
             const Text(
               'Nutrition Facts',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const Text(
-              'Per 100g',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.mediumGrey,
-              ),
+              'Per 100g / 100ml (Approx.)',
+              style: TextStyle(fontSize: 14, color: AppColors.mediumGrey),
             ),
             const SizedBox(height: 16),
             const Divider(),
-            
-            // Calories
             _buildNutrientRow(
               'Calories',
               nutritionInfo.calories != null
@@ -166,10 +185,7 @@ class FoodDetailsScreen extends ConsumerWidget {
               context,
               isCalories: true,
             ),
-            
             const Divider(),
-            
-            // Macronutrients
             _buildNutrientRow(
               'Fat',
               nutritionInfo.fat != null
@@ -209,37 +225,16 @@ class FoodDetailsScreen extends ConsumerWidget {
             _buildNutrientRow(
               'Sodium',
               nutritionInfo.sodium != null
-                  ? '${nutritionInfo.sodium!.toStringAsFixed(1)}g'
+                  ? '${(nutritionInfo.sodium! * 1000).toStringAsFixed(0)}mg'
                   : 'N/A',
               context,
             ),
-            
-            if (nutritionInfo.ingredientsList != null && nutritionInfo.ingredientsList!.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Ingredients:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    nutritionInfo.ingredientsList!,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ],
-              ),
           ],
         ),
       ),
     );
   }
-  
+
   Widget _buildNutrientRow(
     String label,
     String value,
