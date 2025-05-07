@@ -25,99 +25,62 @@ class NutritionCalculatorService {
 
   CalculatedNutrition calculateNutrition({
     required NutritionInfo? baseNutrition,
-    required double servingSize, // This is the 'count' of units (e.g., 2 servings, 150 g)
-    required String servingUnit,
-    String? servingSizeStringFromApi,
-    double? userDefinedWeightPerServing, // New: e.g., if user says 1 piece = 30g
+    required double servingSize, // The 'count' or 'amount' entered by user
+    required String servingUnit,  // The unit selected by user
+    String? servingSizeStringFromApi, // Raw string like "1 piece (30g)"
+    double? userDefinedWeightPerServing, // User input e.g., 30 (for 30g per piece)
+    double? knownWeightOfApiServingUnit, // Pre-parsed weight of API's unit (e.g., 30 if apiServingUnitDescription is "piece" and it's 30g)
   }) {
-    if (baseNutrition == null) { /* ... (no change) ... */
-       if (kDebugMode) { print("NutritionCalculator: No base nutrition info."); }
-       return const CalculatedNutrition();
-    }
-    if (servingSize <= 0) { /* ... (no change) ... */
-       if (kDebugMode) { print("NutritionCalculator: Invalid serving size ($servingSize)."); }
-       return const CalculatedNutrition();
-    }
+    if (baseNutrition == null) { /* ... */ return const CalculatedNutrition(); }
+    if (servingSize <= 0) { /* ... */ return const CalculatedNutrition(); }
 
     double calculationFactor = 0.0;
     final unitLower = servingUnit.toLowerCase();
 
     if (unitLower == 'g' || unitLower == 'ml') {
       calculationFactor = servingSize / _baseAmount;
-       if (kDebugMode) { print("NutritionCalculator: Unit '$servingUnit'. Factor: $calculationFactor"); }
-    }
-    // --- Updated Logic for Countable Units ---
-    else if (['serving', 'piece', 'slice', 'cup', 'tbsp', 'tsp', 'oz'].contains(unitLower)) {
-      // Priority:
-      // 1. User-defined weight for this countable unit
-      // 2. Parsed weight from API's serving_size string (if unit is 'serving')
-      // 3. Fallback (approximate or zero)
-
-      if (userDefinedWeightPerServing != null && userDefinedWeightPerServing > 0) {
-        // User specified how much 1 of their chosen units weighs (e.g., 1 piece = 30g)
-        calculationFactor = (userDefinedWeightPerServing / _baseAmount) * servingSize;
-        if (kDebugMode) { print("NutritionCalculator: Unit '$servingUnit'. User-defined weight: $userDefinedWeightPerServing g. Quantity: $servingSize. Factor: $calculationFactor"); }
-      } else if (unitLower == 'serving' && servingSizeStringFromApi != null) {
+    } else if (userDefinedWeightPerServing != null && userDefinedWeightPerServing > 0) {
+      // Highest priority: User explicitly defined weight for the selected countable unit
+      calculationFactor = (userDefinedWeightPerServing / _baseAmount) * servingSize;
+      if (kDebugMode) { print("NutritionCalculator: Using user-defined weight ($userDefinedWeightPerServing g/ml) for '$servingUnit'. Quantity: $servingSize. Factor: $calculationFactor");}
+    } else if (knownWeightOfApiServingUnit != null && knownWeightOfApiServingUnit > 0) {
+      // Next priority: The selected unit is the API's defined unit, and we know its weight
+      calculationFactor = (knownWeightOfApiServingUnit / _baseAmount) * servingSize;
+       if (kDebugMode) { print("NutritionCalculator: Using API known weight ($knownWeightOfApiServingUnit g/ml) for '$servingUnit'. Quantity: $servingSize. Factor: $calculationFactor");}
+    } else if (unitLower == 'serving' && servingSizeStringFromApi != null) {
+        // Fallback for generic "serving" if API string has a parsable weight (but not directly tied to knownWeightOfApiServingUnit)
         final double? weightFromApi = parseWeightFromServingString(servingSizeStringFromApi);
         if (weightFromApi != null) {
           calculationFactor = (weightFromApi / _baseAmount) * servingSize;
            if (kDebugMode) { print("NutritionCalculator: Unit 'serving'. Parsed API weight: $weightFromApi g/ml. Quantity: $servingSize. Factor: $calculationFactor"); }
         } else {
-          // API string not parsable for 'serving', treat as uncalculable for now
-           if (kDebugMode) { print("NutritionCalculator: Unit 'serving'. API string '$servingSizeStringFromApi' not parsable for weight. Fallback."); }
+           if (kDebugMode) { print("NutritionCalculator: Unit 'serving'. API string '$servingSizeStringFromApi' not parsable. Fallback."); }
            return _fallbackForUncertainUnits(baseNutrition);
         }
-      } else if (unitLower == 'oz') {
-          // Add conversion for ounces (1 oz ~ 28.35g)
-          const double gramsPerOunce = 28.3495;
-          calculationFactor = ( (servingSize * gramsPerOunce) / _baseAmount );
-          if (kDebugMode) { print("NutritionCalculator: Unit 'oz'. Quantity: $servingSize. Factor: $calculationFactor"); }
-      }
-      else {
-        // No user-defined weight, and not 'serving' with parsable API string, or it's 'piece', 'slice' etc.
-         if (kDebugMode) { print("NutritionCalculator: Unit '$servingUnit'. No specific weight known. Fallback."); }
+    } else if (unitLower == 'oz') {
+        const double gramsPerOunce = 28.3495;
+        calculationFactor = ((servingSize * gramsPerOunce) / _baseAmount);
+    } else {
+        // All other countable units without a user-defined or API-defined weight
+        if (kDebugMode) { print("NutritionCalculator: Unit '$servingUnit'. No specific weight known. Fallback."); }
         return _fallbackForUncertainUnits(baseNutrition);
-      }
-    }
-    // --- End Updated Logic ---
-    else {
-      if (kDebugMode) { print("NutritionCalculator: Unknown serving unit '$servingUnit'."); }
-      return const CalculatedNutrition();
     }
 
-    if (calculationFactor > 0) {
+    if (calculationFactor > 0) { /* ... (calculate and return) ... */
       return CalculatedNutrition(
         calories: (baseNutrition.calories ?? 0.0) * calculationFactor,
         protein: (baseNutrition.protein ?? 0.0) * calculationFactor,
         carbs: (baseNutrition.carbs ?? 0.0) * calculationFactor,
         fat: (baseNutrition.fat ?? 0.0) * calculationFactor,
       );
-    } else {
-       // This case should ideally be hit less often with the new logic
-       if (kDebugMode) { print("NutritionCalculator: Calculation factor is zero or negative. Returning zeros."); }
-       return const CalculatedNutrition();
     }
+    return const CalculatedNutrition();
   }
 
-  // --- NEW Fallback Method ---
   CalculatedNutrition _fallbackForUncertainUnits(NutritionInfo baseNutrition) {
-    // Option: Return raw per 100g values if user logged "1 serving/piece" etc.
-    // This gives *some* info but needs clear UI indication it's not per "their" serving.
-    // For now, let's return zeros to force user to define weight or use g/ml.
-    // If we returned baseNutrition directly, the UI would show "per 100g" which is fine,
-    // but the "Calculated Nutrition" title might be misleading.
-    if (kDebugMode) {
-      print("NutritionCalculator: Fallback - Returning zero nutrition for uncertain unit. User should define weight or use g/ml.");
-    }
-    return const CalculatedNutrition(
-      // To give some hint, maybe provide the per 100g values but it should be clear on UI
-      // calories: baseNutrition.calories ?? 0.0, // This would be the "per 100g" value
-      // protein: baseNutrition.protein ?? 0.0,
-      // carbs: baseNutrition.carbs ?? 0.0,
-      // fat: baseNutrition.fat ?? 0.0,
-    );
+     if (kDebugMode) { print("NutritionCalculator: Fallback - Returning zero nutrition for uncertain unit."); }
+    return const CalculatedNutrition();
   }
-  // --- End NEW Fallback Method ---
 
   static double? parseWeightFromServingString(String? servingString) { /* ... (no change) ... */
     if (servingString == null || servingString.isEmpty) { return null; }

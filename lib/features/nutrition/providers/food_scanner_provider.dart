@@ -1,7 +1,5 @@
 // lib/features/nutrition/providers/food_scanner_provider.dart
 import 'package:bums_n_tums/shared/providers/firebase_providers.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/food_item.dart';
 import '../services/open_food_facts_service.dart';

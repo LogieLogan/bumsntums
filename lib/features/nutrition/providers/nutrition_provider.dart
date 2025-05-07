@@ -1,8 +1,6 @@
 // lib/features/nutrition/providers/nutrition_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
-
 import '../models/food_log_entry.dart';
 import '../repositories/nutrition_repository.dart';
 import '../models/estimated_goals.dart'; // Import goal model
