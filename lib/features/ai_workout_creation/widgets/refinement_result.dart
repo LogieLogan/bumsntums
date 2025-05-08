@@ -13,13 +13,13 @@ class RefinementResult extends StatelessWidget {
   final VoidCallback onRefineAgain;
 
   const RefinementResult({
-    Key? key,
+    super.key,
     required this.workoutData,
     this.changesSummary,
     required this.onUseWorkout,
     required this.onUndoChanges,
     required this.onRefineAgain,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

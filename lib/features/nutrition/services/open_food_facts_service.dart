@@ -9,7 +9,6 @@ import '../models/food_search_result.dart'; // Import the new model
 import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../../../shared/analytics/crash_reporting_service.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:uuid/uuid.dart';
 
 class OpenFoodFactsService {
   // ... (existing fields and constructor) ...

@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bums_n_tums/features/splash/screens/splash_screen.dart';
 import 'package:bums_n_tums/features/auth/providers/auth_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 
 @GenerateMocks([User])

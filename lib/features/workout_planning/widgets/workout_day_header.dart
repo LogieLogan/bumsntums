@@ -9,11 +9,11 @@ class WorkoutDayHeader extends StatelessWidget {
   final int workoutCount;
 
   const WorkoutDayHeader({
-    Key? key,
+    super.key,
     required this.date,
     required this.isToday,
     required this.workoutCount,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

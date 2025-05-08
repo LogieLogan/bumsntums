@@ -14,14 +14,14 @@ class MeasurementsStep extends StatefulWidget {
   final Function(DateTime?, double?, double?, UnitSystem)? onChanged;
 
   const MeasurementsStep({
-    Key? key,
+    super.key,
     this.initialDateOfBirth,
     this.initialHeight,
     this.initialWeight,
     this.initialUnitSystem = UnitSystem.metric,
     required this.onNext,
     this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<MeasurementsStep> createState() => _MeasurementsStepState();

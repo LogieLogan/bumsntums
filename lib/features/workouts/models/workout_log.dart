@@ -127,7 +127,7 @@ class WorkoutLog extends Equatable {
   }
 
   factory WorkoutLog.fromMap(Map<String, dynamic> map) {
-    DateTime _dateTimeFromTimestamp(dynamic timestamp) {
+    DateTime dateTimeFromTimestamp(dynamic timestamp) {
       if (timestamp is Timestamp) {
         return timestamp.toDate();
       } else if (timestamp is int) {
@@ -141,8 +141,8 @@ class WorkoutLog extends Equatable {
       id: map['id'] ?? '',
       userId: map['userId'] ?? '',
       workoutId: map['workoutId'] ?? '',
-      startedAt: _dateTimeFromTimestamp(map['startedAt']),
-      completedAt: _dateTimeFromTimestamp(map['completedAt']),
+      startedAt: dateTimeFromTimestamp(map['startedAt']),
+      completedAt: dateTimeFromTimestamp(map['completedAt']),
       durationMinutes: map['durationMinutes']?.toInt() ?? 0,
       caloriesBurned: map['caloriesBurned']?.toInt() ?? 0,
       exercisesCompleted:

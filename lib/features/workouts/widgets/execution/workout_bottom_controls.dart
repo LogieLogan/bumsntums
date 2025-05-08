@@ -12,12 +12,12 @@ class WorkoutBottomControls extends ConsumerWidget {
   final bool isTimeBased;
   
   const WorkoutBottomControls({
-    Key? key,
+    super.key,
     required this.exercise,
     required this.onCompleteSet,
     required this.onShowInfo,
     required this.isTimeBased,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

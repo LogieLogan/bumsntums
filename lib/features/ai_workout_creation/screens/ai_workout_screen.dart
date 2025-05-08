@@ -20,7 +20,7 @@ import '../widgets/parameter_summary_sheet.dart'; // Add this import
 import '../models/creation_step.dart';
 
 class AIWorkoutScreen extends ConsumerStatefulWidget {
-  const AIWorkoutScreen({Key? key}) : super(key: key);
+  const AIWorkoutScreen({super.key});
 
   @override
   ConsumerState<AIWorkoutScreen> createState() => _AIWorkoutScreenState();

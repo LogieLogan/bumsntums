@@ -13,10 +13,10 @@ class AchievementTile extends StatefulWidget {
   final Duration animationDelay; // Optional delay for staggering effect
 
   const AchievementTile({
-    Key? key,
+    super.key,
     required this.achievement,
     this.animationDelay = Duration.zero, // Default to no delay
-  }) : super(key: key);
+  });
 
   @override
   State<AchievementTile> createState() => _AchievementTileState();

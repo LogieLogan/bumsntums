@@ -10,10 +10,10 @@ class CategorySelectionStep extends StatefulWidget {
   final Function(WorkoutCategory) onCategorySelected;
 
   const CategorySelectionStep({
-    Key? key,
+    super.key,
     required this.selectedCategory,
     required this.onCategorySelected,
-  }) : super(key: key);
+  });
 
   @override
   State<CategorySelectionStep> createState() => _CategorySelectionStepState();

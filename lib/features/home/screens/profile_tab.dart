@@ -2,7 +2,7 @@
 import 'package:bums_n_tums/features/workouts/screens/workout_history_screen.dart';
 import 'package:bums_n_tums/shared/services/unit_conversion_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart'; // Added for kDebugMode
+// Added for kDebugMode
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bums_n_tums/features/auth/models/user_profile.dart';

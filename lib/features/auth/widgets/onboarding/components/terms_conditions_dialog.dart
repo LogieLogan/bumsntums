@@ -11,9 +11,9 @@ class TermsConditionsDialog extends ConsumerStatefulWidget {
   final Function(bool accepted, int version) onResult;
 
   const TermsConditionsDialog({
-    Key? key,
+    super.key,
     required this.onResult,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<TermsConditionsDialog> createState() => _TermsConditionsDialogState();

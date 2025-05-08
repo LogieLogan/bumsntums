@@ -15,12 +15,12 @@ class EquipmentSelectionStep extends ConsumerStatefulWidget {
   final VoidCallback onBack;
 
   const EquipmentSelectionStep({
-    Key? key,
+    super.key,
     required this.selectedEquipment,
     required this.onEquipmentUpdated,
     required this.onContinue,
     required this.onBack,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<EquipmentSelectionStep> createState() => _EquipmentSelectionStepState();

@@ -17,7 +17,7 @@ class RefinementStep extends StatefulWidget {
   final VoidCallback onApplyChanges;
 
   const RefinementStep({
-    Key? key,
+    super.key,
     required this.workoutData,
     required this.controller,
     required this.isRefining,
@@ -25,7 +25,7 @@ class RefinementStep extends StatefulWidget {
     required this.onCancel,
     required this.onUndoChanges,
     required this.onApplyChanges,
-  }) : super(key: key);
+  });
 
   @override
   State<RefinementStep> createState() => _RefinementStepState();

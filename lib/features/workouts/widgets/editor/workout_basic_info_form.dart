@@ -12,14 +12,14 @@ class WorkoutBasicInfoForm extends StatelessWidget {
   final Function(WorkoutDifficulty) onDifficultyChanged;
 
   const WorkoutBasicInfoForm({
-    Key? key,
+    super.key,
     required this.titleController,
     required this.descriptionController,
     required this.selectedCategory,
     required this.selectedDifficulty,
     required this.onCategoryChanged,
     required this.onDifficultyChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

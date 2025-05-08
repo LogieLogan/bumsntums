@@ -12,11 +12,11 @@ class SatisfactionPrompt extends ConsumerStatefulWidget {
   final VoidCallback? onComplete;
 
   const SatisfactionPrompt({
-    Key? key,
+    super.key,
     required this.featureName,
     required this.userId,
     this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<SatisfactionPrompt> createState() => _SatisfactionPromptState();

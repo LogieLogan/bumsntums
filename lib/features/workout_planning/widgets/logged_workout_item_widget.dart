@@ -10,11 +10,11 @@ class LoggedWorkoutItemWidget extends StatelessWidget {
   final VoidCallback onDelete; // Optional delete action
 
   const LoggedWorkoutItemWidget({
-    Key? key,
+    super.key,
     required this.workoutLog,
     required this.onTap,
     required this.onDelete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

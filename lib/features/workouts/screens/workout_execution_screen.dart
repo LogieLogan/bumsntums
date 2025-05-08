@@ -19,10 +19,10 @@ class WorkoutExecutionScreen extends ConsumerStatefulWidget {
 
   // Update Constructor
   const WorkoutExecutionScreen({
-    Key? key,
+    super.key,
     this.originPlanId,
     this.originScheduledWorkoutId,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<WorkoutExecutionScreen> createState() =>

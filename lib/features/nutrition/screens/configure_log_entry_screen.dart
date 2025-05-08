@@ -183,8 +183,9 @@ class _ConfigureLogEntryScreenState
   bool get _showWeightPerCustomUnitInput {
     if (_selectedServingUnit == 'g' ||
         _selectedServingUnit == 'ml' ||
-        _selectedServingUnit == 'oz')
+        _selectedServingUnit == 'oz') {
       return false;
+    }
 
     // If the selected unit IS the API's defined unit (e.g., "piece")
     if (_selectedServingUnit == _apiServingUnitDescriptionForDisplay) {
@@ -454,8 +455,9 @@ class _ConfigureLogEntryScreenState
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Required';
                         if (double.tryParse(value) == null ||
-                            double.parse(value) <= 0)
+                            double.parse(value) <= 0) {
                           return 'Invalid number';
+                        }
                         return null;
                       },
                     ),

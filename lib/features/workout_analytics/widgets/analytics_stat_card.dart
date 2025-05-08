@@ -13,13 +13,13 @@ class AnalyticsStatCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const AnalyticsStatCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.value,
     required this.icon,
     this.color = AppColors.salmon,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

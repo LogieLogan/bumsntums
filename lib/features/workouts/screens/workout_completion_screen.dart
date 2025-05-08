@@ -30,13 +30,13 @@ class WorkoutCompletionScreen extends ConsumerStatefulWidget {
   final String? originScheduledWorkoutId;
 
   const WorkoutCompletionScreen({
-    Key? key,
+    super.key,
     required this.workout,
     required this.elapsedTime,
     required this.exercisesCompleted,
     this.originPlanId,
     this.originScheduledWorkoutId,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<WorkoutCompletionScreen> createState() =>

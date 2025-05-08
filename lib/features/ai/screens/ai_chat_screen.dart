@@ -1,8 +1,6 @@
 // lib/features/ai/screens/ai_chat_screen.dart
 import 'dart:math';
-
 import 'package:bums_n_tums/features/ai_workout_creation/screens/ai_workout_screen.dart';
-import 'package:bums_n_tums/shared/providers/environment_provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +13,7 @@ import '../models/message.dart';
 class AIChatScreen extends ConsumerStatefulWidget {
   final String sessionId;
 
-  const AIChatScreen({required this.sessionId, Key? key}) : super(key: key);
+  const AIChatScreen({required this.sessionId, super.key});
 
   @override
   ConsumerState<AIChatScreen> createState() => _AIChatScreenState();
@@ -24,10 +22,6 @@ class AIChatScreen extends ConsumerStatefulWidget {
 class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-
-  static const String _initialWelcomeMessage =
-      "Hi there! How can I help you with your fitness journey today?";
-  static const String _clearedChatMessage = "Chat cleared. How can I help?";
 
   @override
   void initState() {
@@ -84,11 +78,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
     Map<String, dynamic>?
     profileMap; // Keep as nullable initially for error handling
     try {
-      profileMap = userProfile.toMap(); // Call the method
-      if (profileMap == null) {
-        // Explicitly check if toMap returned null
-        throw Exception("toMap() method returned null");
-      }
+      profileMap = userProfile.toMap();
       debugPrint(
         "AIChatScreen: Successfully created profileMap: ${profileMap.toString().substring(0, min(profileMap.toString().length, 100))}...",
       ); // Log part of the map
@@ -504,31 +494,31 @@ class _ChatMessageWidget extends StatelessWidget {
   }
 }
 
-class _SuggestionChip extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-  final Color color;
+// class _SuggestionChip extends StatelessWidget {
+//   final String label;
+//   final VoidCallback onTap;
+//   final Color color;
 
-  const _SuggestionChip({
-    required this.label,
-    required this.onTap,
-    this.color = AppColors.salmon,
-  });
+//   const _SuggestionChip({
+//     required this.label,
+//     required this.onTap,
+//     this.color = AppColors.salmon,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.5)),
-        ),
-        child: Text(label, style: TextStyle(color: color)),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return InkWell(
+//       onTap: onTap,
+//       borderRadius: BorderRadius.circular(16),
+//       child: Container(
+//         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+//         decoration: BoxDecoration(
+//           color: Colors.white,
+//           borderRadius: BorderRadius.circular(16),
+//           border: Border.all(color: color.withOpacity(0.5)),
+//         ),
+//         child: Text(label, style: TextStyle(color: color)),
+//       ),
+//     );
+//   }
+// }

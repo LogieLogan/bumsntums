@@ -19,7 +19,7 @@ class SectionCard extends ConsumerWidget {
   onUpdateExercise;
 
   const SectionCard({
-    Key? key,
+    super.key,
     required this.section,
     required this.sectionIndex,
     required this.onAddExercise,
@@ -27,7 +27,7 @@ class SectionCard extends ConsumerWidget {
     required this.onDeleteSection,
     required this.onReorderExercises,
     required this.onUpdateExercise,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -423,11 +423,11 @@ class ExerciseListItem extends StatelessWidget {
   final VoidCallback onDelete;
 
   const ExerciseListItem({
-    Key? key,
+    super.key,
     required this.exercise,
     required this.onEdit,
     required this.onDelete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

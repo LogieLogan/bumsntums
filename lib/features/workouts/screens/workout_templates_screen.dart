@@ -12,8 +12,7 @@ import '../../../shared/components/indicators/loading_indicator.dart';
 class WorkoutTemplatesScreen extends ConsumerWidget {
   final bool selectionMode;
 
-  const WorkoutTemplatesScreen({Key? key, this.selectionMode = false})
-    : super(key: key);
+  const WorkoutTemplatesScreen({super.key, this.selectionMode = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -63,8 +62,8 @@ class WorkoutTemplatesScreen extends ConsumerWidget {
           ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _createNewTemplate(context),
-        child: const Icon(Icons.add),
         tooltip: 'Create New Template',
+        child: const Icon(Icons.add),
       ),
     );
   }

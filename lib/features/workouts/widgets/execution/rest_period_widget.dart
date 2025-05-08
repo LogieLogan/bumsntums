@@ -14,11 +14,11 @@ class RestPeriodWidget extends ConsumerWidget {
   final VoidCallback onComplete;
 
   const RestPeriodWidget({
-    Key? key,
+    super.key,
     required this.nextExercise,
     required this.isBetweenSets,
     required this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

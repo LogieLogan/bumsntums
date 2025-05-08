@@ -82,7 +82,7 @@ $consultationSection
 
 DESIGN PRINCIPLES:
 1. Structure: Include "Warm-up", "Main Workout", "Cool-down" in 'sections'.
-2. Duration: Total time near ${roundedMinutes} min. Top-level 'durationMinutes' MUST be ${roundedMinutes}.
+2. Duration: Total time near $roundedMinutes min. Top-level 'durationMinutes' MUST be $roundedMinutes.
 3. Equipment: Use available items. List ONLY used items in 'equipment' array.
 4. Suitability: Beginner-friendly, safe exercises matching profile.
 5. Clarity: Clear exercise descriptions. Include 'targetArea'.
@@ -129,7 +129,7 @@ REQUIRED JSON OUTPUT STRUCTURE:
 
       if (responseText == null || responseText.trim().isEmpty) {
         final blockReason = response.promptFeedback?.blockReason;
-        final safetyRatings = response.candidates?.first.safetyRatings;
+        final safetyRatings = response.candidates.first.safetyRatings;
         debugPrint(
           "Vertex AI Error: Empty or blocked response. Reason: $blockReason, Ratings: $safetyRatings",
         );
@@ -359,7 +359,7 @@ REQUIRED JSON OUTPUT STRUCTURE (same as input, plus changesSummary):
     try {
       final chat = _model.startChat(history: chatHistoryWithContext);
       debugPrint(
-        "Sending chat message ('${message}') to Vertex AI Gemini with history/context...",
+        "Sending chat message ('$message') to Vertex AI Gemini with history/context...",
       );
 
       final response = await chat.sendMessage(Content.text(message));

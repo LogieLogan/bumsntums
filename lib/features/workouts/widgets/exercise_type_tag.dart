@@ -6,9 +6,9 @@ class ExerciseTypeTag extends StatelessWidget {
   final String type;
   
   const ExerciseTypeTag({
-    Key? key,
+    super.key,
     required this.type,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {

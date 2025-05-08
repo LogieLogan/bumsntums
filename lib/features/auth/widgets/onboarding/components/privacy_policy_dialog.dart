@@ -11,9 +11,9 @@ class PrivacyPolicyDialog extends ConsumerStatefulWidget {
   final Function(bool accepted, int version) onResult;
 
   const PrivacyPolicyDialog({
-    Key? key,
+    super.key,
     required this.onResult,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<PrivacyPolicyDialog> createState() => _PrivacyPolicyDialogState();

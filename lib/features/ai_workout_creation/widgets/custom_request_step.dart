@@ -15,14 +15,14 @@ class CustomRequestStep extends StatefulWidget {
   final VoidCallback onGenerate;
 
   const CustomRequestStep({
-    Key? key,
+    super.key,
     required this.controller,
     required this.selectedCategory,
     required this.selectedDuration,
     required this.selectedEquipment,
     required this.onBack,
     required this.onGenerate,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomRequestStep> createState() => _CustomRequestStepState();
@@ -44,11 +44,11 @@ class _CustomRequestStepState extends State<CustomRequestStep> {
     // This is a simplified approach - in a real app you might want
     // a more sophisticated parsing for exact matches
     final text = widget.controller.text.toLowerCase();
-    _suggestions.forEach((suggestion) {
+    for (var suggestion in _suggestions) {
       if (text.contains(suggestion.toLowerCase())) {
         _selectedSuggestions.add(suggestion);
       }
-    });
+    }
   }
 
   // Organized suggestions by category for better usability

@@ -17,10 +17,10 @@ class WorkoutEditorScreen extends ConsumerStatefulWidget {
   final bool isTemplate;
 
   const WorkoutEditorScreen({
-    Key? key,
+    super.key,
     this.originalWorkout,
     this.isTemplate = false,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<WorkoutEditorScreen> createState() =>

@@ -12,13 +12,13 @@ class FeaturedWorkoutCard extends StatelessWidget {
   final String difficultyLevel;
 
   const FeaturedWorkoutCard({
-    Key? key,
+    super.key,
     required this.workoutId,
     this.title = 'Beginner Bums & Tums',
     this.durationMinutes = 20,
     this.exerciseCount = 8,
     this.difficultyLevel = 'Beginner',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

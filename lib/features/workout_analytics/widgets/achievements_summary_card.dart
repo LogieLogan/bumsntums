@@ -12,7 +12,7 @@ import 'package:bums_n_tums/features/workout_analytics/screens/achievements_scre
 
 // Convert back to ConsumerWidget
 class AchievementsSummaryCard extends ConsumerWidget {
-  const AchievementsSummaryCard({Key? key}) : super(key: key);
+  const AchievementsSummaryCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -12,7 +12,7 @@ import '../../../shared/components/buttons/primary_button.dart';
 import '../../../shared/theme/app_colors.dart';
 
 class GdprSettingsScreen extends ConsumerStatefulWidget {
-  const GdprSettingsScreen({Key? key}) : super(key: key);
+  const GdprSettingsScreen({super.key});
 
   @override
   ConsumerState<GdprSettingsScreen> createState() => _GdprSettingsScreenState();

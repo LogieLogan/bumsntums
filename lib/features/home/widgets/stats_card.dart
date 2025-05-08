@@ -9,7 +9,7 @@ import '../../../shared/navigation/navigation.dart';
 class StatsCard extends ConsumerWidget {
   final String userId;
 
-  const StatsCard({Key? key, required this.userId}) : super(key: key);
+  const StatsCard({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

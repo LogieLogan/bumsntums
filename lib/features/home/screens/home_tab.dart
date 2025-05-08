@@ -20,8 +20,7 @@ class HomeTab extends ConsumerStatefulWidget {
   final UserProfile profile;
   final Function(int) onTabChange;
 
-  const HomeTab({Key? key, required this.profile, required this.onTabChange})
-      : super(key: key);
+  const HomeTab({super.key, required this.profile, required this.onTabChange});
 
   @override
   ConsumerState<HomeTab> createState() => _HomeTabState();

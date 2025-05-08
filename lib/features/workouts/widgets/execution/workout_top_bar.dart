@@ -11,10 +11,10 @@ class WorkoutTopBar extends ConsumerWidget {
   final VoidCallback onExit;
   
   const WorkoutTopBar({
-    Key? key,
+    super.key,
     required this.workoutTitle,
     required this.onExit,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

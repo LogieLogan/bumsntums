@@ -182,11 +182,11 @@ final workoutFrequencyDataProvider = FutureProvider.family<
       "WorkoutFrequencyDataProvider: Fetched ${result.length} frequency data points.",
     ); // Add print
     return result;
-  } catch (e, stackTrace) {
+  } catch (e) {
     print("Error in workoutFrequencyDataProvider for user $userId: $e");
     // Consider logging to crash reporting service
     // ref.read(crashReportingServiceProvider).recordError(e, stackTrace);
-    throw e; // Re-throw error so the .when clause catches it
+    rethrow; // Re-throw error so the .when clause catches it
   }
 });
 
@@ -218,11 +218,11 @@ final workoutProgressDataProvider = FutureProvider.family<
       "workoutProgressDataProvider: Successfully fetched ${result.length} progress points.",
     );
     return result;
-  } catch (e, stackTrace) {
+  } catch (e) {
     print("Error in workoutProgressDataProvider for user $userId: $e");
     // Log error
     // ref.read(crashReportingServiceProvider)...
-    throw e; // Allow the UI to handle the error state
+    rethrow; // Allow the UI to handle the error state
   }
 });
 

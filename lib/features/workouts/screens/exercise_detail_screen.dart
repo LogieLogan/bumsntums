@@ -10,8 +10,7 @@ import '../../../shared/theme/app_colors.dart';
 class ExerciseDetailScreen extends ConsumerStatefulWidget {
   final String exerciseId;
 
-  const ExerciseDetailScreen({Key? key, required this.exerciseId})
-    : super(key: key);
+  const ExerciseDetailScreen({super.key, required this.exerciseId});
 
   @override
   ConsumerState<ExerciseDetailScreen> createState() =>

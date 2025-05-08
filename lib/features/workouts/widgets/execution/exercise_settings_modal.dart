@@ -11,10 +11,10 @@ class ExerciseSettingsModal extends StatefulWidget {
   final Function(Exercise) onSave;
 
   const ExerciseSettingsModal({
-    Key? key,
+    super.key,
     required this.exercise,
     required this.onSave,
-  }) : super(key: key);
+  });
 
   @override
   State<ExerciseSettingsModal> createState() => _ExerciseSettingsModalState();

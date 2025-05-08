@@ -379,7 +379,7 @@ class PlannerItemsNotifier
              print("Notifier: Reverted optimistic removal for ${itemToDelete.scheduledWorkout.id} due to error.");
            }
         }
-        throw e; // Re-throw the error
+        rethrow; // Re-throw the error
       }
     } else if (itemToDelete is LoggedWorkoutItem) {
        try {
@@ -399,7 +399,7 @@ class PlannerItemsNotifier
                print("Notifier: Reverted optimistic removal for ${itemToDelete.workoutLog.id} due to error.");
              }
           }
-          throw e; // Re-throw the error
+          rethrow; // Re-throw the error
        }
     }
     // No else needed here as we handled unknown types earlier

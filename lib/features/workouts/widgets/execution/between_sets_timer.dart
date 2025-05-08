@@ -13,7 +13,7 @@ class BetweenSetsTimer extends StatefulWidget {
   final VoidCallback onReduceTime;
 
   const BetweenSetsTimer({
-    Key? key,
+    super.key,
     required this.durationSeconds,
     required this.isPaused,
     required this.currentSet,
@@ -21,7 +21,7 @@ class BetweenSetsTimer extends StatefulWidget {
     required this.onComplete,
     required this.onAddTime,
     required this.onReduceTime,
-  }) : super(key: key);
+  });
 
   @override
   State<BetweenSetsTimer> createState() => _BetweenSetsTimerState();

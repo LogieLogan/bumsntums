@@ -15,12 +15,12 @@ class ExerciseContentWidget extends ConsumerWidget {
   final VoidCallback onInfoTap;
 
   const ExerciseContentWidget({
-    Key? key,
+    super.key,
     required this.exercise,
     required this.currentSet,
     required this.onComplete,
     required this.onInfoTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

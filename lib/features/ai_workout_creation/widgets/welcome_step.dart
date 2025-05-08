@@ -7,7 +7,7 @@ import '../../../shared/components/buttons/primary_button.dart';
 class WelcomeStep extends StatelessWidget {
   final VoidCallback onGetStarted;
 
-  const WelcomeStep({Key? key, required this.onGetStarted}) : super(key: key);
+  const WelcomeStep({super.key, required this.onGetStarted});
 
   @override
   Widget build(BuildContext context) {

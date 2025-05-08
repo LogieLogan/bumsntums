@@ -6,7 +6,6 @@ import '../../../shared/analytics/firebase_analytics_service.dart';
 import '../models/exercise.dart';
 import '../models/workout.dart';
 import '../models/workout_log.dart';
-import '../services/voice_guidance_service.dart';
 
 // Provider for the execution state
 final workoutExecutionProvider =

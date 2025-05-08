@@ -73,8 +73,9 @@ class WorkoutStatsService {
     try {
       final doc = await _userStreakDoc(userId).get();
       if (!doc.exists) {
-        if (kDebugMode)
+        if (kDebugMode) {
           print("No existing streak found for $userId, returning empty.");
+        }
         return WorkoutStreak.empty(userId);
       }
 
@@ -155,10 +156,11 @@ class WorkoutStatsService {
       });
 
       await _analytics.logEvent(name: 'workout_stats_updated');
-      if (_debugMode)
+      if (_debugMode) {
         print(
           "Successfully completed transaction for user ${log.userId}. Newly unlocked: ${newlyUnlocked.length}",
         );
+      }
 
       // *** Return the captured list ***
       return newlyUnlocked;
@@ -513,10 +515,11 @@ class WorkoutStatsService {
       final definitions = allAchievements;
       final achievementsCollectionRef = _userAchievementsCollection(userId);
 
-      if (_debugMode)
+      if (_debugMode) {
         print(
           "Checking achievements for $userId against ${initiallyUnlockedIds.length} pre-fetched unlocked IDs.",
         );
+      }
 
       for (final definition in definitions) {
         if (initiallyUnlockedIds.contains(definition.id)) {
@@ -635,7 +638,7 @@ class WorkoutStatsService {
 
     if (kDebugMode) {
       print('Fetching workout logs for $userId');
-      print('Path: ${_userLogsBaseCollection}/$userId/${_logsSubcollection}');
+      print('Path: $_userLogsBaseCollection/$userId/$_logsSubcollection');
       print('Date range (ms): $startMillis to $endMillis');
     }
 
@@ -926,10 +929,11 @@ class WorkoutStatsService {
         } else {
           // This case might happen if a log's date falls slightly outside the calculated range
           // due to timezone differences or edge cases. Log it if necessary.
-          if (kDebugMode)
+          if (kDebugMode) {
             print(
               "Warning: Log group key '$periodKey' not found in initialized periods.",
             );
+          }
         }
       });
 

@@ -13,7 +13,7 @@ import '../../../shared/analytics/firebase_analytics_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
-  const EditProfileScreen({Key? key}) : super(key: key);
+  const EditProfileScreen({super.key});
 
   @override
   ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -835,7 +835,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 selectedOption: newValue,
                               );
                             });
-                          }).toList(),
+                          }),
                         ],
                       ),
                     ),
@@ -926,7 +926,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 activeColor: AppColors.popTurquoise,
                 dense: true,
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

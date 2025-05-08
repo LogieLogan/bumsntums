@@ -17,8 +17,7 @@ import '../../../shared/components/indicators/loading_indicator.dart';
 class WorkoutProgressChart extends ConsumerStatefulWidget {
   final AnalyticsTimeframe timeframe;
 
-  const WorkoutProgressChart({Key? key, required this.timeframe})
-    : super(key: key);
+  const WorkoutProgressChart({super.key, required this.timeframe});
 
   @override
   ConsumerState<WorkoutProgressChart> createState() =>
@@ -182,9 +181,9 @@ class _WorkoutProgressChartState extends ConsumerState<WorkoutProgressChart>
     final double leftInterval = horizontalInterval;
     double bottomInterval = 1.0;
     if (spots.length > 10) {
-      if (timeframe == AnalyticsTimeframe.weekly)
+      if (timeframe == AnalyticsTimeframe.weekly) {
         bottomInterval = 2.0;
-      else if (timeframe == AnalyticsTimeframe.monthly)
+      } else if (timeframe == AnalyticsTimeframe.monthly)
         bottomInterval = 1.0;
       else if (timeframe == AnalyticsTimeframe.yearly)
         bottomInterval = 2.0;
@@ -244,10 +243,11 @@ class _WorkoutProgressChartState extends ConsumerState<WorkoutProgressChart>
                           break;
                       }
                     } catch (e) {
-                      if (kDebugMode)
+                      if (kDebugMode) {
                         print(
                           "Error formatting tooltip label for period: $periodString - $e",
                         );
+                      }
                       periodLabel = periodString;
                     }
                     String valueString;
@@ -382,10 +382,11 @@ class _WorkoutProgressChartState extends ConsumerState<WorkoutProgressChart>
                       break;
                   }
                 } catch (e) {
-                  if (kDebugMode)
+                  if (kDebugMode) {
                     print(
                       "Error formatting bottom title label for period: $periodString - $e",
                     );
+                  }
                   label = '?';
                 }
 

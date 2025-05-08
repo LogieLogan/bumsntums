@@ -7,7 +7,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_text_styles.dart';
 
 class AchievementsScreen extends ConsumerWidget {
-  const AchievementsScreen({Key? key}) : super(key: key);
+  const AchievementsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

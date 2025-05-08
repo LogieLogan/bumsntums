@@ -35,7 +35,7 @@ final userAchievementsProvider = FutureProvider.autoDispose<
       );
     }
     return achievements;
-  } catch (e, stackTrace) {
+  } catch (e) {
     if (kDebugMode) {
       print(
         "userAchievementsProvider: Error fetching achievements for user $userId: $e",

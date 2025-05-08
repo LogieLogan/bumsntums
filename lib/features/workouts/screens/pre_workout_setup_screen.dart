@@ -16,11 +16,11 @@ class PreWorkoutSetupScreen extends ConsumerStatefulWidget {
   final String? originScheduledWorkoutId;
 
   const PreWorkoutSetupScreen({
-    Key? key,
+    super.key,
     required this.workout,
     this.originPlanId, // Make optional
     this.originScheduledWorkoutId, // Make optional
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<PreWorkoutSetupScreen> createState() =>

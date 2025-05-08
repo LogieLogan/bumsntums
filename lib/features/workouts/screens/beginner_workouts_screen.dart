@@ -12,7 +12,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_text_styles.dart';
 
 class BeginnerWorkoutsScreen extends ConsumerStatefulWidget {
-  const BeginnerWorkoutsScreen({Key? key}) : super(key: key);
+  const BeginnerWorkoutsScreen({super.key});
 
   @override
   ConsumerState<BeginnerWorkoutsScreen> createState() => _BeginnerWorkoutsScreenState();

@@ -18,8 +18,7 @@ import '../../../shared/analytics/firebase_analytics_service.dart';
 class WorkoutAnalyticsScreen extends ConsumerStatefulWidget {
   final String userId;
 
-  const WorkoutAnalyticsScreen({Key? key, required this.userId})
-    : super(key: key);
+  const WorkoutAnalyticsScreen({super.key, required this.userId});
 
   @override
   ConsumerState<WorkoutAnalyticsScreen> createState() =>

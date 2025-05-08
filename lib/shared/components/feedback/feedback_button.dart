@@ -11,10 +11,10 @@ class FeedbackButton extends ConsumerWidget {
   final String currentScreen;
 
   const FeedbackButton({
-    Key? key,
+    super.key,
     required this.userId,
     required this.currentScreen,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,10 +40,10 @@ class FeedbackDialog extends ConsumerStatefulWidget {
   final String currentScreen;
 
   const FeedbackDialog({
-    Key? key,
+    super.key,
     required this.userId,
     required this.currentScreen,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<FeedbackDialog> createState() => _FeedbackDialogState();

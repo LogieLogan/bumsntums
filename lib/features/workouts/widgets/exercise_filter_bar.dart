@@ -9,12 +9,12 @@ class ExerciseFilterBar extends StatelessWidget {
   final Function(String) onSelected;
 
   const ExerciseFilterBar({
-    Key? key,
+    super.key,
     required this.title,
     required this.options,
     this.selectedOption,
     required this.onSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

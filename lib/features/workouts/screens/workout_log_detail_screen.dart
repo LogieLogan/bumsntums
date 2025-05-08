@@ -11,10 +11,10 @@ class WorkoutLogDetailScreen extends StatelessWidget {
   final Workout? workoutContext; // Optional: For displaying title/description
 
   const WorkoutLogDetailScreen({
-    Key? key,
+    super.key,
     required this.workoutLog,
     this.workoutContext, // Make context optional
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

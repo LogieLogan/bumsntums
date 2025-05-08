@@ -9,8 +9,7 @@ import '../../workouts/models/workout.dart';
 class GeneratingStep extends StatefulWidget {
   final WorkoutCategory selectedCategory;
 
-  const GeneratingStep({Key? key, required this.selectedCategory})
-    : super(key: key);
+  const GeneratingStep({super.key, required this.selectedCategory});
 
   @override
   State<GeneratingStep> createState() => _GeneratingStepState();

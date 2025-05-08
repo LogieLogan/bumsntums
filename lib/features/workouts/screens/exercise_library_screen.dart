@@ -9,7 +9,7 @@ import '../widgets/exercise_filter_bar.dart';
 import 'package:go_router/go_router.dart';
 
 class ExerciseLibraryScreen extends ConsumerStatefulWidget {
-  const ExerciseLibraryScreen({Key? key}) : super(key: key);
+  const ExerciseLibraryScreen({super.key});
 
   @override
   ConsumerState<ExerciseLibraryScreen> createState() =>

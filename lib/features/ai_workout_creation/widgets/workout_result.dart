@@ -15,10 +15,10 @@ class WorkoutResult extends ConsumerWidget {
   final VoidCallback onStartRefinement;
 
   const WorkoutResult({
-    Key? key,
+    super.key,
     required this.workoutData,
     required this.onStartRefinement,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

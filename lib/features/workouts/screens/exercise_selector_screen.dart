@@ -10,7 +10,7 @@ import '../providers/exercise_selector_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 
 class ExerciseSelectorScreen extends ConsumerStatefulWidget {
-  const ExerciseSelectorScreen({Key? key}) : super(key: key);
+  const ExerciseSelectorScreen({super.key});
 
   @override
   ConsumerState<ExerciseSelectorScreen> createState() =>
@@ -25,7 +25,7 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
   String? _selectedEquipment;
   late TabController _tabController;
 
-  List<String> _targetAreas = [
+  final List<String> _targetAreas = [
     'All',
     'Bums',
     'Tums',
@@ -37,7 +37,7 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
     'Full Body',
   ];
 
-  List<String> _difficulties = [
+  final List<String> _difficulties = [
     'All Difficulties',
     'Very Easy (1)',
     'Easy (2)',
@@ -46,7 +46,7 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
     'Very Hard (5)',
   ];
 
-  List<String> _equipmentOptions = [
+  final List<String> _equipmentOptions = [
     'All Equipment',
     'None',
     'Dumbbell',
@@ -246,9 +246,7 @@ class _ExerciseSelectorScreenState extends ConsumerState<ExerciseSelectorScreen>
                     ref
                         .read(exerciseSelectorProvider.notifier)
                         .filterByDifficultyLevel(
-                          _selectedDifficulty == null
-                              ? null
-                              : _selectedDifficulty,
+                          _selectedDifficulty,
                         );
                   },
                 ),

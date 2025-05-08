@@ -10,14 +10,14 @@ class EquipmentAndTagsSection extends StatelessWidget {
   final Function(String) onRemoveTag;
 
   const EquipmentAndTagsSection({
-    Key? key,
+    super.key,
     required this.equipment,
     required this.tags,
     required this.onAddEquipment,
     required this.onRemoveEquipment,
     required this.onAddTag,
     required this.onRemoveTag,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

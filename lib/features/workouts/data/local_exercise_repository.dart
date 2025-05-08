@@ -208,8 +208,9 @@ class LocalExerciseRepository implements ExerciseRepository {
       if (e.id == exercise.id) return false;
       
       // Check for same target area (case-insensitive)
-      if (e.targetArea.toLowerCase() != exercise.targetArea.toLowerCase()) 
+      if (e.targetArea.toLowerCase() != exercise.targetArea.toLowerCase()) {
         return false;
+      }
       
       // Check for at least one common target muscle
       final hasCommonMuscle = e.targetMuscles.any(
@@ -229,8 +230,9 @@ class LocalExerciseRepository implements ExerciseRepository {
     // Fallback: find exercises with same target area only
     final fallbackMatches = _exercises.where((e) {
       // Skip the original exercise and already matched exercises
-      if (e.id == exercise.id || primaryMatches.any((m) => m.id == e.id)) 
+      if (e.id == exercise.id || primaryMatches.any((m) => m.id == e.id)) {
         return false;
+      }
       
       // Match by target area only (case-insensitive)
       return e.targetArea.toLowerCase() == exercise.targetArea.toLowerCase();

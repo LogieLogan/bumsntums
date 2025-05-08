@@ -13,14 +13,14 @@ class RestTimer extends StatefulWidget {
   final VoidCallback onReduceTime;
 
   const RestTimer({
-    Key? key,
+    super.key,
     required this.durationSeconds,
     required this.isPaused,
     required this.nextExerciseName,
     required this.onComplete,
     required this.onAddTime,
     required this.onReduceTime,
-  }) : super(key: key);
+  });
 
   @override
   State<RestTimer> createState() => _RestTimerState();

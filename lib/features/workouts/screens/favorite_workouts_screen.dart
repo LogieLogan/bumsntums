@@ -13,7 +13,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_text_styles.dart';
 
 class FavoriteWorkoutsScreen extends ConsumerStatefulWidget {
-  const FavoriteWorkoutsScreen({Key? key}) : super(key: key);
+  const FavoriteWorkoutsScreen({super.key});
 
   @override
   ConsumerState<FavoriteWorkoutsScreen> createState() => _FavoriteWorkoutsScreenState();

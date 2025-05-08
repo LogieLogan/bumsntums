@@ -212,7 +212,7 @@ class WorkoutGenerationNotifier extends StateNotifier<WorkoutGenerationState> {
           'ai_service': _aiService.runtimeType.toString(),
         },
       );
-    } catch (e, stackTrace) {
+    } catch (e) {
       final errorMessage = 'Workout generation failed: ${e.toString()}';
       state = state.copyWith(isLoading: false, error: errorMessage);
       _analytics.logError(
@@ -295,7 +295,7 @@ class WorkoutGenerationNotifier extends StateNotifier<WorkoutGenerationState> {
           'ai_service': _aiService.runtimeType.toString(),
         },
       );
-    } catch (e, stackTrace) {
+    } catch (e) {
       final errorMessage = 'Workout refinement failed: ${e.toString()}';
       // Revert to the previous state on failure
       state = state.copyWith(
@@ -352,7 +352,7 @@ class WorkoutGenerationNotifier extends StateNotifier<WorkoutGenerationState> {
   int _countExercises(Map<String, dynamic>? workoutData) {
     if (workoutData == null ||
         workoutData['sections'] == null ||
-        !(workoutData['sections'] is List)) {
+        workoutData['sections'] is! List) {
       return 0;
     }
     int count = 0;

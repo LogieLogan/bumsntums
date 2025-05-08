@@ -23,11 +23,11 @@ class WorkoutSchedulingScreen extends ConsumerStatefulWidget {
   final bool isLoggingMode;
 
   const WorkoutSchedulingScreen({
-    Key? key,
+    super.key,
     required this.userId,
     required this.scheduledDate,
     this.isLoggingMode = false,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<WorkoutSchedulingScreen> createState() =>
@@ -617,8 +617,9 @@ class _WorkoutSchedulingScreenState
   }
 
   Future<void> _saveAndMaybeComplete(BuildContext context) async {
-    if (_selectedWorkoutId == null || _selectedTimeOption == null || _isSaving)
+    if (_selectedWorkoutId == null || _selectedTimeOption == null || _isSaving) {
       return;
+    }
 
     setState(() {
       _isSaving = true;

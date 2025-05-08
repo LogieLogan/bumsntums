@@ -9,10 +9,10 @@ class PeriodSelector extends StatelessWidget {
   final Function(AnalyticsTimeframe) onPeriodChanged;
 
   const PeriodSelector({
-    Key? key,
+    super.key,
     required this.selectedPeriod,
     required this.onPeriodChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

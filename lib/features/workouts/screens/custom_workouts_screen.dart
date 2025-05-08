@@ -31,8 +31,7 @@ final customWorkoutsStreamProvider = StreamProvider.autoDispose
 class CustomWorkoutsScreen extends ConsumerStatefulWidget {
   final String userId;
 
-  const CustomWorkoutsScreen({Key? key, required this.userId})
-    : super(key: key);
+  const CustomWorkoutsScreen({super.key, required this.userId});
 
   @override
   ConsumerState<CustomWorkoutsScreen> createState() =>

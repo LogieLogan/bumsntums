@@ -10,9 +10,9 @@ class WelcomeCard extends ConsumerWidget {
   final UserProfile profile;
 
   const WelcomeCard({
-    Key? key,
+    super.key,
     required this.profile,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

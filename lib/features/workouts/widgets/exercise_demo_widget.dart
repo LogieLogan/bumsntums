@@ -186,7 +186,7 @@ class _ExerciseDemoWidgetState extends State<ExerciseDemoWidget> {
         widget.exercise.imagePath != null &&
         widget.exercise.imagePath!.isNotEmpty;
 
-    return Container(
+    return SizedBox(
       height: widget.height,
       width: widget.width,
       child: LayoutBuilder(

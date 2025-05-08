@@ -9,7 +9,7 @@ import '../../../shared/components/indicators/loading_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class WorkoutHistoryScreen extends ConsumerWidget {
-  const WorkoutHistoryScreen({Key? key}) : super(key: key);
+  const WorkoutHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

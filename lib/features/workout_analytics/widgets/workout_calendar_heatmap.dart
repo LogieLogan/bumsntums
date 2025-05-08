@@ -15,10 +15,10 @@ class WorkoutCalendarHeatmap extends ConsumerStatefulWidget {
   final int daysToFetch;
 
   const WorkoutCalendarHeatmap({
-    Key? key,
+    super.key,
     this.months = 3, // Show 3 months by default
     this.daysToFetch = 90, // Fetch 90 days for 3 months
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<WorkoutCalendarHeatmap> createState() =>

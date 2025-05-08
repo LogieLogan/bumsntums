@@ -7,8 +7,7 @@ import 'package:fl_chart/fl_chart.dart';
 class BodyFocusChart extends StatefulWidget {
   final Map<String, int> workoutsByCategory;
 
-  const BodyFocusChart({Key? key, required this.workoutsByCategory})
-    : super(key: key);
+  const BodyFocusChart({super.key, required this.workoutsByCategory});
 
   @override
   State<BodyFocusChart> createState() => _BodyFocusChartState();

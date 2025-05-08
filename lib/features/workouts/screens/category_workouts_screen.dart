@@ -14,8 +14,7 @@ import '../../../shared/theme/app_text_styles.dart';
 class CategoryWorkoutsScreen extends ConsumerStatefulWidget {
   final WorkoutCategory category;
 
-  const CategoryWorkoutsScreen({Key? key, required this.category})
-    : super(key: key);
+  const CategoryWorkoutsScreen({super.key, required this.category});
 
   @override
   ConsumerState<CategoryWorkoutsScreen> createState() =>

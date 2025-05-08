@@ -158,6 +158,6 @@ class PersonalitySettings extends Equatable {
         break;
     }
     
-    return modifiers.join(". ") + ".";
+    return "${modifiers.join(". ")}.";
   }
 }

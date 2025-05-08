@@ -19,7 +19,7 @@ class ParameterSummarySheet extends StatelessWidget {
   final String continueButtonText;
 
   const ParameterSummarySheet({
-    Key? key,
+    super.key,
     this.selectedCategory,
     this.selectedDuration,
     this.selectedEquipment = const [],
@@ -29,7 +29,7 @@ class ParameterSummarySheet extends StatelessWidget {
     this.showBackButton = true,
     this.showContinueButton = true,
     this.continueButtonText = 'Continue',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

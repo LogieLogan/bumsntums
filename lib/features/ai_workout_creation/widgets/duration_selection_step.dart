@@ -13,12 +13,12 @@ class DurationSelectionStep extends StatelessWidget {
   final VoidCallback onBack;
 
   const DurationSelectionStep({
-    Key? key,
+    super.key,
     required this.selectedDuration,
     required this.selectedCategory,
     required this.onDurationSelected,
     required this.onBack,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {

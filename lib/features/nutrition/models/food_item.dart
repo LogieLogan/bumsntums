@@ -215,8 +215,9 @@ class FoodItem {
             final double? value = double.tryParse(quantityMatch.group(1)!);
             final String unit = quantityMatch.group(2)!.toLowerCase();
             if (value != null) {
-                if (unit == 'g') packageWeightG = value;
-                else if (unit == 'kg') packageWeightG = value * 1000;
+                if (unit == 'g') {
+                  packageWeightG = value;
+                } else if (unit == 'kg') packageWeightG = value * 1000;
                 else if (unit == 'ml') packageVolumeMl = value;
                 else if (unit == 'l') packageVolumeMl = value * 1000;
                 else if (unit == 'cl') packageVolumeMl = value * 10;

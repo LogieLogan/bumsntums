@@ -11,12 +11,12 @@ class ScheduledWorkoutItem extends StatelessWidget {
   final VoidCallback onComplete;
 
   const ScheduledWorkoutItem({
-    Key? key,
+    super.key,
     required this.scheduledWorkout,
     required this.onTap,
     required this.onDelete,
     required this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

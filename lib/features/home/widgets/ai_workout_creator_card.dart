@@ -5,7 +5,7 @@ import '../../../shared/theme/app_text_styles.dart';
 import '../../ai_workout_creation/screens/ai_workout_screen.dart';
 
 class AIWorkoutCreatorCard extends StatelessWidget {
-  const AIWorkoutCreatorCard({Key? key}) : super(key: key);
+  const AIWorkoutCreatorCard({super.key});
 
   @override
   Widget build(BuildContext context) {

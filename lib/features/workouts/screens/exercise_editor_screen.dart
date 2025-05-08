@@ -10,10 +10,10 @@ class ExerciseEditorScreen extends ConsumerStatefulWidget {
   final bool isNewExercise;
 
   const ExerciseEditorScreen({
-    Key? key,
+    super.key,
     this.exercise,
     this.isNewExercise = false,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<ExerciseEditorScreen> createState() => _ExerciseEditorScreenState();
