@@ -30,7 +30,6 @@ class ConfigureLogEntryScreen extends ConsumerStatefulWidget {
 
 class _ConfigureLogEntryScreenState
     extends ConsumerState<ConfigureLogEntryScreen> {
-  // ... (other state variables) ...
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _quantityController;
   late TextEditingController _weightPerCustomUnitController;
@@ -41,6 +40,12 @@ class _ConfigureLogEntryScreenState
   CalculatedNutrition _calculatedNutrition = const CalculatedNutrition();
   bool _isLoading = false;
 
+  List<DropdownMenuItem<String>> _unitDropdownItems = [];
+
+  double? _knownWeightOrVolumeForApiServingUnit;
+  String? _apiServingUnitDescriptionForDisplay;
+  bool _apiProvidedWeightForSelectedApiUnit = false;
+
   final List<String> _countableUnits = [
     'serving',
     'piece',
@@ -50,23 +55,13 @@ class _ConfigureLogEntryScreenState
     'tsp',
   ];
 
-  // --- Initialize _unitDropdownItems ---
-  List<DropdownMenuItem<String>> _unitDropdownItems = [];
-  // --- End Initialization ---
-
-  double? _knownWeightOrVolumeForApiServingUnit;
-  String? _apiServingUnitDescriptionForDisplay;
-  bool _apiProvidedWeightForSelectedApiUnit = false;
-
   bool get _isEditing => widget.existingEntry != null;
   bool get _isCountableUnitSelected =>
       _countableUnits.contains(_selectedServingUnit);
 
-  // ... (rest of the class, including initState which calls _setupInitialServingOptions) ...
   @override
   void initState() {
     super.initState();
-// Initialize _allUnits before _setup...
     final entry = widget.existingEntry;
     final food = widget.foodItem;
 
@@ -82,130 +77,106 @@ class _ConfigureLogEntryScreenState
     );
     _weightPerCustomUnitController = TextEditingController();
 
-    _setupInitialServingOptions(
-      food,
-      entry,
-    ); // This populates _unitDropdownItems
+    _knownWeightOrVolumeForApiServingUnit =
+        food.apiServingWeightGrams ?? food.apiServingVolumeMl;
+    _apiServingUnitDescriptionForDisplay = food.apiServingUnitDescription;
+    _apiProvidedWeightForSelectedApiUnit =
+        _apiServingUnitDescriptionForDisplay != null &&
+        _apiServingUnitDescriptionForDisplay!.isNotEmpty &&
+        _knownWeightOrVolumeForApiServingUnit != null &&
+        _knownWeightOrVolumeForApiServingUnit! > 0;
 
-    _quantityController.addListener(_updateCalculatedNutrition);
-    _weightPerCustomUnitController.addListener(_updateCalculatedNutrition);
+    _setupInitialServingOptionsAndState(food, entry);
+
+    _quantityController.addListener(_handleInputsChanged);
+    _weightPerCustomUnitController.addListener(_handleInputsChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _updateCalculatedNutrition();
     });
   }
 
-  void _setupInitialServingOptions(FoodItem food, FoodLogEntry? entry) {
-    List<String> availableUnits = ['g', 'ml'];
+  void _setupInitialServingOptionsAndState(FoodItem food, FoodLogEntry? entry) {
+    List<String> availableUnits = ['g'];
+    if (food.nutritionInfo?.calories != null) {
+      if (food.apiPackageQuantityString?.toLowerCase().contains('ml') == true ||
+          food.apiPackageQuantityString?.toLowerCase().contains('l') == true) {
+        if (!availableUnits.contains('ml')) availableUnits.add('ml');
+      }
+    }
 
-    _knownWeightOrVolumeForApiServingUnit =
-        food.apiServingWeightGrams ?? food.apiServingVolumeMl;
-    _apiServingUnitDescriptionForDisplay = food.apiServingUnitDescription;
-
-    if (_apiServingUnitDescriptionForDisplay != null &&
-        _apiServingUnitDescriptionForDisplay!.isNotEmpty &&
-        _knownWeightOrVolumeForApiServingUnit != null) {
+    if (_apiProvidedWeightForSelectedApiUnit) {
       if (!availableUnits.contains(_apiServingUnitDescriptionForDisplay!)) {
         availableUnits.add(_apiServingUnitDescriptionForDisplay!);
       }
-      _apiProvidedWeightForSelectedApiUnit = true;
+
       if (entry == null) {
         _selectedServingUnit = _apiServingUnitDescriptionForDisplay!;
         _quantityController.text = '1';
       }
     } else if (food.nutritionInfo != null) {
-      _apiProvidedWeightForSelectedApiUnit = false;
       if (entry == null) {
-        _selectedServingUnit = 'g';
+        _selectedServingUnit = availableUnits.contains('ml') ? 'ml' : 'g';
         _quantityController.text = '100';
       }
     } else {
-      _apiProvidedWeightForSelectedApiUnit = false;
       if (entry == null) {
-        // Check if _isCountableUnitSelected is safe to call here, depends on _selectedServingUnit which might not be set by user yet
-        // Safer to just default to 'g' if no other info.
-        _selectedServingUnit = 'g'; // Default to 'g' if no info
+        _selectedServingUnit = 'g';
         _quantityController.text = '1';
       }
     }
 
     if (entry != null) {
       _selectedServingUnit = entry.servingUnit;
+
       _selectedMealType = entry.mealType;
       _selectedLogTime = entry.loggedAt;
-      if (entry.servingUnit == _apiServingUnitDescriptionForDisplay &&
-          _knownWeightOrVolumeForApiServingUnit != null) {
-        _apiProvidedWeightForSelectedApiUnit = true;
-      } else if (_countableUnits.contains(entry.servingUnit)) {
-        // Use _countableUnits directly
-        _apiProvidedWeightForSelectedApiUnit = false;
-      }
     }
 
-    // Ensure _selectedServingUnit from entry is in availableUnits, if not, default and adjust.
-    // This needs to be done carefully to avoid recursive calls if _updateCalculatedNutrition is triggered by setState.
-    List<String> finalAvailableUnits =
-        availableUnits.toSet().toList(); // Default available units
-
-    if (_apiServingUnitDescriptionForDisplay != null &&
-        _apiServingUnitDescriptionForDisplay!.isNotEmpty) {
-      if (!finalAvailableUnits.contains(
-        _apiServingUnitDescriptionForDisplay!,
-      )) {
-        finalAvailableUnits.add(_apiServingUnitDescriptionForDisplay!);
-      }
-    }
-    // Add all default countable units to ensure they are always options,
-    // the logic for showing weight input handles whether they are "smart" or require user input.
     for (String unit in _countableUnits) {
-      if (!finalAvailableUnits.contains(unit)) {
-        finalAvailableUnits.add(unit);
+      if (!availableUnits.contains(unit)) {
+        availableUnits.add(unit);
       }
     }
+    availableUnits = availableUnits.toSet().toList();
 
-    if (!finalAvailableUnits.contains(_selectedServingUnit)) {
-      _selectedServingUnit = 'g'; // Fallback to 'g'
+    if (!availableUnits.contains(_selectedServingUnit)) {
+      _selectedServingUnit = 'g';
       if (entry == null) {
         _quantityController.text =
             widget.foodItem.nutritionInfo != null ? '100' : '1';
       }
     }
 
-    // setState for _unitDropdownItems should happen here, after all logic.
-    // And ensure it doesn't trigger an infinite loop with listeners.
-    // The direct assignment in initState should be fine.
     _unitDropdownItems =
-        finalAvailableUnits.map((String unit) {
+        availableUnits.map((String unit) {
           return DropdownMenuItem<String>(value: unit, child: Text(unit));
         }).toList();
   }
 
   bool get _showWeightPerCustomUnitInput {
-    if (_selectedServingUnit == 'g' ||
-        _selectedServingUnit == 'ml' ||
-        _selectedServingUnit == 'oz') {
+    final unitLower = _selectedServingUnit.toLowerCase();
+    if (unitLower == 'g' || unitLower == 'ml' || unitLower == 'oz')
       return false;
-    }
 
-    // If the selected unit IS the API's defined unit (e.g., "piece")
-    if (_selectedServingUnit == _apiServingUnitDescriptionForDisplay) {
-      // Show input only if we DON'T have a known weight for this API unit
+    if (unitLower == _apiServingUnitDescriptionForDisplay?.toLowerCase()) {
       return !_apiProvidedWeightForSelectedApiUnit;
     }
-    // For any other countable unit (not 'g'/'ml' and not the API's known one)
-    return _isCountableUnitSelected; // True if it's in _countableUnits
+
+    return _isCountableUnitSelected;
   }
 
-  // ... (Rest of the class: dispose, _updateCalculatedNutrition, _logEntry, _selectLogTime, build, _buildCalculatedMacro) ...
   @override
   void dispose() {
-    _quantityController.removeListener(
-      _updateCalculatedNutrition,
-    ); // Ensure listeners are removed
-    _weightPerCustomUnitController.removeListener(_updateCalculatedNutrition);
+    _quantityController.removeListener(_handleInputsChanged);
+    _weightPerCustomUnitController.removeListener(_handleInputsChanged);
     _quantityController.dispose();
     _weightPerCustomUnitController.dispose();
     super.dispose();
+  }
+
+  void _handleInputsChanged() {
+    _updateCalculatedNutrition();
   }
 
   void _updateCalculatedNutrition() {
@@ -216,29 +187,22 @@ class _ConfigureLogEntryScreenState
             : null;
 
     final calculator = ref.read(nutritionCalculatorServiceProvider);
+
+    _apiProvidedWeightForSelectedApiUnit =
+        _selectedServingUnit == _apiServingUnitDescriptionForDisplay &&
+        _knownWeightOrVolumeForApiServingUnit != null &&
+        _knownWeightOrVolumeForApiServingUnit! > 0;
+
     final results = calculator.calculateNutrition(
       baseNutrition: widget.foodItem.nutritionInfo,
       servingSize: quantity,
       servingUnit: _selectedServingUnit,
-      servingSizeStringFromApi: widget.foodItem.apiServingSizeString,
       userDefinedWeightPerServing: userDefinedWeight,
-      knownWeightOfApiServingUnit:
-          (_selectedServingUnit == _apiServingUnitDescriptionForDisplay)
-              ? _knownWeightOrVolumeForApiServingUnit
-              : null,
+      knownWeightOfApiServingUnit: _knownWeightOrVolumeForApiServingUnit,
+      apiServingUnitDescription: _apiServingUnitDescriptionForDisplay,
     );
 
-    // Update _apiProvidedWeightForSelectedApiUnit based on current _selectedServingUnit
-    if (_selectedServingUnit == widget.foodItem.apiServingUnitDescription) {
-      _apiProvidedWeightForSelectedApiUnit =
-          (widget.foodItem.apiServingWeightGrams != null ||
-              widget.foodItem.apiServingVolumeMl != null);
-    } else {
-      _apiProvidedWeightForSelectedApiUnit = false;
-    }
-
     if (mounted) {
-      // Check if widget is still in the tree
       setState(() {
         _calculatedNutrition = results;
       });
@@ -276,7 +240,8 @@ class _ConfigureLogEntryScreenState
       finalServingSize = finalServingSize * userEnteredWeightPerCustomUnit;
       finalServingUnit = 'g';
     } else if (_selectedServingUnit == _apiServingUnitDescriptionForDisplay &&
-        _knownWeightOrVolumeForApiServingUnit != null) {
+        _knownWeightOrVolumeForApiServingUnit != null &&
+        _knownWeightOrVolumeForApiServingUnit! > 0) {
       finalServingSize =
           finalServingSize * _knownWeightOrVolumeForApiServingUnit!;
       finalServingUnit =
@@ -381,17 +346,35 @@ class _ConfigureLogEntryScreenState
             : '--';
 
     String quantityLabel = 'Quantity';
-    if (_selectedServingUnit == 'g' || _selectedServingUnit == 'ml') {
-      quantityLabel =
-          _selectedServingUnit == 'g' ? 'Grams (g)' : 'Milliliters (ml)';
-    } else if (_selectedServingUnit == _apiServingUnitDescriptionForDisplay &&
-        _knownWeightOrVolumeForApiServingUnit != null) {
-      quantityLabel = 'Number of ${_apiServingUnitDescriptionForDisplay}s';
-    } else if (_isCountableUnitSelected) {
+    if (_selectedServingUnit == 'g')
+      quantityLabel = 'Grams (g)';
+    else if (_selectedServingUnit == 'ml')
+      quantityLabel = 'Milliliters (ml)';
+    else if (_selectedServingUnit == 'oz')
+      quantityLabel = 'Ounces (oz)';
+    else if (_isCountableUnitSelected)
       quantityLabel = 'Number of ${_selectedServingUnit}s';
+
+    bool showApproximationNote =
+        _calculatedNutrition.isApproximation ||
+        (_showWeightPerCustomUnitInput &&
+            (double.tryParse(_weightPerCustomUnitController.text) ?? 0.0) <=
+                0 &&
+            _calculatedNutrition.calories <= 0 &&
+            widget.foodItem.nutritionInfo != null);
+    String approximationText =
+        'Could not calculate accurately for "$_selectedServingUnit".';
+    if (_showWeightPerCustomUnitInput &&
+        (double.tryParse(_weightPerCustomUnitController.text) ?? 0.0) <= 0) {
+      approximationText =
+          'Enter weight per "$_selectedServingUnit" above for accurate calculation.';
+    } else if (_calculatedNutrition.isApproximation) {
+      approximationText =
+          'Calculation for "$_selectedServingUnit" is approximate.';
     }
 
     return Scaffold(
+      /* ... (AppBar remains the same) ... */
       appBar: AppBar(
         title: Text(
           _isEditing ? 'Edit Log Entry' : 'Log ${widget.foodItem.name}',
@@ -430,6 +413,7 @@ class _ConfigureLogEntryScreenState
                     ),
                   ),
                 ),
+
               const SizedBox(height: 16),
               Text('Amount Eaten', style: AppTextStyles.h3),
               const SizedBox(height: 8),
@@ -455,9 +439,8 @@ class _ConfigureLogEntryScreenState
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Required';
                         if (double.tryParse(value) == null ||
-                            double.parse(value) <= 0) {
+                            double.parse(value) <= 0)
                           return 'Invalid number';
-                        }
                         return null;
                       },
                     ),
@@ -467,11 +450,14 @@ class _ConfigureLogEntryScreenState
                     flex: _unitDropdownItems.length > 2 ? 3 : 2,
                     child: DropdownButtonFormField<String>(
                       value: _selectedServingUnit,
-                      items: _unitDropdownItems, // Use the initialized list
+                      items: _unitDropdownItems,
                       onChanged: (String? newValue) {
                         if (newValue != null) {
                           setState(() {
                             _selectedServingUnit = newValue;
+                            if (!_showWeightPerCustomUnitInput) {
+                              _weightPerCustomUnitController.clear();
+                            }
                           });
                           _updateCalculatedNutrition();
                         }
@@ -484,25 +470,44 @@ class _ConfigureLogEntryScreenState
                   ),
                 ],
               ),
-              if (_showWeightPerCustomUnitInput)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: TextFormField(
-                    controller: _weightPerCustomUnitController,
-                    decoration: InputDecoration(
-                      labelText: 'Weight per $_selectedServingUnit (g)',
-                      hintText: 'e.g., 30 if 1 $_selectedServingUnit is 30g',
-                      border: const OutlineInputBorder(),
-                      suffixText: 'g',
-                    ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                    ],
-                  ),
-                ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child:
+                    _showWeightPerCustomUnitInput
+                        ? Padding(
+                          padding: const EdgeInsets.only(top: 16.0),
+                          child: TextFormField(
+                            controller: _weightPerCustomUnitController,
+                            decoration: InputDecoration(
+                              labelText: 'Weight per $_selectedServingUnit (g)',
+                              hintText:
+                                  'e.g., 30 if 1 $_selectedServingUnit is 30g',
+                              border: const OutlineInputBorder(),
+                              suffixText: 'g',
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d*\.?\d*'),
+                              ),
+                            ],
+                            validator: (value) {
+                              if (value != null &&
+                                  value.isNotEmpty &&
+                                  (double.tryParse(value) == null ||
+                                      double.parse(value) <= 0)) {
+                                return 'Invalid weight';
+                              }
+                              return null;
+                            },
+                          ),
+                        )
+                        : const SizedBox.shrink(),
+              ),
+
               const SizedBox(height: 20),
               Text('Meal', style: AppTextStyles.h3),
               const SizedBox(height: 8),
@@ -562,36 +567,13 @@ class _ConfigureLogEntryScreenState
               const SizedBox(height: 16),
               Text('Calculated Nutrition', style: AppTextStyles.h3),
               const SizedBox(height: 4),
-              if (_showWeightPerCustomUnitInput &&
-                  (double.tryParse(_weightPerCustomUnitController.text) ??
-                          0.0) <=
-                      0 &&
-                  _calculatedNutrition.calories <= 0 &&
-                  widget.foodItem.nutritionInfo != null)
+              if (showApproximationNote)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Text(
-                    'Enter weight per "$_selectedServingUnit" above for accurate calculation, or calculations will be based on 100g/ml.',
+                    approximationText,
                     style: AppTextStyles.caption.copyWith(
                       color: Colors.orange.shade800,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                )
-              else if (_calculatedNutrition.calories <= 0 &&
-                  widget.foodItem.nutritionInfo != null &&
-                  !_showWeightPerCustomUnitInput &&
-                  ![
-                    'g',
-                    'ml',
-                    'oz',
-                  ].contains(_selectedServingUnit)) // Refined condition
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    'Could not calculate for "$_selectedServingUnit". Define weight or use g/ml.',
-                    style: AppTextStyles.caption.copyWith(
-                      color: Colors.red.shade800,
                       fontStyle: FontStyle.italic,
                     ),
                   ),

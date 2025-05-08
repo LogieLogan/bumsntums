@@ -1,99 +1,128 @@
 // lib/features/nutrition/services/nutrition_calculator_service.dart
-// ... (imports and CalculatedNutrition class) ...
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/food_item.dart';
+import '../models/food_item.dart'; // Import FoodItem for NutritionInfo access
 
+// CalculatedNutrition class remains the same
 class CalculatedNutrition {
   final double calories;
   final double protein;
   final double carbs;
   final double fat;
+  final bool isApproximation;
 
   const CalculatedNutrition({
     this.calories = 0.0,
     this.protein = 0.0,
     this.carbs = 0.0,
     this.fat = 0.0,
+    this.isApproximation = false, // Default to precise unless fallback is used
   });
 }
 
-
 class NutritionCalculatorService {
   static const double _baseAmount = 100.0;
+  static const double _gramsPerOunce = 28.3495;
 
   CalculatedNutrition calculateNutrition({
     required NutritionInfo? baseNutrition,
-    required double servingSize, // The 'count' or 'amount' entered by user
-    required String servingUnit,  // The unit selected by user
-    String? servingSizeStringFromApi, // Raw string like "1 piece (30g)"
-    double? userDefinedWeightPerServing, // User input e.g., 30 (for 30g per piece)
-    double? knownWeightOfApiServingUnit, // Pre-parsed weight of API's unit (e.g., 30 if apiServingUnitDescription is "piece" and it's 30g)
+    required double servingSize,
+    required String servingUnit,
+    double? userDefinedWeightPerServing,
+    // Correct parameter names:
+    double? knownWeightOfApiServingUnit,
+    String? apiServingUnitDescription,
   }) {
-    if (baseNutrition == null) { /* ... */ return const CalculatedNutrition(); }
-    if (servingSize <= 0) { /* ... */ return const CalculatedNutrition(); }
+    if (baseNutrition == null) {
+      /* ... */
+      return const CalculatedNutrition(isApproximation: true);
+    }
+    if (servingSize <= 0) {
+      /* ... */
+      return const CalculatedNutrition();
+    }
 
     double calculationFactor = 0.0;
-    final unitLower = servingUnit.toLowerCase();
+    final String unitLower = servingUnit.toLowerCase();
+    bool isApprox = false; // isApproximation flag for the result
 
-    if (unitLower == 'g' || unitLower == 'ml') {
-      calculationFactor = servingSize / _baseAmount;
-    } else if (userDefinedWeightPerServing != null && userDefinedWeightPerServing > 0) {
-      // Highest priority: User explicitly defined weight for the selected countable unit
-      calculationFactor = (userDefinedWeightPerServing / _baseAmount) * servingSize;
-      if (kDebugMode) { print("NutritionCalculator: Using user-defined weight ($userDefinedWeightPerServing g/ml) for '$servingUnit'. Quantity: $servingSize. Factor: $calculationFactor");}
-    } else if (knownWeightOfApiServingUnit != null && knownWeightOfApiServingUnit > 0) {
-      // Next priority: The selected unit is the API's defined unit, and we know its weight
-      calculationFactor = (knownWeightOfApiServingUnit / _baseAmount) * servingSize;
-       if (kDebugMode) { print("NutritionCalculator: Using API known weight ($knownWeightOfApiServingUnit g/ml) for '$servingUnit'. Quantity: $servingSize. Factor: $calculationFactor");}
-    } else if (unitLower == 'serving' && servingSizeStringFromApi != null) {
-        // Fallback for generic "serving" if API string has a parsable weight (but not directly tied to knownWeightOfApiServingUnit)
-        final double? weightFromApi = parseWeightFromServingString(servingSizeStringFromApi);
-        if (weightFromApi != null) {
-          calculationFactor = (weightFromApi / _baseAmount) * servingSize;
-           if (kDebugMode) { print("NutritionCalculator: Unit 'serving'. Parsed API weight: $weightFromApi g/ml. Quantity: $servingSize. Factor: $calculationFactor"); }
-        } else {
-           if (kDebugMode) { print("NutritionCalculator: Unit 'serving'. API string '$servingSizeStringFromApi' not parsable. Fallback."); }
-           return _fallbackForUncertainUnits(baseNutrition);
+    try {
+      if (unitLower == 'g' || unitLower == 'ml') {
+        calculationFactor = servingSize / _baseAmount;
+      } else if (unitLower == 'oz') {
+        calculationFactor = ((servingSize * _gramsPerOunce) / _baseAmount);
+      } else {
+        // Handle Countable Units
+        double? weightPerUnit = 0.0;
+
+        if (userDefinedWeightPerServing != null &&
+            userDefinedWeightPerServing > 0) {
+          weightPerUnit = userDefinedWeightPerServing;
+          if (kDebugMode) {
+            print(
+              "[Calc] Using user-defined weight ($weightPerUnit g/ml) for unit '$servingUnit'.",
+            );
+          }
         }
-    } else if (unitLower == 'oz') {
-        const double gramsPerOunce = 28.3495;
-        calculationFactor = ((servingSize * gramsPerOunce) / _baseAmount);
-    } else {
-        // All other countable units without a user-defined or API-defined weight
-        if (kDebugMode) { print("NutritionCalculator: Unit '$servingUnit'. No specific weight known. Fallback."); }
-        return _fallbackForUncertainUnits(baseNutrition);
-    }
+        // --- Corrected Variable Name ---
+        else if (unitLower == apiServingUnitDescription?.toLowerCase() &&
+            knownWeightOfApiServingUnit !=
+                null && // Use the correct parameter name
+            knownWeightOfApiServingUnit > 0) {
+          weightPerUnit =
+              knownWeightOfApiServingUnit; // Use the correct parameter name
+          if (kDebugMode) {
+            print(
+              "[Calc] Using API known weight ($weightPerUnit g/ml) for unit '$servingUnit'.",
+            );
+          }
+        }
+        // --- End Correction ---
 
-    if (calculationFactor > 0) { /* ... (calculate and return) ... */
-      return CalculatedNutrition(
-        calories: (baseNutrition.calories ?? 0.0) * calculationFactor,
-        protein: (baseNutrition.protein ?? 0.0) * calculationFactor,
-        carbs: (baseNutrition.carbs ?? 0.0) * calculationFactor,
-        fat: (baseNutrition.fat ?? 0.0) * calculationFactor,
-      );
-    }
-    return const CalculatedNutrition();
-  }
+        if (weightPerUnit > 0) {
+          calculationFactor = (weightPerUnit / _baseAmount) * servingSize;
+        } else {
+          if (kDebugMode) {
+            print(
+              "[Calc] Fallback: No weight found for unit '$servingUnit'. Cannot calculate accurately.",
+            );
+          }
+          return const CalculatedNutrition(
+            isApproximation: true,
+          ); // Mark as approximation/failure
+        }
+      }
 
-  CalculatedNutrition _fallbackForUncertainUnits(NutritionInfo baseNutrition) {
-     if (kDebugMode) { print("NutritionCalculator: Fallback - Returning zero nutrition for uncertain unit."); }
-    return const CalculatedNutrition();
-  }
-
-  static double? parseWeightFromServingString(String? servingString) { /* ... (no change) ... */
-    if (servingString == null || servingString.isEmpty) { return null; }
-    final regex = RegExp(r'\(?(\d*\.?\d+)\s?(g|ml)\)?');
-    final match = regex.firstMatch(servingString);
-    if (match != null && match.groupCount >= 1) {
-       final valueString = match.group(1);
-       if (valueString != null) { return double.tryParse(valueString); }
+      if (calculationFactor > 0) {
+        return CalculatedNutrition(
+          calories: (baseNutrition.calories ?? 0.0) * calculationFactor,
+          protein: (baseNutrition.protein ?? 0.0) * calculationFactor,
+          carbs: (baseNutrition.carbs ?? 0.0) * calculationFactor,
+          fat: (baseNutrition.fat ?? 0.0) * calculationFactor,
+          isApproximation:
+              isApprox, // isApprox is currently always false here, could be refined
+        );
+      } else {
+        if (kDebugMode) {
+          print(
+            "[Calc] Calculation factor is zero or negative. Returning zeros.",
+          );
+        }
+        return const CalculatedNutrition(isApproximation: true);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("[Calc] Error during calculation: $e");
+      }
+      return const CalculatedNutrition(isApproximation: true);
     }
-    return null;
   }
 }
 
-final nutritionCalculatorServiceProvider = Provider<NutritionCalculatorService>((ref) {
-  return NutritionCalculatorService();
-});
+// Provider remains the same
+final nutritionCalculatorServiceProvider = Provider<NutritionCalculatorService>(
+  (ref) {
+    return NutritionCalculatorService();
+  },
+);
