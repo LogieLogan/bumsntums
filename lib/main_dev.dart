@@ -74,8 +74,9 @@ FutureOr<void> main() async {
     return;
   }
 
-  if (kDebugMode)
+  if (kDebugMode) {
     print("🔒 Initializing Firebase App Check (DEBUG Provider)...");
+  }
   try {
     await FirebaseAppCheck.instance.activate(
       androidProvider: AndroidProvider.debug,
@@ -84,12 +85,14 @@ FutureOr<void> main() async {
     if (kDebugMode) print("✅ Firebase App Check activated (DEBUG mode)");
 
     FirebaseAppCheck.instance.onTokenChange.listen((token) {
-      if (kDebugMode)
+      if (kDebugMode) {
         print("ℹ️ [AppCheck DEV] Token changed: ${token ?? 'null'}");
+      }
     });
     String? initialToken = await FirebaseAppCheck.instance.getToken(true);
-    if (kDebugMode)
+    if (kDebugMode) {
       print("ℹ️ [AppCheck DEV] Initial token: ${initialToken ?? 'null'}");
+    }
   } catch (e, s) {
     if (kDebugMode) {
       print("🔥 Firebase App Check Activation FAILED: $e");
@@ -104,8 +107,9 @@ FutureOr<void> main() async {
     } catch (_) {}
   }
 
-  if (kDebugMode)
+  if (kDebugMode) {
     print("📊 Initializing FirebaseService (Analytics/Crashlytics)...");
+  }
   try {
     final firebaseService = FirebaseService();
     await firebaseService.initialize();
@@ -167,7 +171,8 @@ Future<void> _requestPermissions() async {
         await permissionsToRequest.request();
     if (kDebugMode) print("ℹ️ Permission statuses: $statuses");
   } else {
-    if (kDebugMode)
+    if (kDebugMode) {
       print("ℹ️ Skipping permission request on ${Platform.operatingSystem}.");
+    }
   }
 }
